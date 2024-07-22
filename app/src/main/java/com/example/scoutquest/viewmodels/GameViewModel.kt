@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.viewmodels
+package com.example.scoutquest.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -16,7 +16,7 @@ class GameViewModel(private val repository: GameRepository) : ViewModel() {
         _games.value = repository.getAllGames()
     }
 
-    fun removeGame(gameId: String) {
+    fun removeGame(gameId: Int) {
         repository.removeGame(gameId)
         _games.value = repository.getAllGames()
 

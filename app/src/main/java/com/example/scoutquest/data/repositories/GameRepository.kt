@@ -9,11 +9,11 @@ class GameRepository {
         games.add(game)
     }
 
-    fun removeGame(gameId: String) {
+    fun removeGame(gameId: Int) {
         games.removeAll { it.gameId == gameId }
     }
 
-    fun getGameById(gameId: String): Game? {
+    fun getGameById(gameId: Int): Game? {
         return games.find { it.gameId == gameId }
     }
 

@@ -9,5 +9,7 @@ data class User (
     val email: String,
     val badges: List<Bagdes>,
     val profilePicture: Picture,
-    val points: Int
+    val points: Int,
+    val createdGames: List<Game>,
+    val gamesHistory: List<Session>
 )
