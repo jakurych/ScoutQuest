@@ -45,7 +45,7 @@ fun NewGameView() {
             ) {
                 CircleButton(
                     text = "Create new game",
-                    onClick = { navController.navigate("/joingame") },
+                    onClick = { navController.navigate("/creator") },
                     modifier = Modifier
                 )
             }
@@ -64,7 +64,6 @@ fun NewGameView() {
                 )
             }
 
-            // Profile button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -73,7 +72,7 @@ fun NewGameView() {
             ) {
                 CircleButton(
                     text = "Browse games",
-                    onClick = { navController.navigate("/profile") },
+                    onClick = { navController.navigate("/browser") },
                     modifier = Modifier
                 )
             }
