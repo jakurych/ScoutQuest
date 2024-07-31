@@ -15,18 +15,22 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 
+
 @Composable
 fun AddTaskDialog(
     onDismiss: () -> Unit,
     onSave: (Task) -> Unit,
     onDelete: (Task) -> Unit,
     initialLocation: Location?,
-    taskToEdit: Task? = null
+    taskToEdit: Task? = null,
+    onUpdateSequence: (Int, Int) -> Boolean
 ) {
-    var taskTitle by remember { mutableStateOf(taskToEdit?.taskTitle ?: "") }
+    var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
     var taskDescription by remember { mutableStateOf(taskToEdit?.description ?: "") }
     var taskPoints by remember { mutableStateOf(taskToEdit?.points?.toString() ?: "") }
     var selectedLocation by remember { mutableStateOf(taskToEdit?.location ?: initialLocation) }
+    var sequenceNumber by remember { mutableStateOf(taskToEdit?.sequenceNumber?.toString() ?: "") }
+    var sequenceNumberError by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -49,6 +53,22 @@ fun AddTaskDialog(
                     label = { Text("Task Points") },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
+
+                if (taskToEdit != null) {
+                    TextField(
+                        value = sequenceNumber,
+                        onValueChange = { sequenceNumber = it },
+                        label = { Text("Task Number") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        isError = sequenceNumberError
+                    )
+                    if (sequenceNumberError) {
+                        Text(
+                            text = "Invalid sequence number",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -86,18 +106,26 @@ fun AddTaskDialog(
                 onClick = {
                     selectedLocation?.let { location ->
                         val task = Task(
-                            taskId = taskToEdit?.taskId ?: 0,
-                            taskTitle = taskTitle,
-                            gameId = taskToEdit?.gameId ?: 0,
+                            taskId = taskToEdit?.taskId ?: 0, // Replace with actual ID generation logic if needed
+                            title = taskTitle,
+                            gameId = taskToEdit?.gameId ?: 0, // Replace with actual game ID
                             description = taskDescription,
                             location = location,
                             points = taskPoints.toIntOrNull() ?: 0,
-                            interactionType = taskToEdit?.interactionType ?: "",
-                            status = taskToEdit?.status,
-                            sequenceNumber = taskToEdit?.sequenceNumber ?: 0
+                            sequenceNumber = taskToEdit?.sequenceNumber ?: 0 // Replace with actual sequence number
                         )
-                        onSave(task)
-                        onDismiss()
+                        if (taskToEdit != null) {
+                            val newSequenceNumber = sequenceNumber.toIntOrNull()
+                            if (newSequenceNumber != null && onUpdateSequence(task.taskId, newSequenceNumber)) {
+                                onSave(task)
+                                onDismiss()
+                            } else {
+                                sequenceNumberError = true
+                            }
+                        } else {
+                            onSave(task)
+                            onDismiss()
+                        }
                     }
                 }
             ) {

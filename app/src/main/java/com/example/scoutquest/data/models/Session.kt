@@ -6,7 +6,8 @@ data class Session (
     var participants: List<User>?,
     var teamsScores: List<Team>?,
     var scores: Map<Int, Int>?, // userId/teamId , score
-    var routingType: Int
+    var routingType: Int,
+    var tasks:Map<Task,Boolean>
     //kolejnosc taskow ustalona przez twórce, gracze wychodzą co t
     //algorytm trasowania i rekompensata punktowa za odleglosc
     //gdy graczy duzo -> oba 

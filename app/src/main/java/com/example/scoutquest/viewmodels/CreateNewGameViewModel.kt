@@ -3,6 +3,7 @@ package com.example.scoutquest.viewmodels
 import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.Task
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,9 +26,11 @@ class CreateNewGameViewModel : ViewModel() {
     private val _selectedLocation = MutableStateFlow<Location?>(null)
     val selectedLocation: StateFlow<Location?> get() = _selectedLocation
 
-    private var nextSequenceNumber = 1
-    private val availableSequenceNumbers = mutableListOf<Int>()
     private var nextTaskId = 1
+    private var nextGameId = 1 // Variable for generating unique gameId
+
+    private val _creator = MutableStateFlow<String?>(null) // Placeholder for the creator
+    val creator: StateFlow<String?> get() = _creator
 
     fun onNameChange(newName: String) {
         _name.value = newName
@@ -41,8 +44,12 @@ class CreateNewGameViewModel : ViewModel() {
         _isPublic.value = newIsPublic
     }
 
-    fun onLocationSelected(location: Location) {
+    fun onLocationSelected(location: Location?) {
         _selectedLocation.value = location
+    }
+
+    fun onCreatorChange(newCreator: String?) {
+        _creator.value = newCreator
     }
 
     fun addTask(task: Task) {
@@ -50,20 +57,17 @@ class CreateNewGameViewModel : ViewModel() {
             val updatedTasks = _tasks.value.toMutableList()
             val existingTaskIndex = updatedTasks.indexOfFirst { it.taskId == task.taskId }
             if (existingTaskIndex != -1) {
-                // Update  task
-                updatedTasks[existingTaskIndex] = task
+                // Update existing task
+                updatedTasks[existingTaskIndex] = task.copy()
             } else {
-                // nowy task
-                val sequenceNumber = if (availableSequenceNumbers.isNotEmpty()) {
-                    availableSequenceNumbers.removeAt(0)
-                } else {
-                    nextSequenceNumber++
-                }
-                task.sequenceNumber = sequenceNumber
-                task.taskId = nextTaskId++
-                updatedTasks.add(task)
+                // Add new task
+                val newTask = task.copy(
+                    sequenceNumber = updatedTasks.size + 1,
+                    taskId = nextTaskId++
+                )
+                updatedTasks.add(newTask)
             }
-            _tasks.value = updatedTasks
+            reassignSequenceNumbers(updatedTasks)
         }
     }
 
@@ -71,12 +75,43 @@ class CreateNewGameViewModel : ViewModel() {
         viewModelScope.launch {
             val updatedTasks = _tasks.value.toMutableList()
             updatedTasks.remove(task)
-            _tasks.value = updatedTasks
-            availableSequenceNumbers.add(task.sequenceNumber)
+            reassignSequenceNumbers(updatedTasks)
         }
     }
 
-    fun saveGame() {
+    fun updateTaskSequence(taskId: Int, newSequenceNumber: Int): Boolean {
+        val updatedTasks = _tasks.value.toMutableList()
+        val taskToMoveIndex = updatedTasks.indexOfFirst { it.taskId == taskId }
 
+        if (taskToMoveIndex == -1 || newSequenceNumber < 1 || newSequenceNumber > updatedTasks.size) {
+            return false // Invalid task or sequence number
+        }
+
+        val taskToMove = updatedTasks.removeAt(taskToMoveIndex)
+        updatedTasks.add(newSequenceNumber - 1, taskToMove)
+
+        reassignSequenceNumbers(updatedTasks)
+        return true
+    }
+
+    private fun reassignSequenceNumbers(tasks: MutableList<Task>) {
+        tasks.forEachIndexed { index, task ->
+            task.sequenceNumber = index + 1
+        }
+        _tasks.value = tasks.toList() // Force a new list instance to trigger recomposition
+    }
+
+    fun saveGame() {
+        viewModelScope.launch {
+            val game = Game(
+                gameId = nextGameId++,
+                creator = _creator.value, // Placeholder for the creator
+                name = _name.value,
+                description = _description.value,
+                tasks = _tasks.value,
+                isPublic = _isPublic.value
+            )
+            // Logic to save the game, e.g., saving to a database or sending to a server
+        }
     }
 }

@@ -4,12 +4,10 @@ import android.location.Location
 
 data class Task(
     var taskId: Int,
-    val taskTitle: String,
-    val gameId: Int,
-    val description: String,
-    val location: Location,
-    val points: Int,
-    val interactionType: String, //wprowadz odp na pytanie, odnajdz beacon, znajdz i zeskanuj Qr,
-    var status: String?,
-    var sequenceNumber: Int
+    var sequenceNumber: Int,
+    var title: String? = null, // Optional field
+    var description: String,
+    var points: Int,
+    var location: Location,
+    var gameId: Int
 )

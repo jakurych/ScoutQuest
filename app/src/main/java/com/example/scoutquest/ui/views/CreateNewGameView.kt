@@ -31,7 +31,6 @@ import com.example.scoutquest.data.models.Task
 @Composable
 fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
 
-    val navController = LocalNavigation.current
     val name by viewModel.name.collectAsState()
     val description by viewModel.description.collectAsState()
     val isPublic by viewModel.isPublic.collectAsState()
@@ -130,7 +129,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         tasks.forEach { task ->
                             Marker(
                                 state = com.google.maps.android.compose.MarkerState(position = LatLng(task.location.latitude, task.location.longitude)),
-                                title = task.taskTitle
+                                title = task.title
                             )
                         }
                     }
@@ -162,10 +161,10 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Task: ${task.taskTitle}")
+                            Text("Task number: ${task.sequenceNumber}")
+                            Text("Title: ${task.title}")
                             Text("Description: ${task.description}")
                             Text("Points: ${task.points}")
-                            Text("Task Number: ${task.sequenceNumber}")
                         }
                         IconButton(onClick = {
                             taskToEdit = task
@@ -179,8 +178,9 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                 item {
                     Button(
                         onClick = {
-                            viewModel.saveGame()
-                            navController.navigateUp()
+                            //   viewModel.saveGame()
+                            // Assuming you have a navigation controller to navigate up
+                            // navController.navigateUp()
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -202,8 +202,16 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                     showAddTaskDialog = false
                 },
                 initialLocation = selectedLocation,
-                taskToEdit = taskToEdit
+                taskToEdit = taskToEdit,
+                onUpdateSequence = { taskId, newSequenceNumber ->
+                    viewModel.updateTaskSequence(taskId, newSequenceNumber)
+                }
             )
         }
     }
+}
+
+@Composable
+fun Header() {
+    // Your header implementation
 }
