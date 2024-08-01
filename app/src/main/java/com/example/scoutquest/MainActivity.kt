@@ -1,5 +1,4 @@
 package com.example.scoutquest
-
 import android.location.Location
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -34,6 +33,7 @@ class MainActivity : ComponentActivity() {
         val initialLocation = Location("provider").apply {
             latitude = 52.253126
             longitude = 20.900157
+
         }
 
         // Przekazanie initialLocation do ViewModel

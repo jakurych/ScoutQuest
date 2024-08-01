@@ -1,5 +1,4 @@
 package com.example.scoutquest.ui.views
-
 import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -27,7 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
-import com.example.scoutquest.utils.rememberBitmapDescriptor
+import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 
 @Composable
 fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
@@ -37,7 +36,8 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
     val isPublic by viewModel.isPublic.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
     val selectedLocation by viewModel.selectedLocation.collectAsState()
-    val mapMarkers by viewModel.mapMarkers.collectAsState()
+    //val mapMarkers by viewModel.mapMarkers.collectAsState()
+    val temporaryMarker by viewModel.temporaryMarker.collectAsState()
 
     var showAddTaskDialog by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<Task?>(null) }
@@ -114,7 +114,10 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
 
                 item {
                     val cameraPositionState = rememberCameraPositionState {
-                        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(37.7749, -122.4194), 10f)
+                        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
+                        //wat position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+                        //                        LatLng(52.253126, 20.900157), 10f
+                        //
                     }
                     GoogleMap(
                         modifier = Modifier
@@ -130,15 +133,22 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         }
                     ) {
                         tasks.forEachIndexed { index, task ->
-                            val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor ?: "green", (index + 1).toString())
+                            val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
                             val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
-                            task.location?.let { location ->
+                            task.location.let { location ->
                                 Marker(
                                     state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
                                     title = task.title,
                                     icon = bitmapDescriptor
                                 )
                             }
+                        }
+                        temporaryMarker?.let { latLng ->
+                            Marker(
+                                state = com.google.maps.android.compose.MarkerState(position = latLng),
+                                title = "Temporary Marker",
+                                icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl("blue", ""), 0)
+                            )
                         }
                     }
                 }
@@ -158,7 +168,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         horizontalAlignment = Alignment.Start
                     ) {
                         Text("Task ${index + 1}: ${task.title ?: "No Title"}")
-                        Text("Description: ${task.description ?: "No Description"}")
+                        Text("Description: ${task.description}")
                         Text("Points: ${task.points}")
                         IconButton(onClick = { taskToEdit = task; showAddTaskDialog = true }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Task")
@@ -191,7 +201,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
             onUpdateSequence = { taskId, newSequenceNumber ->
                 viewModel.updateTaskSequence(taskId, newSequenceNumber)
             },
-            mapMarkers = mapMarkers
+            mapMarkers = tasks // Pass the list of tasks instead of locations
         )
     }
 }

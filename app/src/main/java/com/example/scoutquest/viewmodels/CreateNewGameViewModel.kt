@@ -28,7 +28,7 @@ class CreateNewGameViewModel : ViewModel() {
     val selectedLocation: StateFlow<Location?> get() = _selectedLocation
 
     private var nextTaskId = 1
-    private var nextGameId = 1 // Variable for generating unique gameId
+    private var nextGameId = 1
 
     private val _creator = MutableStateFlow<String?>(null) // Placeholder for the creator
     val creator: StateFlow<String?> get() = _creator
@@ -50,6 +50,7 @@ class CreateNewGameViewModel : ViewModel() {
 
     fun onLocationSelected(location: Location?) {
         _selectedLocation.value = location
+        updateTemporaryMarker(location)
     }
 
     fun onCreatorChange(newCreator: String?) {
@@ -61,10 +62,10 @@ class CreateNewGameViewModel : ViewModel() {
             val updatedTasks = _tasks.value.toMutableList()
             val existingTaskIndex = updatedTasks.indexOfFirst { it.taskId == task.taskId }
             if (existingTaskIndex != -1) {
-                // Update existing task
+                //Update existing task
                 updatedTasks[existingTaskIndex] = task.copy()
             } else {
-                // Add new task
+                //Add new task
                 val newTask = task.copy(
                     sequenceNumber = updatedTasks.size + 1,
                     taskId = nextTaskId++
@@ -90,7 +91,7 @@ class CreateNewGameViewModel : ViewModel() {
         val taskToMoveIndex = updatedTasks.indexOfFirst { it.taskId == taskId }
 
         if (taskToMoveIndex == -1 || newSequenceNumber < 1 || newSequenceNumber > updatedTasks.size) {
-            return false // Invalid task or sequence number
+            return false
         }
 
         val taskToMove = updatedTasks.removeAt(taskToMoveIndex)
@@ -110,6 +111,13 @@ class CreateNewGameViewModel : ViewModel() {
 
     private fun updateMapMarkers(tasks: List<Task>) {
         _mapMarkers.value = tasks.mapNotNull { task -> task.location?.let { LatLng(it.latitude, it.longitude) } }
+    }
+
+    private val _temporaryMarker = MutableStateFlow<LatLng?>(null)
+    val temporaryMarker: StateFlow<LatLng?> get() = _temporaryMarker
+
+    private fun updateTemporaryMarker(location: Location?) {
+        _temporaryMarker.value = location?.let { LatLng(it.latitude, it.longitude) }
     }
 
     fun saveGame() {

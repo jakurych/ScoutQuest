@@ -1,5 +1,4 @@
 package com.example.scoutquest.ui.views
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,8 +14,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.scoutquest.data.services.MarkersHelper
-import com.example.scoutquest.utils.rememberBitmapDescriptor
-
+import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 
 @Composable
 fun AddTaskDialog(
@@ -26,7 +24,7 @@ fun AddTaskDialog(
     initialLocation: Location?,
     taskToEdit: Task? = null,
     onUpdateSequence: (Int, Int) -> Boolean,
-    mapMarkers: List<LatLng>
+    mapMarkers: List<Task>
 ) {
     var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
     var taskDescription by remember { mutableStateOf(taskToEdit?.description ?: "") }
@@ -105,7 +103,7 @@ fun AddTaskDialog(
                 Text("Select Location")
                 val cameraPositionState = rememberCameraPositionState {
                     position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-                        LatLng(37.7749, -122.4194), 10f
+                        LatLng(52.253126, 20.900157), 10f
                     )
                 }
                 GoogleMap(
@@ -120,12 +118,22 @@ fun AddTaskDialog(
                         }
                     }
                 ) {
-                    mapMarkers.forEachIndexed { index, latLng ->
-                        val markerUrl = MarkersHelper.getMarkerUrl("green", (index + 1).toString())
+                    mapMarkers.forEachIndexed { index, task ->
+                        val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor ?: "green", (index + 1).toString())
                         val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
+                        task.location?.let { location ->
+                            Marker(
+                                state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
+                                icon = bitmapDescriptor
+                            )
+                        }
+                    }
+                    selectedLocation?.let { location ->
+                        val latLng = LatLng(location.latitude, location.longitude)
                         Marker(
                             state = com.google.maps.android.compose.MarkerState(position = latLng),
-                            icon = bitmapDescriptor
+                            title = "Selected Location",
+                            icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
                         )
                     }
                 }
