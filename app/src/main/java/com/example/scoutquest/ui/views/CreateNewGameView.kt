@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -15,18 +15,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.ui.components.Header
-import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import android.location.Location
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.example.scoutquest.data.models.Task
+import android.location.Location
+import com.example.scoutquest.data.services.MarkersHelper
+import com.example.scoutquest.utils.rememberBitmapDescriptor
+
 
 @Composable
 fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
@@ -97,11 +99,12 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Public Game")
+                        Text("Public:")
                         Switch(
                             checked = isPublic,
                             onCheckedChange = { viewModel.onIsPublicChange(it) }
@@ -126,92 +129,68 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                             viewModel.onLocationSelected(location)
                         }
                     ) {
-                        tasks.forEach { task ->
-                            Marker(
-                                state = com.google.maps.android.compose.MarkerState(position = LatLng(task.location.latitude, task.location.longitude)),
-                                title = task.title
-                            )
+                        tasks.forEachIndexed { index, task ->
+                            val markerUrl = MarkersHelper.getMarkerUrl("green", (index + 1).toString())
+                            val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
+                            task.location?.let { location ->
+                                Marker(
+                                    state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
+                                    title = task.title,
+                                    icon = bitmapDescriptor
+                                )
+                            }
                         }
                     }
                 }
 
-                item {
-                    Button(
-                        onClick = {
-                            taskToEdit = null
-                            showAddTaskDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Add Task")
-                    }
-                }
-
-                items(tasks) { task ->
-                    Row(
+                itemsIndexed(tasks) { index, task ->
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
-                            .background(Color.White)
-                            .clickable {
-                                taskToEdit = task
-                                showAddTaskDialog = true
-                            },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                            .clickable { taskToEdit = task; showAddTaskDialog = true },
+                        horizontalAlignment = Alignment.Start
                     ) {
-                        Column {
-                            Text("Task number: ${task.sequenceNumber}")
-                            Text("Title: ${task.title}")
-                            Text("Description: ${task.description}")
-                            Text("Points: ${task.points}")
-                        }
-                        IconButton(onClick = {
-                            taskToEdit = task
-                            showAddTaskDialog = true
-                        }) {
+                        Text("Task ${index + 1}: ${task.title ?: "No Title"}")
+                        Text("Description: ${task.description ?: "No Description"}")
+                        Text("Points: ${task.points}")
+                        IconButton(onClick = { taskToEdit = task; showAddTaskDialog = true }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Task")
                         }
                     }
                 }
 
                 item {
-                    Button(
-                        onClick = {
-                            //   viewModel.saveGame()
-                            // Assuming you have a navigation controller to navigate up
-                            // navController.navigateUp()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Save Game")
+                    Button(onClick = { showAddTaskDialog = true }) {
+                        Text("Add Task")
                     }
                 }
             }
         }
-
-        if (showAddTaskDialog) {
-            AddTaskDialog(
-                onDismiss = { showAddTaskDialog = false },
-                onSave = { task ->
-                    viewModel.addTask(task)
-                    showAddTaskDialog = false
-                },
-                onDelete = { task ->
-                    viewModel.removeTask(task)
-                    showAddTaskDialog = false
-                },
-                initialLocation = selectedLocation,
-                taskToEdit = taskToEdit,
-                onUpdateSequence = { taskId, newSequenceNumber ->
-                    viewModel.updateTaskSequence(taskId, newSequenceNumber)
-                }
-            )
-        }
     }
-}
 
-@Composable
-fun Header() {
-    // Your header implementation
+    if (showAddTaskDialog) {
+        AddTaskDialog(
+            onDismiss = { showAddTaskDialog = false },
+            onSave = { task ->
+                if (taskToEdit != null) {
+                    viewModel.addTask(task)
+                } else {
+                    viewModel.addTask(task)
+                }
+                showAddTaskDialog = false
+                taskToEdit = null
+            },
+            onDelete = { task ->
+                viewModel.removeTask(task)
+                showAddTaskDialog = false
+                taskToEdit = null
+            },
+            initialLocation = selectedLocation,
+            taskToEdit = taskToEdit,
+            onUpdateSequence = { taskId, newSequenceNumber ->
+                viewModel.updateTaskSequence(taskId, newSequenceNumber)
+            }
+        )
+    }
 }
