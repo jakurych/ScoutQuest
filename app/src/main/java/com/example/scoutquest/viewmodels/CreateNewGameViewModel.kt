@@ -8,6 +8,7 @@ import com.example.scoutquest.data.models.Task
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.google.android.gms.maps.model.LatLng
 
 class CreateNewGameViewModel : ViewModel() {
 
@@ -31,6 +32,9 @@ class CreateNewGameViewModel : ViewModel() {
 
     private val _creator = MutableStateFlow<String?>(null) // Placeholder for the creator
     val creator: StateFlow<String?> get() = _creator
+
+    private val _mapMarkers = MutableStateFlow<List<LatLng>>(emptyList())
+    val mapMarkers: StateFlow<List<LatLng>> get() = _mapMarkers
 
     fun onNameChange(newName: String) {
         _name.value = newName
@@ -68,6 +72,7 @@ class CreateNewGameViewModel : ViewModel() {
                 updatedTasks.add(newTask)
             }
             reassignSequenceNumbers(updatedTasks)
+            updateMapMarkers(updatedTasks)
         }
     }
 
@@ -76,6 +81,7 @@ class CreateNewGameViewModel : ViewModel() {
             val updatedTasks = _tasks.value.toMutableList()
             updatedTasks.remove(task)
             reassignSequenceNumbers(updatedTasks)
+            updateMapMarkers(updatedTasks)
         }
     }
 
@@ -91,6 +97,7 @@ class CreateNewGameViewModel : ViewModel() {
         updatedTasks.add(newSequenceNumber - 1, taskToMove)
 
         reassignSequenceNumbers(updatedTasks)
+        updateMapMarkers(updatedTasks)
         return true
     }
 
@@ -99,6 +106,10 @@ class CreateNewGameViewModel : ViewModel() {
             task.sequenceNumber = index + 1
         }
         _tasks.value = tasks.toList() // Force a new list instance to trigger recomposition
+    }
+
+    private fun updateMapMarkers(tasks: List<Task>) {
+        _mapMarkers.value = tasks.mapNotNull { task -> task.location?.let { LatLng(it.latitude, it.longitude) } }
     }
 
     fun saveGame() {

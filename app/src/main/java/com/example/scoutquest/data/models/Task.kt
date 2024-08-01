@@ -9,5 +9,6 @@ data class Task(
     var description: String,
     var points: Int,
     var location: Location,
-    var gameId: Int
+    var gameId: Int,
+    var markerColor: String
 )

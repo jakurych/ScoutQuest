@@ -1,5 +1,6 @@
 package com.example.scoutquest.ui.views
 
+import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,10 +26,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import com.example.scoutquest.data.models.Task
-import android.location.Location
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.utils.rememberBitmapDescriptor
-
 
 @Composable
 fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
@@ -38,6 +37,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
     val isPublic by viewModel.isPublic.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
     val selectedLocation by viewModel.selectedLocation.collectAsState()
+    val mapMarkers by viewModel.mapMarkers.collectAsState()
 
     var showAddTaskDialog by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<Task?>(null) }
@@ -130,7 +130,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         }
                     ) {
                         tasks.forEachIndexed { index, task ->
-                            val markerUrl = MarkersHelper.getMarkerUrl("green", (index + 1).toString())
+                            val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor ?: "green", (index + 1).toString())
                             val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
                             task.location?.let { location ->
                                 Marker(
@@ -140,6 +140,12 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                                 )
                             }
                         }
+                    }
+                }
+
+                item {
+                    Button(onClick = { showAddTaskDialog = true }) {
+                        Text("Add Task")
                     }
                 }
 
@@ -157,12 +163,6 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         IconButton(onClick = { taskToEdit = task; showAddTaskDialog = true }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit Task")
                         }
-                    }
-                }
-
-                item {
-                    Button(onClick = { showAddTaskDialog = true }) {
-                        Text("Add Task")
                     }
                 }
             }
@@ -190,7 +190,8 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
             taskToEdit = taskToEdit,
             onUpdateSequence = { taskId, newSequenceNumber ->
                 viewModel.updateTaskSequence(taskId, newSequenceNumber)
-            }
+            },
+            mapMarkers = mapMarkers
         )
     }
 }

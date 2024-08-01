@@ -14,6 +14,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.example.scoutquest.data.services.MarkersHelper
+import com.example.scoutquest.utils.rememberBitmapDescriptor
 
 
 @Composable
@@ -23,7 +25,8 @@ fun AddTaskDialog(
     onDelete: (Task) -> Unit,
     initialLocation: Location?,
     taskToEdit: Task? = null,
-    onUpdateSequence: (Int, Int) -> Boolean
+    onUpdateSequence: (Int, Int) -> Boolean,
+    mapMarkers: List<LatLng>
 ) {
     var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
     var taskDescription by remember { mutableStateOf(taskToEdit?.description ?: "") }
@@ -31,6 +34,10 @@ fun AddTaskDialog(
     var selectedLocation by remember { mutableStateOf(taskToEdit?.location ?: initialLocation) }
     var sequenceNumber by remember { mutableStateOf(taskToEdit?.sequenceNumber?.toString() ?: "") }
     var sequenceNumberError by remember { mutableStateOf(false) }
+    var markerColor by remember { mutableStateOf(taskToEdit?.markerColor ?: "green") }
+
+    val markerColors = listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
+    var expanded by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -72,6 +79,29 @@ fun AddTaskDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                Text("Select Marker Color")
+                Box {
+                    OutlinedButton(onClick = { expanded = true }) {
+                        Text(markerColor)
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        markerColors.forEach { color ->
+                            DropdownMenuItem(
+                                text = { Text(color) },
+                                onClick = {
+                                    markerColor = color
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text("Select Location")
                 val cameraPositionState = rememberCameraPositionState {
                     position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
@@ -90,12 +120,12 @@ fun AddTaskDialog(
                         }
                     }
                 ) {
-                    selectedLocation?.let { location ->
+                    mapMarkers.forEachIndexed { index, latLng ->
+                        val markerUrl = MarkersHelper.getMarkerUrl("green", (index + 1).toString())
+                        val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
                         Marker(
-                            state = com.google.maps.android.compose.MarkerState(
-                                position = LatLng(location.latitude, location.longitude)
-                            ),
-                            title = "Selected Location"
+                            state = com.google.maps.android.compose.MarkerState(position = latLng),
+                            icon = bitmapDescriptor
                         )
                     }
                 }
@@ -106,13 +136,14 @@ fun AddTaskDialog(
                 onClick = {
                     selectedLocation?.let { location ->
                         val task = Task(
-                            taskId = taskToEdit?.taskId ?: 0, // Replace with actual ID generation logic if needed
+                            taskId = taskToEdit?.taskId ?: 0,
                             title = taskTitle,
-                            gameId = taskToEdit?.gameId ?: 0, // Replace with actual game ID
+                            gameId = taskToEdit?.gameId ?: 0,
                             description = taskDescription,
                             location = location,
                             points = taskPoints.toIntOrNull() ?: 0,
-                            sequenceNumber = taskToEdit?.sequenceNumber ?: 0 // Replace with actual sequence number
+                            sequenceNumber = taskToEdit?.sequenceNumber ?: 0,
+                            markerColor = markerColor
                         )
                         if (taskToEdit != null) {
                             val newSequenceNumber = sequenceNumber.toIntOrNull()
