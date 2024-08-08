@@ -1,12 +1,17 @@
 package com.example.scoutquest.ui.views
+
+import AddTaskDialog
 import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,42 +19,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
+import com.example.scoutquest.ui.theme.*
 
 @Composable
 fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
-
     val name by viewModel.name.collectAsState()
     val description by viewModel.description.collectAsState()
     val isPublic by viewModel.isPublic.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
     val selectedLocation by viewModel.selectedLocation.collectAsState()
-    //val mapMarkers by viewModel.mapMarkers.collectAsState()
     val temporaryMarker by viewModel.temporaryMarker.collectAsState()
 
     var showAddTaskDialog by remember { mutableStateOf(false) }
     var taskToEdit by remember { mutableStateOf<Task?>(null) }
+    var isFullscreen by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
+    val cameraPositionState = rememberCameraPositionState {
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
+    }
+
+    val fullscreenCameraPositionState = rememberCameraPositionState {
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -103,26 +109,122 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Public:")
+                        Text("Public:", color = Color.White)
                         Switch(
                             checked = isPublic,
-                            onCheckedChange = { viewModel.onIsPublicChange(it) }
+                            onCheckedChange = { viewModel.onIsPublicChange(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = moss_green,
+                                uncheckedThumbColor = Color.White,
+                                checkedTrackColor = black_olive,
+                                uncheckedTrackColor = black_olive
+                            )
                         )
                     }
                 }
 
                 item {
-                    val cameraPositionState = rememberCameraPositionState {
-                        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
-                        //wat position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-                        //                        LatLng(52.253126, 20.900157), 10f
-                        //
+                    Column {
+                        GoogleMap(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(16f / 9f), // Zmiana proporcji mapy
+                            cameraPositionState = cameraPositionState,
+                            onMapClick = { latLng ->
+                                val location = Location("").apply {
+                                    latitude = latLng.latitude
+                                    longitude = latLng.longitude
+                                }
+                                viewModel.onLocationSelected(location)
+                            }
+                        ) {
+                            tasks.forEachIndexed { index, task ->
+                                val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
+                                val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
+                                task.location.let { location ->
+                                    Marker(
+                                        state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
+                                        title = task.title,
+                                        icon = bitmapDescriptor
+                                    )
+                                }
+                            }
+                            temporaryMarker?.let { latLng ->
+                                Marker(
+                                    state = com.google.maps.android.compose.MarkerState(position = latLng),
+                                    title = "Temporary Marker",
+                                    icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl("blue", ""), 0)
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                isFullscreen = true
+                                fullscreenCameraPositionState.position = cameraPositionState.position
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                        ) {
+                            Text("Full Screen Map", color = Color.White)
+                        }
+
+                        Button(
+                            onClick = { showAddTaskDialog = true },
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                        ) {
+                            Text("Add Task", color = Color.White)
+                        }
                     }
-                    GoogleMap(
+                }
+
+                itemsIndexed(tasks) { index, task ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp),
-                        cameraPositionState = cameraPositionState,
+                            .padding(8.dp)
+                            .clickable { taskToEdit = task; showAddTaskDialog = true },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = moss_green)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text("Task ${index + 1}: ${task.title ?: "No Title"}", color = Color.White)
+                            Text("Description: ${task.description}", color = Color.White)
+                            Text("Points: ${task.points}", color = Color.White)
+                            IconButton(onClick = { taskToEdit = task; showAddTaskDialog = true }) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Task", tint = Color.White)
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Button(
+                        onClick = { /* Logika do tworzenia gry */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                    ) {
+                        Text("Create game!", color = Color.White)
+                    }
+                }
+            }
+        }
+
+        if (isFullscreen) {
+            Dialog(
+                onDismissRequest = { isFullscreen = false },
+                properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    GoogleMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = fullscreenCameraPositionState,
                         onMapClick = { latLng ->
                             val location = Location("").apply {
                                 latitude = latLng.latitude
@@ -150,57 +252,44 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                             )
                         }
                     }
-                }
-
-                item {
-                    Button(onClick = { showAddTaskDialog = true }) {
-                        Text("Add Task")
-                    }
-                }
-
-                itemsIndexed(tasks) { index, task ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable { taskToEdit = task; showAddTaskDialog = true },
-                        horizontalAlignment = Alignment.Start
+                    Button(
+                        onClick = {
+                            isFullscreen = false
+                            cameraPositionState.position = fullscreenCameraPositionState.position
+                        },
+                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = moss_green)
                     ) {
-                        Text("Task ${index + 1}: ${task.title ?: "No Title"}")
-                        Text("Description: ${task.description}")
-                        Text("Points: ${task.points}")
-                        IconButton(onClick = { taskToEdit = task; showAddTaskDialog = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Task")
-                        }
+                        Text("Close", color = Color.White)
                     }
                 }
             }
         }
-    }
 
-    if (showAddTaskDialog) {
-        AddTaskDialog(
-            onDismiss = { showAddTaskDialog = false },
-            onSave = { task ->
-                if (taskToEdit != null) {
-                    viewModel.addTask(task)
-                } else {
-                    viewModel.addTask(task)
-                }
-                showAddTaskDialog = false
-                taskToEdit = null
-            },
-            onDelete = { task ->
-                viewModel.removeTask(task)
-                showAddTaskDialog = false
-                taskToEdit = null
-            },
-            initialLocation = selectedLocation,
-            taskToEdit = taskToEdit,
-            onUpdateSequence = { taskId, newSequenceNumber ->
-                viewModel.updateTaskSequence(taskId, newSequenceNumber)
-            },
-            mapMarkers = tasks // Pass the list of tasks instead of locations
-        )
+        if (showAddTaskDialog) {
+            AddTaskDialog(
+                onDismiss = { showAddTaskDialog = false },
+                onSave = { task ->
+                    if (taskToEdit != null) {
+                        viewModel.addTask(task)
+                    } else {
+                        viewModel.addTask(task)
+                    }
+                    showAddTaskDialog = false
+                    taskToEdit = null
+                },
+                onDelete = { task ->
+                    viewModel.removeTask(task)
+                    showAddTaskDialog = false
+                    taskToEdit = null
+                },
+                initialLocation = selectedLocation,
+                taskToEdit = taskToEdit,
+                onUpdateSequence = { taskId, newSequenceNumber ->
+                    viewModel.updateTaskSequence(taskId, newSequenceNumber)
+                },
+                mapMarkers = tasks
+            )
+        }
     }
 }
