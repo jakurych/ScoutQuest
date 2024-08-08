@@ -25,7 +25,6 @@ fun NewGameView() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF3A3A3A))
     ) {
         Column(
             modifier = Modifier

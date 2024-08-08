@@ -2,25 +2,47 @@ package com.example.scoutquest.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import com.example.scoutquest.R
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+   /* primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80
+    */
+    primary = moss_green,
+    secondary = black_olive,
+    tertiary = bistre,
+    background = Color(0xFF1C1B1F),
+    surface = Color(0xFF1C1B1F)
 )
 
+
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    /*primary = Purple40,
     secondary = PurpleGrey40,
-    tertiary = Pink40
+    tertiary = Pink40 */
+
+    primary = moss_green,
+    secondary = black_olive,
+    tertiary = bistre,
+    background = Color.White,
+    surface = Color.White
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -36,7 +58,6 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun ScoutQuestTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -53,6 +74,16 @@ fun ScoutQuestTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = content
+        content = {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Image(
+                    painter = painterResource(id = R.drawable.wz_background),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                content()
+            }
+        }
     )
 }
