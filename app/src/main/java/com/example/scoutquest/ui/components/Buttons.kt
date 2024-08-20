@@ -23,7 +23,7 @@ fun CircleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-    val buttonSize = screenWidth * 0.4f
+    val buttonSize = screenWidth * 0.42f
 
     Button(
         onClick = onClick,
