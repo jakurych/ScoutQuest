@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
@@ -22,14 +23,20 @@ import com.example.scoutquest.viewmodels.MainScreenViewModel
 fun NewGameView() {
     val navController = LocalNavigation.current
 
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    val padding = screenWidth * 0.05f
+    val elementSpacing = screenWidth * 0.02f
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -39,7 +46,7 @@ fun NewGameView() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(elementSpacing),
                 horizontalArrangement = Arrangement.Start
             ) {
                 CircleButton(
@@ -53,7 +60,7 @@ fun NewGameView() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(elementSpacing),
                 horizontalArrangement = Arrangement.End
             ) {
                 CircleButton(
@@ -66,7 +73,7 @@ fun NewGameView() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(elementSpacing),
                 horizontalArrangement = Arrangement.Start
             ) {
                 CircleButton(

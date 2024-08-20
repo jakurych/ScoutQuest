@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -34,6 +35,12 @@ import com.example.scoutquest.ui.theme.*
 
 @Composable
 fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    val padding = screenWidth * 0.05f
+    val elementSpacing = screenWidth * 0.02f
+
     val name by viewModel.name.collectAsState()
     val description by viewModel.description.collectAsState()
     val isPublic by viewModel.isPublic.collectAsState()
@@ -53,9 +60,9 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().padding(padding)) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -64,7 +71,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(elementSpacing)
             ) {
                 item {
                     BasicTextField(
@@ -73,10 +80,10 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
-                            .padding(8.dp),
+                            .padding(elementSpacing),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
                         decorationBox = { innerTextField ->
-                            Box(modifier = Modifier.padding(8.dp)) {
+                            Box(modifier = Modifier.padding(elementSpacing)) {
                                 if (name.isEmpty()) Text("Enter game name")
                                 innerTextField()
                             }
@@ -91,10 +98,10 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
-                            .padding(8.dp),
+                            .padding(elementSpacing),
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
                         decorationBox = { innerTextField ->
-                            Box(modifier = Modifier.padding(8.dp)) {
+                            Box(modifier = Modifier.padding(elementSpacing)) {
                                 if (description.isEmpty()) Text("Enter game description")
                                 innerTextField()
                             }
@@ -106,7 +113,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
+                            .padding(elementSpacing),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Public:", color = Color.White)
@@ -128,7 +135,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         GoogleMap(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(16f / 9f), // Zmiana proporcji mapy
+                                .aspectRatio(16f / 9f),
                             cameraPositionState = cameraPositionState,
                             onMapClick = { latLng ->
                                 val location = Location("").apply {
@@ -163,7 +170,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                                 isFullscreen = true
                                 fullscreenCameraPositionState.position = cameraPositionState.position
                             },
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = elementSpacing),
                             colors = ButtonDefaults.buttonColors(containerColor = button_green)
                         ) {
                             Text("Full Screen Map", color = Color.White)
@@ -171,7 +178,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
 
                         Button(
                             onClick = { showAddTaskDialog = true },
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = elementSpacing),
                             colors = ButtonDefaults.buttonColors(containerColor = button_green)
                         ) {
                             Text("Add Task", color = Color.White)
@@ -183,13 +190,13 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
+                            .padding(elementSpacing)
                             .clickable { taskToEdit = task; showAddTaskDialog = true },
                         shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(containerColor = moss_green)
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier.padding(elementSpacing),
                             horizontalAlignment = Alignment.Start
                         ) {
                             Text("Task ${index + 1}: ${task.title ?: "No Title"}", color = Color.White)
@@ -207,7 +214,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         onClick = { /* Logika do tworzenia gry */ },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(elementSpacing),
                         colors = ButtonDefaults.buttonColors(containerColor = button_green)
                     ) {
                         Text("Create game!", color = Color.White)
@@ -257,7 +264,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                             isFullscreen = false
                             cameraPositionState.position = fullscreenCameraPositionState.position
                         },
-                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+                        modifier = Modifier.align(Alignment.TopEnd).padding(elementSpacing),
                         colors = ButtonDefaults.buttonColors(containerColor = moss_green)
                     ) {
                         Text("Close", color = Color.White)

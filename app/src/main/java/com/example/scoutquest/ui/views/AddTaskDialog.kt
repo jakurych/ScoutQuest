@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Dialog
@@ -35,6 +36,12 @@ fun AddTaskDialog(
     onUpdateSequence: (Int, Int) -> Boolean,
     mapMarkers: List<Task>
 ) {
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    val padding = screenWidth * 0.05f
+    val elementSpacing = screenWidth * 0.02f
+
     var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
     var taskDescription by remember { mutableStateOf(taskToEdit?.description ?: "") }
     var taskPoints by remember { mutableStateOf(taskToEdit?.points?.toString() ?: "") }
@@ -55,7 +62,7 @@ fun AddTaskDialog(
             onDismissRequest = { isFullscreen = false },
             properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 val cameraPositionState = rememberCameraPositionState {
                     position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
                         LatLng(selectedLocation?.latitude ?: 52.253126, selectedLocation?.longitude ?: 20.900157), 10f
@@ -92,7 +99,7 @@ fun AddTaskDialog(
                 }
                 Button(
                     onClick = { isFullscreen = false },
-                    modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+                    modifier = Modifier.align(Alignment.TopEnd).padding(padding),
                     colors = ButtonDefaults.buttonColors(containerColor = moss_green)
                 ) {
                     Text("Close", color = Color.White)
@@ -109,6 +116,7 @@ fun AddTaskDialog(
                     modifier = Modifier
                         .background(drab_dark_brown)
                         .verticalScroll(scrollState)
+                        .padding(padding)
                 ) {
                     TextField(
                         value = taskTitle,
@@ -126,6 +134,8 @@ fun AddTaskDialog(
                             errorIndicatorColor = Color.Red
                         )
                     )
+                    Spacer(modifier = Modifier.height(elementSpacing))
+
                     TextField(
                         value = taskDescription,
                         onValueChange = { taskDescription = it },
@@ -142,6 +152,8 @@ fun AddTaskDialog(
                             errorIndicatorColor = Color.Red
                         )
                     )
+                    Spacer(modifier = Modifier.height(elementSpacing))
+
                     TextField(
                         value = taskPoints,
                         onValueChange = { taskPoints = it },
@@ -161,6 +173,8 @@ fun AddTaskDialog(
                     )
 
                     if (taskToEdit != null) {
+                        Spacer(modifier = Modifier.height(elementSpacing))
+
                         TextField(
                             value = sequenceNumber,
                             onValueChange = { sequenceNumber = it },
@@ -187,7 +201,7 @@ fun AddTaskDialog(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(elementSpacing))
 
                     Text("Select Marker Color", color = Color.White)
                     Box {
@@ -210,7 +224,7 @@ fun AddTaskDialog(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(elementSpacing))
 
                     Text("Select Location", color = Color.White)
                     val cameraPositionState = rememberCameraPositionState {
@@ -221,7 +235,7 @@ fun AddTaskDialog(
                     GoogleMap(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .aspectRatio(16f / 9f), // Zmiana proporcji mapy
+                            .aspectRatio(16f / 9f),
                         cameraPositionState = cameraPositionState,
                         onMapClick = { latLng ->
                             selectedLocation = Location("").apply {
@@ -250,9 +264,11 @@ fun AddTaskDialog(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(elementSpacing))
+
                     Button(
                         onClick = { isFullscreen = true },
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = elementSpacing),
                         colors = ButtonDefaults.buttonColors(containerColor = moss_green)
                     ) {
                         Text("Full Screen Map", color = Color.White)
@@ -304,7 +320,7 @@ fun AddTaskDialog(
                         ) {
                             Text("Delete", color = Color.White)
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(elementSpacing))
                     }
                     Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = moss_green)) {
                         Text("Cancel", color = Color.White)
