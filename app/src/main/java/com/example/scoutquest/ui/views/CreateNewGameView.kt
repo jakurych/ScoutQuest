@@ -116,7 +116,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                             .padding(elementSpacing),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Public:", color = Color.White)
+                        Text("Public: ", color = Color.White)
                         Switch(
                             checked = isPublic,
                             onCheckedChange = { viewModel.onIsPublicChange(it) },

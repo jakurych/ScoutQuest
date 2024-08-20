@@ -20,12 +20,10 @@ import com.example.scoutquest.ui.theme.button_green
 
 @Composable
 fun CircleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    // Retrieve the screen width from LocalConfiguration
+
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-
-    // Calculate button size based on screen width
-    val buttonSize = screenWidth * 0.4f // 40% of screen width
+    val buttonSize = screenWidth * 0.4f
 
     Button(
         onClick = onClick,
@@ -45,7 +43,7 @@ fun CircleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
             Text(
                 text = text,
                 color = Color.White,
-                fontSize = (buttonSize.value * 0.1f).sp,
+                fontSize = (buttonSize.value * 0.12f).sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
