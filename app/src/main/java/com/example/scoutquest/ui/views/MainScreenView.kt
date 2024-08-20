@@ -53,7 +53,6 @@ fun MainScreenView(viewModel: MainScreenViewModel) {
                 )
             }
 
-            // New Game button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

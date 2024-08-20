@@ -11,10 +11,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.scoutquest.ui.components.Header
+import com.example.scoutquest.ui.navigation.Login
+import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.ui.theme.button_green
+import com.example.scoutquest.ui.theme.moss_green
+import com.example.scoutquest.ui.navigation.LocalNavigation
+
 
 @Composable
 fun RegisterView(registerViewModel: RegisterViewModel = viewModel()) {
+    val navController = LocalNavigation.current
+
     Column {
         Header()
         TextField(
@@ -42,6 +49,13 @@ fun RegisterView(registerViewModel: RegisterViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Register")
+        }
+        Button(
+            onClick = { navController.navigate(Login) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = moss_green)
+        ) {
+            Text("Go to Login")
         }
     }
 }

@@ -11,7 +11,7 @@ import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.viewmodels.LoginViewModel
-import com.example.scoutquest.ui.theme.button_green
+import com.example.scoutquest.ui.theme.*
 
 
 @Composable
@@ -42,7 +42,8 @@ fun LoginView(loginViewModel: LoginViewModel) {
         }
         Button(
             onClick = { navController.navigate(Register) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = moss_green)
         ) {
             Text("Go to Register")
         }

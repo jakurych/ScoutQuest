@@ -9,12 +9,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scoutquest.ui.theme.button_green
 
 @Composable
 fun CircleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val buttonSize = screenWidth * 0.4f
+
     Button(
         onClick = onClick,
         shape = CircleShape,
@@ -22,9 +28,9 @@ fun CircleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
             containerColor = button_green
         ),
         modifier = modifier
-            .size(180.dp)
+            .size(buttonSize)
             .clip(CircleShape)
     ) {
-        Text(text = text, color = Color.White, fontSize = 20.sp)
+        Text(text = text, color = Color.White, fontSize = (buttonSize.value * 0.1f).sp)
     }
 }
