@@ -1,9 +1,13 @@
 package com.example.scoutquest.data.repositories
 
 import com.example.scoutquest.data.models.Game
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 
 class GameRepository {
     private val games = mutableListOf<Game>()
+
+
 
     fun addGame(game: Game) {
         games.add(game)

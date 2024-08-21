@@ -18,6 +18,7 @@ import com.example.scoutquest.ui.theme.moss_green
 import com.example.scoutquest.ui.navigation.LocalNavigation
 
 
+
 @Composable
 fun RegisterView(registerViewModel: RegisterViewModel = viewModel()) {
     val navController = LocalNavigation.current
