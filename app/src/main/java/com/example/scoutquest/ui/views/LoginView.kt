@@ -5,14 +5,16 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.viewmodels.LoginViewModel
 import com.example.scoutquest.ui.theme.*
-
 
 @Composable
 fun LoginView(loginViewModel: LoginViewModel) {
@@ -47,6 +49,18 @@ fun LoginView(loginViewModel: LoginViewModel) {
         ) {
             Text("Go to Register")
         }
+
+        // Wyświetlanie komunikatu o błędzie
+        if (loginViewModel.errorMessage.isNotEmpty()) {
+            Text(text = loginViewModel.errorMessage, color = Color.Red)
+        }
+
+        // Przejście do następnego ekranu po pomyślnym zalogowaniu
+        LaunchedEffect(loginViewModel.loginSuccess) {
+            if (loginViewModel.loginSuccess) {
+                // Przejdź do następnego ekranu, np. Home
+                navController.navigate("home")
+            }
+        }
     }
 }
-

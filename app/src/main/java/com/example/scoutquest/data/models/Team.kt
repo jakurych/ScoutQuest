@@ -4,6 +4,6 @@ data class Team (
     var teamId: Int,
     var teamName: String?,
     var teamScore: Int?,
-    var teamLeader: Users?,
-    var teamMembers: List<Users>
+    var teamLeader: User?,
+    var teamMembers: List<User>
 )
