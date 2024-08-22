@@ -1,6 +1,5 @@
 package com.example.scoutquest.viewmodels
 
-import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.models.Game
@@ -24,8 +23,11 @@ class CreateNewGameViewModel : ViewModel() {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> get() = _tasks
 
-    private val _selectedLocation = MutableStateFlow<Location?>(null)
-    val selectedLocation: StateFlow<Location?> get() = _selectedLocation
+    private val _selectedLatitude = MutableStateFlow<Double?>(null)
+    val selectedLatitude: StateFlow<Double?> get() = _selectedLatitude
+
+    private val _selectedLongitude = MutableStateFlow<Double?>(null)
+    val selectedLongitude: StateFlow<Double?> get() = _selectedLongitude
 
     private var nextTaskId = 1
     private var nextGameId = 1
@@ -48,9 +50,10 @@ class CreateNewGameViewModel : ViewModel() {
         _isPublic.value = newIsPublic
     }
 
-    fun onLocationSelected(location: Location?) {
-        _selectedLocation.value = location
-        updateTemporaryMarker(location)
+    fun onLocationSelected(latitude: Double?, longitude: Double?) {
+        _selectedLatitude.value = latitude
+        _selectedLongitude.value = longitude
+        updateTemporaryMarker(latitude, longitude)
     }
 
     fun onCreatorChange(newCreator: String?) {
@@ -110,14 +113,18 @@ class CreateNewGameViewModel : ViewModel() {
     }
 
     private fun updateMapMarkers(tasks: List<Task>) {
-        _mapMarkers.value = tasks.mapNotNull { task -> task.location?.let { LatLng(it.latitude, it.longitude) } }
+        _mapMarkers.value = tasks.map { task -> LatLng(task.latitude, task.longitude) }
     }
 
     private val _temporaryMarker = MutableStateFlow<LatLng?>(null)
     val temporaryMarker: StateFlow<LatLng?> get() = _temporaryMarker
 
-    private fun updateTemporaryMarker(location: Location?) {
-        _temporaryMarker.value = location?.let { LatLng(it.latitude, it.longitude) }
+    private fun updateTemporaryMarker(latitude: Double?, longitude: Double?) {
+        _temporaryMarker.value = if (latitude != null && longitude != null) {
+            LatLng(latitude, longitude)
+        } else {
+            null
+        }
     }
 
     fun saveGame() {
@@ -130,7 +137,7 @@ class CreateNewGameViewModel : ViewModel() {
                 tasks = _tasks.value,
                 isPublic = _isPublic.value
             )
-            // Logic to save the game, e.g., saving to a database or sending to a server
+            // Logic to save the game to a database
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.LocalNavigation
+import com.example.scoutquest.ui.navigation.Profile
 import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.viewmodels.LoginViewModel
 import com.example.scoutquest.ui.theme.*
@@ -50,16 +51,14 @@ fun LoginView(loginViewModel: LoginViewModel) {
             Text("Go to Register")
         }
 
-        // Wyświetlanie komunikatu o błędzie
         if (loginViewModel.errorMessage.isNotEmpty()) {
             Text(text = loginViewModel.errorMessage, color = Color.Red)
         }
 
-        // Przejście do następnego ekranu po pomyślnym zalogowaniu
+        //po pomyślnym zalogowaniu
         LaunchedEffect(loginViewModel.loginSuccess) {
             if (loginViewModel.loginSuccess) {
-                // Przejdź do następnego ekranu, np. Home
-                navController.navigate("home")
+                navController.navigate(Profile)
             }
         }
     }

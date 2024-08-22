@@ -1,7 +1,6 @@
 package com.example.scoutquest.ui.views
 
 import AddTaskDialog
-import android.location.Location
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -45,7 +44,8 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
     val description by viewModel.description.collectAsState()
     val isPublic by viewModel.isPublic.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
-    val selectedLocation by viewModel.selectedLocation.collectAsState()
+    val selectedLatitude by viewModel.selectedLatitude.collectAsState()
+    val selectedLongitude by viewModel.selectedLongitude.collectAsState()
     val temporaryMarker by viewModel.temporaryMarker.collectAsState()
 
     var showAddTaskDialog by remember { mutableStateOf(false) }
@@ -138,23 +138,18 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                                 .aspectRatio(16f / 9f),
                             cameraPositionState = cameraPositionState,
                             onMapClick = { latLng ->
-                                val location = Location("").apply {
-                                    latitude = latLng.latitude
-                                    longitude = latLng.longitude
-                                }
-                                viewModel.onLocationSelected(location)
+                                viewModel.onLocationSelected(latLng.latitude, latLng.longitude)
                             }
                         ) {
                             tasks.forEachIndexed { index, task ->
                                 val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
                                 val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
-                                task.location.let { location ->
-                                    Marker(
-                                        state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
-                                        title = task.title,
-                                        icon = bitmapDescriptor
-                                    )
-                                }
+                                val position = LatLng(task.latitude, task.longitude)
+                                Marker(
+                                    state = com.google.maps.android.compose.MarkerState(position = position),
+                                    title = task.title,
+                                    icon = bitmapDescriptor
+                                )
                             }
                             temporaryMarker?.let { latLng ->
                                 Marker(
@@ -233,23 +228,18 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         modifier = Modifier.fillMaxSize(),
                         cameraPositionState = fullscreenCameraPositionState,
                         onMapClick = { latLng ->
-                            val location = Location("").apply {
-                                latitude = latLng.latitude
-                                longitude = latLng.longitude
-                            }
-                            viewModel.onLocationSelected(location)
+                            viewModel.onLocationSelected(latLng.latitude, latLng.longitude)
                         }
                     ) {
                         tasks.forEachIndexed { index, task ->
                             val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
                             val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
-                            task.location.let { location ->
-                                Marker(
-                                    state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
-                                    title = task.title,
-                                    icon = bitmapDescriptor
-                                )
-                            }
+                            val position = LatLng(task.latitude, task.longitude)
+                            Marker(
+                                state = com.google.maps.android.compose.MarkerState(position = position),
+                                title = task.title,
+                                icon = bitmapDescriptor
+                            )
                         }
                         temporaryMarker?.let { latLng ->
                             Marker(
@@ -274,29 +264,34 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
         }
 
         if (showAddTaskDialog) {
-            AddTaskDialog(
-                onDismiss = { showAddTaskDialog = false },
-                onSave = { task ->
-                    if (taskToEdit != null) {
-                        viewModel.addTask(task)
-                    } else {
-                        viewModel.addTask(task)
-                    }
-                    showAddTaskDialog = false
-                    taskToEdit = null
-                },
-                onDelete = { task ->
-                    viewModel.removeTask(task)
-                    showAddTaskDialog = false
-                    taskToEdit = null
-                },
-                initialLocation = selectedLocation,
-                taskToEdit = taskToEdit,
-                onUpdateSequence = { taskId, newSequenceNumber ->
-                    viewModel.updateTaskSequence(taskId, newSequenceNumber)
-                },
-                mapMarkers = tasks
-            )
+            selectedLatitude?.let {
+                selectedLongitude?.let { it1 ->
+                    AddTaskDialog(
+                        onDismiss = { showAddTaskDialog = false },
+                        onSave = { task ->
+                            if (taskToEdit != null) {
+                                viewModel.addTask(task)
+                            } else {
+                                viewModel.addTask(task)
+                            }
+                            showAddTaskDialog = false
+                            taskToEdit = null
+                        },
+                        onDelete = { task ->
+                            viewModel.removeTask(task)
+                            showAddTaskDialog = false
+                            taskToEdit = null
+                        },
+                        initialLatitude = it,
+                        initialLongitude = it1,
+                        taskToEdit = taskToEdit,
+                        onUpdateSequence = { taskId, newSequenceNumber ->
+                            viewModel.updateTaskSequence(taskId, newSequenceNumber)
+                        },
+                        mapMarkers = tasks
+                    )
+                }
+            }
         }
     }
 }

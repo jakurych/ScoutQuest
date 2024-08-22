@@ -12,6 +12,7 @@ import com.example.scoutquest.ui.navigation.AppNavigation
 import com.example.scoutquest.ui.theme.ScoutQuestTheme
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: CreateNewGameViewModel by viewModels()
@@ -20,8 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ScoutQuestTheme {
-                    AppNavigation()
-
+                AppNavigation()
             }
         }
 
@@ -29,10 +29,9 @@ class MainActivity : ComponentActivity() {
         val initialLocation = Location("provider").apply {
             latitude = 52.253126
             longitude = 20.900157
-
         }
 
-        // Przekazanie initialLocation do ViewModel
-        viewModel.onLocationSelected(initialLocation)
+        // Przekazanie szerokości i długości geograficznej do ViewModel
+        viewModel.onLocationSelected(initialLocation.latitude, initialLocation.longitude)
     }
 }

@@ -13,7 +13,6 @@ class ProfileViewModel : ViewModel() {
 
     fun checkUserLoggedIn() {
         viewModelScope.launch {
-
             _isUserLoggedIn.value = false
         }
     }

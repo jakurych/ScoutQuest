@@ -1,15 +1,13 @@
 package com.example.scoutquest.data.models
 
-import android.graphics.Picture
-
-data class User (
-    val userId: Int? = null,
-    val username: String,
-    val password: String,
-    val email: String?,
-    val badges: List<Bagdes>? = null,
-    val profilePicture: Picture? = null,
+data class User(
+    val userId: String? = null,
+    val username: String = "",
+    val password: String = "",
+    val email: String? = "",
+    val badges: List<Badge>? = emptyList(),
+    val profilePictureUrl: String? = null, //URL-a obrazka
     val points: Int = 0,
-    val createdGames: List<Game>? = null,
-    val gamesHistory: List<Session>? = null
+    val createdGames: List<Game>? = emptyList(),
+    val gamesHistory: List<Session>? = emptyList()
 )

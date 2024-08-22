@@ -15,15 +15,20 @@ class UserRepository {
                 .get()
                 .await()
 
+            println("Query documents count: ${querySnapshot.documents.size}")
+
             if (querySnapshot.documents.isNotEmpty()) {
                 querySnapshot.documents[0].toObject(User::class.java)
             } else {
                 null
             }
         } catch (e: Exception) {
+            println("Error fetching user: ${e.message}")
             null
         }
     }
+
+
 
     suspend fun addUser(user: User): Boolean {
         return try {

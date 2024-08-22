@@ -19,13 +19,22 @@ class LoginViewModel : ViewModel() {
     fun login() {
         viewModelScope.launch {
             val user = userRepository.getUserByUsername(username)
-            if (user != null && user.password == password) {
-                loginSuccess = true
-                errorMessage = ""
+            if (user != null) {
+                println("Found user: ${user.username}")
+                if (user.password == password) {
+                    loginSuccess = true
+                    errorMessage = ""
+                } else {
+                    println("Password mismatch")
+                    loginSuccess = false
+                    errorMessage = "Invalid username or password"
+                }
             } else {
+                println("User not found")
                 loginSuccess = false
                 errorMessage = "Invalid username or password"
             }
         }
     }
+
 }

@@ -1,14 +1,13 @@
 package com.example.scoutquest.data.models
 
-import android.location.Location
-
 data class Task(
-    var taskId: Int,
-    var sequenceNumber: Int,
-    var title: String? = null, // Optional field
-    var description: String,
-    var points: Int,
-    var location: Location,
-    var gameId: Int,
-    var markerColor: String
+    var taskId: Int = 0,
+    var sequenceNumber: Int = 0,
+    var title: String? = null,
+    var description: String = "",
+    var points: Int = 0,
+    var latitude: Double = 0.0, //Double dla szerokości geograficznej
+    var longitude: Double = 0.0, //Double dla długości geograficznej
+    var gameId: Int = 0,
+    var markerColor: String = ""
 )

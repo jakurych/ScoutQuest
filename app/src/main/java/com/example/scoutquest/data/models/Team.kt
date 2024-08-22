@@ -1,9 +1,9 @@
 package com.example.scoutquest.data.models
 
-data class Team (
-    var teamId: Int,
-    var teamName: String?,
-    var teamScore: Int?,
-    var teamLeader: User?,
-    var teamMembers: List<User>
+data class Team(
+    var teamId: Int = 0,
+    var teamName: String? = null,
+    var teamScore: Int? = 0,
+    var teamLeader: User? = null,
+    var teamMembers: List<User> = emptyList()
 )

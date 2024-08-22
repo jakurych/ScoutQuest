@@ -31,7 +31,8 @@ fun AddTaskDialog(
     onDismiss: () -> Unit,
     onSave: (Task) -> Unit,
     onDelete: (Task) -> Unit,
-    initialLocation: Location?,
+    initialLatitude: Double = 0.0,
+    initialLongitude: Double = 0.0,
     taskToEdit: Task? = null,
     onUpdateSequence: (Int, Int) -> Boolean,
     mapMarkers: List<Task>
@@ -45,7 +46,8 @@ fun AddTaskDialog(
     var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
     var taskDescription by remember { mutableStateOf(taskToEdit?.description ?: "") }
     var taskPoints by remember { mutableStateOf(taskToEdit?.points?.toString() ?: "") }
-    var selectedLocation by remember { mutableStateOf(taskToEdit?.location ?: initialLocation) }
+    var latitude by remember { mutableStateOf(taskToEdit?.latitude ?: initialLatitude) }
+    var longitude by remember { mutableStateOf(taskToEdit?.longitude ?: initialLongitude) }
     var sequenceNumber by remember { mutableStateOf(taskToEdit?.sequenceNumber?.toString() ?: "") }
     var sequenceNumberError by remember { mutableStateOf(false) }
     var markerColor by remember { mutableStateOf(taskToEdit?.markerColor ?: "green") }
@@ -65,37 +67,30 @@ fun AddTaskDialog(
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 val cameraPositionState = rememberCameraPositionState {
                     position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-                        LatLng(selectedLocation?.latitude ?: 52.253126, selectedLocation?.longitude ?: 20.900157), 10f
+                        LatLng(latitude, longitude), 10f
                     )
                 }
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = cameraPositionState,
                     onMapClick = { latLng ->
-                        selectedLocation = Location("").apply {
-                            latitude = latLng.latitude
-                            longitude = latLng.longitude
-                        }
+                        latitude = latLng.latitude
+                        longitude = latLng.longitude
                     }
                 ) {
                     mapMarkers.forEachIndexed { index, task ->
                         val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor ?: "green", (index + 1).toString())
                         val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
-                        task.location?.let { location ->
-                            Marker(
-                                state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
-                                icon = bitmapDescriptor
-                            )
-                        }
-                    }
-                    selectedLocation?.let { location ->
-                        val latLng = LatLng(location.latitude, location.longitude)
                         Marker(
-                            state = com.google.maps.android.compose.MarkerState(position = latLng),
-                            title = "Selected Location",
-                            icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
+                            state = com.google.maps.android.compose.MarkerState(position = LatLng(task.latitude, task.longitude)),
+                            icon = bitmapDescriptor
                         )
                     }
+                    Marker(
+                        state = com.google.maps.android.compose.MarkerState(position = LatLng(latitude, longitude)),
+                        title = "Selected Location",
+                        icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
+                    )
                 }
                 Button(
                     onClick = { isFullscreen = false },
@@ -229,7 +224,7 @@ fun AddTaskDialog(
                     Text("Select Location", color = Color.White)
                     val cameraPositionState = rememberCameraPositionState {
                         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-                            LatLng(selectedLocation?.latitude ?: 52.253126, selectedLocation?.longitude ?: 20.900157), 10f
+                            LatLng(latitude, longitude), 10f
                         )
                     }
                     GoogleMap(
@@ -238,30 +233,23 @@ fun AddTaskDialog(
                             .aspectRatio(16f / 9f),
                         cameraPositionState = cameraPositionState,
                         onMapClick = { latLng ->
-                            selectedLocation = Location("").apply {
-                                latitude = latLng.latitude
-                                longitude = latLng.longitude
-                            }
+                            latitude = latLng.latitude
+                            longitude = latLng.longitude
                         }
                     ) {
                         mapMarkers.forEachIndexed { index, task ->
                             val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor ?: "green", (index + 1).toString())
                             val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
-                            task.location?.let { location ->
-                                Marker(
-                                    state = com.google.maps.android.compose.MarkerState(position = LatLng(location.latitude, location.longitude)),
-                                    icon = bitmapDescriptor
-                                )
-                            }
-                        }
-                        selectedLocation?.let { location ->
-                            val latLng = LatLng(location.latitude, location.longitude)
                             Marker(
-                                state = com.google.maps.android.compose.MarkerState(position = latLng),
-                                title = "Selected Location",
-                                icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
+                                state = com.google.maps.android.compose.MarkerState(position = LatLng(task.latitude, task.longitude)),
+                                icon = bitmapDescriptor
                             )
                         }
+                        Marker(
+                            state = com.google.maps.android.compose.MarkerState(position = LatLng(latitude, longitude)),
+                            title = "Selected Location",
+                            icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(elementSpacing))
@@ -278,29 +266,28 @@ fun AddTaskDialog(
             confirmButton = {
                 Button(
                     onClick = {
-                        selectedLocation?.let { location ->
-                            val task = Task(
-                                taskId = taskToEdit?.taskId ?: 0,
-                                title = taskTitle,
-                                gameId = taskToEdit?.gameId ?: 0,
-                                description = taskDescription,
-                                location = location,
-                                points = taskPoints.toIntOrNull() ?: 0,
-                                sequenceNumber = taskToEdit?.sequenceNumber ?: 0,
-                                markerColor = markerColor
-                            )
-                            if (taskToEdit != null) {
-                                val newSequenceNumber = sequenceNumber.toIntOrNull()
-                                if (newSequenceNumber != null && onUpdateSequence(task.taskId, newSequenceNumber)) {
-                                    onSave(task)
-                                    onDismiss()
-                                } else {
-                                    sequenceNumberError = true
-                                }
-                            } else {
+                        val task = Task(
+                            taskId = taskToEdit?.taskId ?: 0,
+                            title = taskTitle,
+                            gameId = taskToEdit?.gameId ?: 0,
+                            description = taskDescription,
+                            latitude = latitude,
+                            longitude = longitude,
+                            points = taskPoints.toIntOrNull() ?: 0,
+                            sequenceNumber = taskToEdit?.sequenceNumber ?: 0,
+                            markerColor = markerColor
+                        )
+                        if (taskToEdit != null) {
+                            val newSequenceNumber = sequenceNumber.toIntOrNull()
+                            if (newSequenceNumber != null && onUpdateSequence(task.taskId, newSequenceNumber)) {
                                 onSave(task)
                                 onDismiss()
+                            } else {
+                                sequenceNumberError = true
                             }
+                        } else {
+                            onSave(task)
+                            onDismiss()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = moss_green)
