@@ -11,8 +11,9 @@ import androidx.compose.ui.Modifier
 import com.example.scoutquest.ui.navigation.AppNavigation
 import com.example.scoutquest.ui.theme.ScoutQuestTheme
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel: CreateNewGameViewModel by viewModels()

@@ -11,6 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -21,3 +22,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "ScoutQuest"
 include(":app")
+
+//włączenie obsługi Hilt
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

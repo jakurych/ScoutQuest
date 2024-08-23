@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.LocalNavigation
+import com.example.scoutquest.ui.navigation.MainScreenRoute
 import com.example.scoutquest.ui.navigation.Profile
 import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.viewmodels.LoginViewModel
@@ -24,9 +25,9 @@ fun LoginView(loginViewModel: LoginViewModel) {
     Column {
         Header()
         TextField(
-            value = loginViewModel.username,
-            onValueChange = { loginViewModel.username = it },
-            label = { Text("Username") },
+            value = loginViewModel.usernameOrEmail,
+            onValueChange = { loginViewModel.usernameOrEmail = it },
+            label = { Text("Username or Email") },
             modifier = Modifier.fillMaxWidth()
         )
         TextField(
@@ -55,10 +56,12 @@ fun LoginView(loginViewModel: LoginViewModel) {
             Text(text = loginViewModel.errorMessage, color = Color.Red)
         }
 
-        //po pomyślnym zalogowaniu
-        LaunchedEffect(loginViewModel.loginSuccess) {
-            if (loginViewModel.loginSuccess) {
-                navController.navigate(Profile)
+        // Reaguj na zmiany stanu zalogowania
+        LaunchedEffect(loginViewModel.isUserLoggedIn) {
+            if (loginViewModel.isUserLoggedIn) {
+                navController.navigate(MainScreenRoute) {
+                    popUpTo(0)
+                }
             }
         }
     }

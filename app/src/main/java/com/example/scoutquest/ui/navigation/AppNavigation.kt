@@ -18,12 +18,13 @@ import com.example.scoutquest.viewmodels.LoginViewModel
 import com.example.scoutquest.viewmodels.MainScreenViewModel
 import com.example.scoutquest.viewmodels.ProfileViewModel
 import com.example.scoutquest.viewmodels.SettingsViewModel
+import com.example.scoutquest.viewmodels.UserViewModel
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    val mainScreenViewModel: MainScreenViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
     val createNewGameViewModel: CreateNewGameViewModel = viewModel()
@@ -34,7 +35,7 @@ fun AppNavigation() {
     CompositionLocalProvider(LocalNavigation provides navController) {
         NavHost(navController = navController, startDestination = MainScreenRoute) {
             composable(route = MainScreenRoute) {
-                MainScreenView(mainScreenViewModel)
+                MainScreenView(userViewModel)
             }
             composable(route = Profile) {
                 ProfileView(profileViewModel)

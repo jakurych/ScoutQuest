@@ -8,8 +8,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class CreateNewGameViewModel : ViewModel() {
+@HiltViewModel
+class CreateNewGameViewModel @Inject constructor() : ViewModel() {
 
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> get() = _name

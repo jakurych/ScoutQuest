@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "462271306818",
+    "project_id": "engineering-thesis-mobile-game",
+    "storage_bucket": "engineering-thesis-mobile-game.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:462271306818:android:c1dd75ed9bab7c170021db",
+        "android_client_info": {
+          "package_name": "com.example.scoutquest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNNVDDISOX8kPpB6OlfAxUmo3KT8PNSqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

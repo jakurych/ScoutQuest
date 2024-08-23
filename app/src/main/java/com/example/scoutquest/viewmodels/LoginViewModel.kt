@@ -7,34 +7,63 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.repositories.UserRepository
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class LoginViewModel : ViewModel() {
-    var username by mutableStateOf("")
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val userRepository: UserRepository
+) : ViewModel() {
+    var usernameOrEmail by mutableStateOf("")
     var password by mutableStateOf("")
-    var loginSuccess by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    private val userRepository = UserRepository()
+    val isUserLoggedIn: Boolean
+        get() = auth.currentUser != null
 
     fun login() {
         viewModelScope.launch {
-            val user = userRepository.getUserByUsername(username)
-            if (user != null) {
-                println("Found user: ${user.username}")
-                if (user.password == password) {
-                    loginSuccess = true
-                    errorMessage = ""
-                } else {
-                    println("Password mismatch")
-                    loginSuccess = false
-                    errorMessage = "Invalid username or password"
-                }
+            if (usernameOrEmail.contains("@")) {
+                // Logowanie przez email
+                loginWithEmail(usernameOrEmail, password)
             } else {
-                println("User not found")
-                loginSuccess = false
-                errorMessage = "Invalid username or password"
+                // Logowanie przez username
+                loginWithUsername(usernameOrEmail, password)
             }
         }
     }
 
+    private suspend fun loginWithEmail(email: String, password: String) {
+        try {
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        // Logowanie się powiodło
+                        errorMessage = ""
+                    } else {
+                        // Logowanie się nie powiodło
+                        errorMessage = "Invalid email or password"
+                    }
+                }
+        } catch (e: Exception) {
+            errorMessage = "Login error: ${e.message}"
+        }
+    }
+
+    private suspend fun loginWithUsername(username: String, password: String) {
+        val user = userRepository.getUserByUsername(username)
+        if (user == null) {
+            errorMessage = "Invalid username"
+            return
+        }
+
+        val email = user.email ?: run {
+            errorMessage = "Email not found for user"
+            return
+        }
+
+        loginWithEmail(email, password)
+    }
 }

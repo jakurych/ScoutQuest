@@ -36,6 +36,7 @@ fun JoinGameView(joinGameViewModel: JoinGameViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .padding(padding),
+
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
