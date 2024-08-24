@@ -6,6 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.models.User
 import com.example.scoutquest.data.repositories.UserRepository
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class RegisterViewModel : ViewModel() {
     var username by mutableStateOf("")
@@ -14,28 +21,36 @@ class RegisterViewModel : ViewModel() {
     var registrationSuccess by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
 
-    private val userRepository = UserRepository()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     fun register() {
         viewModelScope.launch {
-            // Sprawdź, czy użytkownik o podanym adresie e-mail już istnieje
-            val existingUser = userRepository.getUserByEmail(email)
-            if (existingUser != null) {
-                errorMessage = "Email already in use"
-                registrationSuccess = false
-                return@launch
-            }
+            try {
+                auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        // Pobierz UID nowo utworzonego użytkownika
+                        val userId = task.result?.user?.uid ?: ""
 
-            // Utwórz nowego użytkownika
-            val newUser = User(username = username, email = email, password = password)
-            val success = userRepository.addUser(newUser)
-            if (success) {
-                registrationSuccess = true
-                errorMessage = ""
-            } else {
+                        // Dodaj użytkownika do Firestore
+                        val db = FirebaseFirestore.getInstance()
+                        val user = User(username = username, email = email, userId = userId)
+                        db.collection("users").document(userId).set(user).addOnSuccessListener {
+                            registrationSuccess = true
+                            errorMessage = ""
+                        }.addOnFailureListener { e ->
+                            registrationSuccess = false
+                            errorMessage = e.message ?: "Failed to add user to Firestore"
+                        }
+                    } else {
+                        registrationSuccess = false
+                        errorMessage = task.exception?.message ?: "Registration failed"
+                    }
+                }
+            } catch (e: Exception) {
                 registrationSuccess = false
-                errorMessage = "Registration failed"
+                errorMessage = e.message ?: "Registration failed"
             }
         }
     }
+
 }
