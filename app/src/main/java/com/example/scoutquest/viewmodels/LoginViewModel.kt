@@ -12,7 +12,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
@@ -22,12 +21,15 @@ class LoginViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow("")
     val errorMessage: StateFlow<String> = _errorMessage
 
-    fun login(email: String, password: String) {
+    fun login(identifier: String, password: String) {
         viewModelScope.launch {
             try {
-                loginWithEmail(email, password)
+                authRepository.loginWithEmailOrUsername(identifier, password)
+                _errorMessage.value = ""
+                _isUserLoggedIn.value = true
             } catch (e: Exception) {
                 _errorMessage.value = "Login error: ${e.message}"
+                _isUserLoggedIn.value = false
             }
         }
     }
@@ -36,17 +38,6 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             authRepository.signOut()
             _isUserLoggedIn.value = false
-        }
-    }
-
-    private suspend fun loginWithEmail(email: String, password: String) {
-        try {
-            authRepository.loginWithEmail(email, password)
-            _errorMessage.value = ""
-            _isUserLoggedIn.value = true
-            authRepository.checkLoginState()
-        } catch (e: Exception) {
-            _errorMessage.value = "Invalid email or password"
         }
     }
 

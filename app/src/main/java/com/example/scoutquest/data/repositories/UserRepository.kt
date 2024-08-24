@@ -9,6 +9,26 @@ class UserRepository @Inject constructor() {
 
     private val db = FirebaseFirestore.getInstance()
 
+    //Poberz mail na podstawie nazwy użytkownika
+    suspend fun getEmailByUsername(username: String): String? {
+        return try {
+            val querySnapshot = db.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .await()
+
+            if (querySnapshot.documents.isNotEmpty()) {
+                querySnapshot.documents[0].getString("email")
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            println("Error fetching email by username: ${e.message}")
+            null
+        }
+    }
+
+
     // Pobierz użytkownika na podstawie nazwy użytkownika
     suspend fun getUserByUsername(username: String): User? {
         return try {

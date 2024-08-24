@@ -35,4 +35,14 @@ class UserViewModel @Inject constructor(
             authRepository.signOut()
         }
     }
+
+    fun login(identifier: String, password: String) {
+        viewModelScope.launch {
+            try {
+                authRepository.loginWithEmailOrUsername(identifier, password)
+            } catch (e: Exception) {
+            }
+        }
+    }
 }
+
