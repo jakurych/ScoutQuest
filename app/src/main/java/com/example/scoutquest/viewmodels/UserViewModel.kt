@@ -1,25 +1,38 @@
 package com.example.scoutquest.viewmodels
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.FirebaseAuth
+import androidx.lifecycle.viewModelScope
+import com.example.scoutquest.data.repositories.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class UserViewModel : ViewModel() {
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val _isUserLoggedIn = MutableStateFlow(auth.currentUser != null)
-    val isUserLoggedIn: StateFlow<Boolean> get() = _isUserLoggedIn
+@HiltViewModel
+class UserViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
+    private val _isUserLoggedIn = MutableStateFlow<Boolean?>(null)
+    val isUserLoggedIn: StateFlow<Boolean?> = _isUserLoggedIn
 
     init {
-        auth.addAuthStateListener { firebaseAuth ->
-            val isLoggedIn = firebaseAuth.currentUser != null
-            println("Auth state changed: isLoggedIn = $isLoggedIn")
-            _isUserLoggedIn.value = isLoggedIn
+        viewModelScope.launch {
+            authRepository.isUserLoggedIn.collect { isLoggedIn ->
+                _isUserLoggedIn.value = isLoggedIn
+            }
         }
     }
 
+    fun checkLoginState() {
+        authRepository.checkLoginState()
+    }
 
-    fun signOut() {
-        auth.signOut()
+    fun logout() {
+        viewModelScope.launch {
+            _isUserLoggedIn.value = false
+            authRepository.signOut()
+        }
     }
 }

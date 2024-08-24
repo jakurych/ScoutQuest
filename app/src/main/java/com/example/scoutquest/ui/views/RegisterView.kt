@@ -18,6 +18,7 @@ import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.moss_green
 import com.example.scoutquest.ui.navigation.LocalNavigation
+import com.example.scoutquest.ui.navigation.MainScreenRoute
 
 
 @Composable
@@ -59,13 +60,18 @@ fun RegisterView(registerViewModel: RegisterViewModel = viewModel()) {
         ) {
             Text("Go to Login")
         }
+        Button(
+            onClick = { navController.navigate(MainScreenRoute) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+        ) {
+            Text("Back to Home Screen")
+        }
 
-        // Wyświetlanie komunikatu o błędzie
         if (registerViewModel.errorMessage.isNotEmpty()) {
             Text(text = registerViewModel.errorMessage, color = Color.Red)
         }
 
-        // Przejście do ekranu logowania po pomyślnej rejestracji
         LaunchedEffect(registerViewModel.registrationSuccess) {
             if (registerViewModel.registrationSuccess) {
                 navController.navigate(Login)

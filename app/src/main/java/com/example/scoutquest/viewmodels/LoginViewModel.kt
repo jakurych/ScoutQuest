@@ -1,69 +1,56 @@
 package com.example.scoutquest.viewmodels
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.scoutquest.data.repositories.AuthRepository
 import com.example.scoutquest.data.repositories.UserRepository
-import kotlinx.coroutines.launch
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
-    var usernameOrEmail by mutableStateOf("")
-    var password by mutableStateOf("")
-    var errorMessage by mutableStateOf("")
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    val isUserLoggedIn: Boolean
-        get() = auth.currentUser != null
+    private val _isUserLoggedIn = MutableStateFlow(false)
+    val isUserLoggedIn: StateFlow<Boolean> = _isUserLoggedIn
 
-    fun login() {
+    private val _errorMessage = MutableStateFlow("")
+    val errorMessage: StateFlow<String> = _errorMessage
+
+    fun login(email: String, password: String) {
         viewModelScope.launch {
-            if (usernameOrEmail.contains("@")) {
-                // Logowanie przez email
-                loginWithEmail(usernameOrEmail, password)
-            } else {
-                // Logowanie przez username
-                loginWithUsername(usernameOrEmail, password)
+            try {
+                loginWithEmail(email, password)
+            } catch (e: Exception) {
+                _errorMessage.value = "Login error: ${e.message}"
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _isUserLoggedIn.value = false
         }
     }
 
     private suspend fun loginWithEmail(email: String, password: String) {
         try {
-            auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        // Logowanie się powiodło
-                        errorMessage = ""
-                    } else {
-                        // Logowanie się nie powiodło
-                        errorMessage = "Invalid email or password"
-                    }
-                }
+            authRepository.loginWithEmail(email, password)
+            _errorMessage.value = ""
+            _isUserLoggedIn.value = true
+            authRepository.checkLoginState()
         } catch (e: Exception) {
-            errorMessage = "Login error: ${e.message}"
+            _errorMessage.value = "Invalid email or password"
         }
     }
 
-    private suspend fun loginWithUsername(username: String, password: String) {
-        val user = userRepository.getUserByUsername(username)
-        if (user == null) {
-            errorMessage = "Invalid username"
-            return
-        }
-
-        val email = user.email ?: run {
-            errorMessage = "Email not found for user"
-            return
-        }
-
-        loginWithEmail(email, password)
+    fun clearError() {
+        _errorMessage.value = ""
     }
 }

@@ -1,13 +1,8 @@
 package com.example.scoutquest.ui.views
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -17,7 +12,8 @@ import androidx.compose.ui.unit.dp
 import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.LocalNavigation
-import com.example.scoutquest.viewmodels.MainScreenViewModel
+import com.example.scoutquest.ui.navigation.Login
+import com.example.scoutquest.ui.navigation.Profile
 import com.example.scoutquest.viewmodels.UserViewModel
 
 @Composable
@@ -33,17 +29,15 @@ fun MainScreenView(viewModel: UserViewModel) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(padding) //  dynamic padding
+            .padding(padding)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Header()
 
-            // Join Game button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -57,7 +51,6 @@ fun MainScreenView(viewModel: UserViewModel) {
                 )
             }
 
-            // New Game button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -71,7 +64,6 @@ fun MainScreenView(viewModel: UserViewModel) {
                 )
             }
 
-            // Profile button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -79,17 +71,20 @@ fun MainScreenView(viewModel: UserViewModel) {
                 horizontalArrangement = Arrangement.Start
             ) {
                 CircleButton(
-                    text = if (isUserLoggedIn) "Profile" else "Log in",
+                    text = if (isUserLoggedIn == true) "Profile" else "Log in",
                     onClick = {
-                        if (isUserLoggedIn) {
-                            navController.navigate("/profile")
+                        if (isUserLoggedIn == true) {
+                            navController.navigate(Profile)
                         } else {
-                            navController.navigate("/login")
+                            navController.navigate(Login)
                         }
                     },
                     modifier = Modifier
                 )
             }
+
+
         }
     }
 }
+
