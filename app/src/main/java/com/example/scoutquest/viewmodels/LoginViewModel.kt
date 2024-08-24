@@ -28,11 +28,12 @@ class LoginViewModel @Inject constructor(
                 _errorMessage.value = ""
                 _isUserLoggedIn.value = true
             } catch (e: Exception) {
-                _errorMessage.value = "Login error: ${e.message}"
+                _errorMessage.value = e.message ?: "Unknown error occurred"
                 _isUserLoggedIn.value = false
             }
         }
     }
+
 
     fun logout() {
         viewModelScope.launch {

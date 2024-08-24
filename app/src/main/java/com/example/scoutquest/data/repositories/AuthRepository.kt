@@ -1,9 +1,11 @@
 package com.example.scoutquest.data.repositories
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 
@@ -30,24 +32,31 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun loginWithEmailOrUsername(identifier: String, password: String) {
-        val email = if (identifier.contains("@")) {
-            identifier
-        } else {
-            userRepository.getEmailByUsername(identifier)
-        }
+        try {
+            val email = if (identifier.contains("@")) {
+                identifier
+            } else {
+                userRepository.getEmailByUsername(identifier)
+            }
 
-        if (email != null) {
-            auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+            if (email != null) {
+                val result = auth.signInWithEmailAndPassword(email, password).await()
+                if (result.user != null) {
                     _isUserLoggedIn.value = true
                 } else {
-                    throw task.exception ?: Exception("Login failed")
+                    throw Exception("Login failed: User is null")
                 }
+            } else {
+                throw Exception("Invalid username or email")
             }
-        } else {
-            throw Exception("Invalid username or email")
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            throw Exception("Invalid credentials: ${e.message}")
+        } catch (e: Exception) {
+            throw Exception("Login error: ${e.message}")
         }
     }
+
+
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
     }
