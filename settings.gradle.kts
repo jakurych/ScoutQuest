@@ -10,6 +10,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+    plugins {
+        id("com.google.dagger.hilt.android") version "2.44" apply false
+    }
 }
 
 dependencyResolutionManagement {
@@ -23,5 +26,5 @@ dependencyResolutionManagement {
 rootProject.name = "ScoutQuest"
 include(":app")
 
-//włączenie obsługi Hilt
+// Włączenie obsługi Hilt
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

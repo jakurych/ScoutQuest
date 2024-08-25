@@ -8,6 +8,6 @@ data class User(
     val badges: List<Badge>? = emptyList(),
     val profilePictureUrl: String? = null, //URL-a obrazka
     val points: Int = 0,
-    val createdGames: List<Game>? = emptyList(),
-    val gamesHistory: List<Session>? = emptyList()
+    val createdGames: List<Game>? = null,
+    val gamesHistory: List<Session>? = null
 )

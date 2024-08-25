@@ -9,7 +9,7 @@ class UserRepository @Inject constructor() {
 
     private val db = FirebaseFirestore.getInstance()
 
-    //Poberz mail na podstawie nazwy użytkownika
+    // Pobierz email na podstawie nazwy użytkownika
     suspend fun getEmailByUsername(username: String): String? {
         return try {
             val querySnapshot = db.collection("users")
@@ -27,7 +27,6 @@ class UserRepository @Inject constructor() {
             null
         }
     }
-
 
     // Pobierz użytkownika na podstawie nazwy użytkownika
     suspend fun getUserByUsername(username: String): User? {
@@ -67,13 +66,28 @@ class UserRepository @Inject constructor() {
         }
     }
 
+    // Pobierz użytkownika na podstawie ID
+    suspend fun getUserById(userId: String): User? {
+        return try {
+            val documentSnapshot = db.collection("users")
+                .document(userId)
+                .get()
+                .await()
+
+            documentSnapshot.toObject(User::class.java)
+        } catch (e: Exception) {
+            println("Error fetching user by ID: ${e.message}")
+            null
+        }
+    }
+
     // Dodaj nowego użytkownika
     suspend fun addUser(user: User): Boolean {
         return try {
             val documentReference = db.collection("users").add(user).await()
             val userId = documentReference.id
 
-            //zaktualizuj obiekt User o userId
+            // Zaktualizuj obiekt User o userId
             db.collection("users").document(userId).update("userId", userId).await()
 
             true
