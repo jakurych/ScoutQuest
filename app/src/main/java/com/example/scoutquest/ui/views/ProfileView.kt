@@ -6,15 +6,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -144,6 +142,29 @@ fun BadgesRow(badges: List<Badge>?) {
 
 @Composable
 fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavController) {
+    var showEmailDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
+
+    if (showEmailDialog) {
+        ChangeEmailDialog(
+            onDismiss = { showEmailDialog = false },
+            onConfirm = { newEmail ->
+                profileViewModel.updateEmail(newEmail)
+                showEmailDialog = false
+            }
+        )
+    }
+
+    if (showPasswordDialog) {
+        ChangePasswordDialog(
+            onDismiss = { showPasswordDialog = false },
+            onConfirm = { newPassword ->
+                profileViewModel.updatePassword(newPassword)
+                showPasswordDialog = false
+            }
+        )
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -156,7 +177,7 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
             modifier = Modifier.padding(16.dp)
         ) {
             Button(
-                onClick = { /* Change email functionality */ },
+                onClick = { showEmailDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = button_green),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -164,7 +185,7 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
             }
             Spacer(modifier = Modifier.height(8.dp))
             Button(
-                onClick = { /* Change password functionality */ },
+                onClick = { showPasswordDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = button_green),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -186,3 +207,129 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChangeEmailDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var newEmail by remember { mutableStateOf("") }
+    var confirmEmail by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                if (newEmail == confirmEmail) {
+                    onConfirm(newEmail)
+                } else {
+                    errorMessage = "Emails do not match"
+                }
+            }) {
+                Text("Confirm", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = Color.White)
+            }
+        },
+        title = { Text("Change Email", color = Color.White) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = newEmail,
+                    onValueChange = { newEmail = it },
+                    label = { Text("New Email") },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    )
+                )
+                OutlinedTextField(
+                    value = confirmEmail,
+                    onValueChange = { confirmEmail = it },
+                    label = { Text("Confirm Email") },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    )
+                )
+                if (errorMessage != null) {
+                    Text(errorMessage!!, color = Color.Red)
+                }
+            }
+        },
+        containerColor = drab_dark_brown
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChangePasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                if (newPassword == confirmPassword) {
+                    onConfirm(newPassword)
+                } else {
+                    errorMessage = "Passwords do not match"
+                }
+            }) {
+                Text("Confirm", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = Color.White)
+            }
+        },
+        title = { Text("Change Password", color = Color.White) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text("New Password") },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
+                    visualTransformation = PasswordVisualTransformation()
+                )
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirm Password") },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
+                    visualTransformation = PasswordVisualTransformation()
+                )
+                if (errorMessage != null) {
+                    Text(errorMessage!!, color = Color.Red)
+                }
+            }
+        },
+        containerColor = drab_dark_brown
+    )
+}
+
+

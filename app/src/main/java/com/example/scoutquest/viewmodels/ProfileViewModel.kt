@@ -47,5 +47,27 @@ class ProfileViewModel @Inject constructor(
     fun logout() {
         authRepository.signOut()
     }
+
+    fun updateEmail(newEmail: String) {
+        viewModelScope.launch {
+            try {
+                authRepository.changeEmail(newEmail)
+                _userEmail.value = newEmail
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+    fun updatePassword(newPassword: String) {
+        viewModelScope.launch {
+            try {
+                authRepository.changePassword(newPassword)
+                //if success
+            } catch (e: Exception) {
+            }
+        }
+    }
+
 }
 

@@ -60,4 +60,27 @@ class AuthRepository @Inject constructor(
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
     }
+
+    suspend fun changeEmail(newEmail: String) {
+        val user = auth.currentUser
+        user?.let {
+            try {
+                it.updateEmail(newEmail).await()
+            } catch (e: Exception) {
+                throw Exception("Failed to update email: ${e.message}")
+            }
+        }
+    }
+
+    suspend fun changePassword(newPassword: String) {
+        val user = auth.currentUser
+        user?.let {
+            try {
+                it.updatePassword(newPassword).await()
+            } catch (e: Exception) {
+                throw Exception("Failed to update password: ${e.message}")
+            }
+        }
+    }
+
 }
