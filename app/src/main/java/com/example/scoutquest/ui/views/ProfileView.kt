@@ -129,7 +129,7 @@ fun BadgesRow(badges: List<Badge>?) {
                     .padding(4.dp)
             ) {
                 Text(
-                    text = badge.name.take(1), // First letter of badge as placeholder
+                    text = badge.name.take(1),
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.align(Alignment.Center)
@@ -153,8 +153,19 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
         ChangeEmailDialog(
             onDismiss = { showEmailDialog = false },
             onConfirm = { newEmail, currentPassword ->
-                profileViewModel.updateEmail(newEmail, currentPassword)
-                showEmailDialog = false
+                profileViewModel.updateEmail(
+                    newEmail = newEmail,
+                    password = currentPassword,
+                    onSuccess = {
+                        successMessage = "Email changed successfully"
+                        showSuccessDialog = true
+                        showEmailDialog = false
+                    },
+                    onError = { error ->
+                        errorMessage = error
+                        showErrorDialog = true
+                    }
+                )
             }
         )
     }
@@ -164,12 +175,12 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
             onDismiss = { showPasswordDialog = false },
             onConfirm = { newPassword, currentPassword ->
                 profileViewModel.updatePassword(
-                    newPassword,
-                    currentPassword,
+                    newPassword = newPassword,
+                    password = currentPassword,
                     onSuccess = {
                         successMessage = "Password changed successfully"
                         showSuccessDialog = true
-                        showPasswordDialog = false // Zamknij dialog zmiany hasła po sukcesie
+                        showPasswordDialog = false
                     },
                     onError = { error ->
                         errorMessage = error
@@ -190,7 +201,7 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
             },
             title = { Text("Success", color = Color.White) },
             text = { Text(successMessage, color = Color.White) },
-            containerColor = button_green // Zmieniono kolor na button_green
+            containerColor = button_green
         )
     }
 
@@ -250,6 +261,7 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

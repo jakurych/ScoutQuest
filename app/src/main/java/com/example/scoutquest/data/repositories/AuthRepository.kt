@@ -131,4 +131,18 @@ class AuthRepository @Inject constructor(
             throw Exception("Failed to update password: ${e.message}")
         }
     }
+
+    suspend fun sendEmailVerification() {
+        val user = auth.currentUser
+        user?.let {
+            try {
+                it.sendEmailVerification().await()
+                Log.d("AuthRepository", "Verification email sent.")
+            } catch (e: Exception) {
+                Log.e("AuthRepository", "Failed to send verification email: ${e.message}")
+                throw Exception("Failed to send verification email: ${e.message}")
+            }
+        }
+    }
+
 }

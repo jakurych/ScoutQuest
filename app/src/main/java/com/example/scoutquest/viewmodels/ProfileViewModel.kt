@@ -47,16 +47,19 @@ class ProfileViewModel @Inject constructor(
         authRepository.signOut()
     }
 
-    fun updateEmail(newEmail: String, password: String) {
+    fun updateEmail(newEmail: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
                 authRepository.changeEmail(newEmail, password)
                 _userEmail.value = newEmail
+                authRepository.sendEmailVerification()
+                onSuccess()
             } catch (e: Exception) {
-                // Handle error
+                onError(e.message ?: "Failed to update email")
             }
         }
     }
+
 
     fun updatePassword(newPassword: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
