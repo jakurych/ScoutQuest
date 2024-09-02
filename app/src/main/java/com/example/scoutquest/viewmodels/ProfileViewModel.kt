@@ -16,9 +16,7 @@ class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository
 ) : ViewModel() {
-    val isUserLoggedIn = authRepository.isUserLoggedIn
     private val _userEmail = MutableStateFlow<String?>(null)
-    val userEmail: StateFlow<String?> = _userEmail
 
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
@@ -40,6 +38,7 @@ class ProfileViewModel @Inject constructor(
             val currentUser = authRepository.getCurrentUser()
             currentUser?.let {
                 _user.value = userRepository.getUserById(it.uid)
+                _userEmail.value = it.email
             }
         }
     }
@@ -48,26 +47,27 @@ class ProfileViewModel @Inject constructor(
         authRepository.signOut()
     }
 
-    fun updateEmail(newEmail: String) {
+    fun updateEmail(newEmail: String, password: String) {
         viewModelScope.launch {
             try {
-                authRepository.changeEmail(newEmail)
+                authRepository.changeEmail(newEmail, password)
                 _userEmail.value = newEmail
             } catch (e: Exception) {
-
+                // Handle error
             }
         }
     }
 
-    fun updatePassword(newPassword: String) {
+    fun updatePassword(newPassword: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
-                authRepository.changePassword(newPassword)
-                //if success
+                val success = authRepository.changePassword(newPassword, password)
+                if (success) {
+                    onSuccess()
+                }
             } catch (e: Exception) {
+                onError(e.message ?: "Failed to update password")
             }
         }
     }
-
 }
-

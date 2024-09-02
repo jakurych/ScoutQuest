@@ -144,12 +144,16 @@ fun BadgesRow(badges: List<Badge>?) {
 fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavController) {
     var showEmailDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var successMessage by remember { mutableStateOf("") }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     if (showEmailDialog) {
         ChangeEmailDialog(
             onDismiss = { showEmailDialog = false },
-            onConfirm = { newEmail ->
-                profileViewModel.updateEmail(newEmail)
+            onConfirm = { newEmail, currentPassword ->
+                profileViewModel.updateEmail(newEmail, currentPassword)
                 showEmailDialog = false
             }
         )
@@ -158,10 +162,49 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
     if (showPasswordDialog) {
         ChangePasswordDialog(
             onDismiss = { showPasswordDialog = false },
-            onConfirm = { newPassword ->
-                profileViewModel.updatePassword(newPassword)
-                showPasswordDialog = false
+            onConfirm = { newPassword, currentPassword ->
+                profileViewModel.updatePassword(
+                    newPassword,
+                    currentPassword,
+                    onSuccess = {
+                        successMessage = "Password changed successfully"
+                        showSuccessDialog = true
+                        showPasswordDialog = false // Zamknij dialog zmiany hasła po sukcesie
+                    },
+                    onError = { error ->
+                        errorMessage = error
+                        showErrorDialog = true
+                    }
+                )
             }
+        )
+    }
+
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { showSuccessDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showSuccessDialog = false }) {
+                    Text("OK", color = Color.White)
+                }
+            },
+            title = { Text("Success", color = Color.White) },
+            text = { Text(successMessage, color = Color.White) },
+            containerColor = button_green // Zmieniono kolor na button_green
+        )
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) {
+                    Text("OK", color = Color.White)
+                }
+            },
+            title = { Text("Error", color = Color.White) },
+            text = { Text(errorMessage, color = Color.White) },
+            containerColor = drab_dark_brown
         )
     }
 
@@ -210,7 +253,8 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangeEmailDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+fun ChangeEmailDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> Unit) {
+    var currentPassword by remember { mutableStateOf("") }
     var newEmail by remember { mutableStateOf("") }
     var confirmEmail by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -220,7 +264,7 @@ fun ChangeEmailDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         confirmButton = {
             TextButton(onClick = {
                 if (newEmail == confirmEmail) {
-                    onConfirm(newEmail)
+                    onConfirm(newEmail, currentPassword)
                 } else {
                     errorMessage = "Emails do not match"
                 }
@@ -236,6 +280,19 @@ fun ChangeEmailDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         title = { Text("Change Email", color = Color.White) },
         text = {
             Column {
+                OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text("Current Password") },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
+                    visualTransformation = PasswordVisualTransformation()
+                )
                 OutlinedTextField(
                     value = newEmail,
                     onValueChange = { newEmail = it },
@@ -271,7 +328,8 @@ fun ChangeEmailDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangePasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+fun ChangePasswordDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> Unit) {
+    var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -280,10 +338,17 @@ fun ChangePasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = {
-                if (newPassword == confirmPassword) {
-                    onConfirm(newPassword)
-                } else {
-                    errorMessage = "Passwords do not match"
+                when {
+                    newPassword == currentPassword -> {
+                        errorMessage = "New and old passwords are the same!"
+                    }
+                    newPassword != confirmPassword -> {
+                        errorMessage = "Passwords do not match"
+                    }
+                    else -> {
+                        onConfirm(newPassword, currentPassword)
+                        errorMessage = null
+                    }
                 }
             }) {
                 Text("Confirm", color = Color.White)
@@ -297,6 +362,19 @@ fun ChangePasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         title = { Text("Change Password", color = Color.White) },
         text = {
             Column {
+                OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text("Current Password") },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.Gray,
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color.White
+                    ),
+                    visualTransformation = PasswordVisualTransformation()
+                )
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
@@ -331,5 +409,4 @@ fun ChangePasswordDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         containerColor = drab_dark_brown
     )
 }
-
 

@@ -9,7 +9,6 @@ class UserRepository @Inject constructor() {
 
     private val db = FirebaseFirestore.getInstance()
 
-    // Pobierz email na podstawie nazwy użytkownika
     suspend fun getEmailByUsername(username: String): String? {
         return try {
             val querySnapshot = db.collection("users")
@@ -28,45 +27,6 @@ class UserRepository @Inject constructor() {
         }
     }
 
-    // Pobierz użytkownika na podstawie nazwy użytkownika
-    suspend fun getUserByUsername(username: String): User? {
-        return try {
-            val querySnapshot = db.collection("users")
-                .whereEqualTo("username", username)
-                .get()
-                .await()
-
-            if (querySnapshot.documents.isNotEmpty()) {
-                querySnapshot.documents[0].toObject(User::class.java)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            println("Error fetching user by username: ${e.message}")
-            null
-        }
-    }
-
-    // Pobierz użytkownika przez maila
-    suspend fun getUserByEmail(email: String): User? {
-        return try {
-            val querySnapshot = db.collection("users")
-                .whereEqualTo("email", email)
-                .get()
-                .await()
-
-            if (querySnapshot.documents.isNotEmpty()) {
-                querySnapshot.documents[0].toObject(User::class.java)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            println("Error fetching user by email: ${e.message}")
-            null
-        }
-    }
-
-    // Pobierz użytkownika na podstawie ID
     suspend fun getUserById(userId: String): User? {
         return try {
             val documentSnapshot = db.collection("users")
@@ -81,19 +41,14 @@ class UserRepository @Inject constructor() {
         }
     }
 
-    // Dodaj nowego użytkownika
-    suspend fun addUser(user: User): Boolean {
-        return try {
-            val documentReference = db.collection("users").add(user).await()
-            val userId = documentReference.id
 
-            // Zaktualizuj obiekt User o userId
-            db.collection("users").document(userId).update("userId", userId).await()
 
-            true
+    suspend fun updateUserEmail(userId: String, newEmail: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            userRef.update("email", newEmail).await()
         } catch (e: Exception) {
-            println("Error adding user: ${e.message}")
-            false
+            println("Error updating user email: ${e.message}")
         }
     }
 }
