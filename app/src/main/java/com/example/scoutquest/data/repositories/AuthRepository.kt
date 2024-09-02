@@ -1,12 +1,16 @@
 package com.example.scoutquest.data.repositories
 
+import android.util.Log
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -75,18 +79,43 @@ class AuthRepository @Inject constructor(
 
     suspend fun changeEmail(newEmail: String, password: String) {
         val user = auth.currentUser
-        user?.let {
+        if (user != null) {
+            //Reauthentication
+            val credential = EmailAuthProvider.getCredential(user.email!!, password)
             try {
-                reauthenticateUser(password)
-                it.updateEmail(newEmail).await()
-                userRepository.updateUserEmail(it.uid, newEmail)
+                user.reauthenticate(credential).await()
+                user.updateEmail(newEmail).addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("AuthRepository", "User email address updated.")
+                        // Update email in Firestore
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                userRepository.updateUserEmail(user.uid, newEmail)
+                                Log.d("AuthRepository", "User email updated in Firestore.")
+                            } catch (e: Exception) {
+                                Log.e("AuthRepository", "Error updating email in Firestore: ${e.message}")
+                            }
+                        }
+                    } else {
+                        Log.e("AuthRepository", "Failed to update email: ${task.exception?.message}")
+                    }
+                }
+            } catch (e: FirebaseAuthInvalidCredentialsException) {
+                Log.e("AuthRepository", "Invalid current password")
+                throw Exception("Invalid current password")
             } catch (e: FirebaseAuthRecentLoginRequiredException) {
-                throw Exception("Reauthentication required: ${e.message}")
+                Log.e("AuthRepository", "Recent login required. Please log in again.")
+                throw Exception("Recent login required. Please log in again.")
             } catch (e: Exception) {
+                Log.e("AuthRepository", "Failed to update email: ${e.message}")
                 throw Exception("Failed to update email: ${e.message}")
             }
+        } else {
+            Log.e("AuthRepository", "User is not logged in")
+            throw Exception("User is not logged in")
         }
     }
+
 
     suspend fun changePassword(newPassword: String, password: String): Boolean {
         val user = auth.currentUser

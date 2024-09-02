@@ -5,14 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.models.User
 import com.example.scoutquest.data.repositories.UserRepository
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class RegisterViewModel : ViewModel() {
     var username by mutableStateOf("")
@@ -35,8 +31,8 @@ class RegisterViewModel : ViewModel() {
                         val db = FirebaseFirestore.getInstance()
                         val user = User(username = username, email = email, userId = userId)
                         db.collection("users").document(userId).set(user).addOnSuccessListener {
-                            registrationSuccess = true
-                            errorMessage = ""
+                            //wyślij e-mail weryfikacyjny
+                            sendEmailVerification()
                         }.addOnFailureListener { e ->
                             registrationSuccess = false
                             errorMessage = e.message ?: "Failed to add user to Firestore"
@@ -53,4 +49,18 @@ class RegisterViewModel : ViewModel() {
         }
     }
 
+    private fun sendEmailVerification() {
+        val user = auth.currentUser
+        user?.sendEmailVerification()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("RegisterViewModel", "Verification email sent to ${user.email}")
+                registrationSuccess = true
+                errorMessage = ""
+            } else {
+                Log.e("RegisterViewModel", "Failed to send verification email: ${task.exception?.message}")
+                registrationSuccess = false
+                errorMessage = task.exception?.message ?: "Failed to send verification email"
+            }
+        }
+    }
 }
