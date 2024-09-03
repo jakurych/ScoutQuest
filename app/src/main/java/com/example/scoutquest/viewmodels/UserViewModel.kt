@@ -41,8 +41,15 @@ class UserViewModel @Inject constructor(
             try {
                 authRepository.loginWithEmailOrUsername(identifier, password)
             } catch (e: Exception) {
+
             }
         }
     }
-}
 
+    fun resetPassword(email: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val success = authRepository.sendPasswordResetEmail(email)
+            onResult(success)
+        }
+    }
+}

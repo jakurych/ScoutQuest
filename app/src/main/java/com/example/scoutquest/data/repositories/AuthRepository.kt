@@ -116,6 +116,25 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun sendPasswordResetEmail(email: String): Boolean {
+        return try {
+            val signInMethodsResult = auth.fetchSignInMethodsForEmail(email).await()
+            val signInMethods = signInMethodsResult.signInMethods
+
+            if (!signInMethods.isNullOrEmpty()) {
+                auth.sendPasswordResetEmail(email).await()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Failed to send password reset email: ${e.message}")
+            false
+        }
+    }
+
+
+
 
     suspend fun changePassword(newPassword: String, password: String): Boolean {
         val user = auth.currentUser

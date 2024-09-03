@@ -17,6 +17,8 @@ import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.viewmodels.LoginViewModel
 import com.example.scoutquest.viewmodels.UserViewModel
 import com.example.scoutquest.ui.theme.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 @Composable
 fun LoginView(loginViewModel: LoginViewModel, userViewModel: UserViewModel) {
@@ -26,6 +28,9 @@ fun LoginView(loginViewModel: LoginViewModel, userViewModel: UserViewModel) {
 
     var usernameOrEmail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var showResetPasswordDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
+    var resetErrorMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(isUserLoggedIn) {
         if (isUserLoggedIn == true) {
@@ -74,9 +79,57 @@ fun LoginView(loginViewModel: LoginViewModel, userViewModel: UserViewModel) {
         ) {
             Text("Back to Home Screen")
         }
+        Button(
+            onClick = { showResetPasswordDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = drab_dark_brown)
+        ) {
+            Text("Forgot Password?")
+        }
 
         if (errorMessage.isNotEmpty()) {
             Text(text = errorMessage, color = Color.Red)
         }
+
+        if (showResetPasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetPasswordDialog = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        userViewModel.resetPassword(resetEmail) { success ->
+                            if (success) {
+                                showResetPasswordDialog = false
+                            } else {
+                                resetErrorMessage = "Email not found"
+                            }
+                        }
+                    }) {
+                        Text("Send", color = Color.White)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetPasswordDialog = false }) {
+                        Text("Cancel", color = Color.White)
+                    }
+                },
+                title = { Text("Reset Password", color = Color.White) },
+                text = {
+                    Column {
+                        TextField(
+                            value = resetEmail,
+                            onValueChange = { resetEmail = it },
+                            label = { Text("Enter your email") },
+                            modifier = Modifier.fillMaxWidth()
+
+                        )
+                        if (resetErrorMessage.isNotEmpty()) {
+                            Text(text = resetErrorMessage, color = Color.Red)
+                        }
+                    }
+                },
+                containerColor = black_olive
+            )
+        }
     }
 }
+
