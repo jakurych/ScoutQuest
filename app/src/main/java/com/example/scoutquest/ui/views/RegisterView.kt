@@ -20,10 +20,15 @@ import com.example.scoutquest.ui.theme.moss_green
 import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.ui.navigation.MainScreenRoute
 
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 
 @Composable
 fun RegisterView(registerViewModel: RegisterViewModel = viewModel()) {
     val navController = LocalNavigation.current
+    var showDialog by remember { mutableStateOf(false) }
 
     Column {
         Header()
@@ -43,6 +48,13 @@ fun RegisterView(registerViewModel: RegisterViewModel = viewModel()) {
             value = registerViewModel.password,
             onValueChange = { registerViewModel.password = it },
             label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation()
+        )
+        TextField(
+            value = registerViewModel.confirmPassword,
+            onValueChange = { registerViewModel.confirmPassword = it },
+            label = { Text("Confirm Password") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
@@ -74,8 +86,27 @@ fun RegisterView(registerViewModel: RegisterViewModel = viewModel()) {
 
         LaunchedEffect(registerViewModel.registrationSuccess) {
             if (registerViewModel.registrationSuccess) {
-                navController.navigate(Login)
+                showDialog = true
             }
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDialog = false
+                        navController.navigate(Login)
+                    }) {
+                        Text("OK", color = Color.White)
+                    }
+                },
+                title = { Text("Registration Successful", color = Color.White) },
+                text = { Text("Verification email sent to your address.", color = Color.White) },
+                containerColor = button_green
+            )
         }
     }
 }
+
+

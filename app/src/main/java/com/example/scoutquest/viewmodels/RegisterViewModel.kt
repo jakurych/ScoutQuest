@@ -14,12 +14,18 @@ class RegisterViewModel : ViewModel() {
     var username by mutableStateOf("")
     var email by mutableStateOf("")
     var password by mutableStateOf("")
+    var confirmPassword by mutableStateOf("") // Dodano pole potwierdzenia hasła
     var registrationSuccess by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     fun register() {
+        if (password != confirmPassword) {
+            errorMessage = "Passwords do not match"
+            return
+        }
+
         viewModelScope.launch {
             try {
                 auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
@@ -31,7 +37,7 @@ class RegisterViewModel : ViewModel() {
                         val db = FirebaseFirestore.getInstance()
                         val user = User(username = username, email = email, userId = userId)
                         db.collection("users").document(userId).set(user).addOnSuccessListener {
-                            //wyślij e-mail weryfikacyjny
+                            // Wyślij e-mail weryfikacyjny
                             sendEmailVerification()
                         }.addOnFailureListener { e ->
                             registrationSuccess = false
@@ -64,3 +70,4 @@ class RegisterViewModel : ViewModel() {
         }
     }
 }
+
