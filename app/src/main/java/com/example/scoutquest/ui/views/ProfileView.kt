@@ -50,7 +50,7 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
         user?.let {
             ProfileHeader(user = it)
             Spacer(modifier = Modifier.height(16.dp))
-            ProfileDetails(user = it)
+            ProfileDetails(user = it, isEmailVerified = profileViewModel.isEmailVerified())
             Spacer(modifier = Modifier.height(16.dp))
             ProfileActions(profileViewModel, navController)
         }
@@ -93,7 +93,7 @@ fun ProfileHeader(user: User) {
 }
 
 @Composable
-fun ProfileDetails(user: User) {
+fun ProfileDetails(user: User, isEmailVerified: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -109,14 +109,20 @@ fun ProfileDetails(user: User) {
             Spacer(modifier = Modifier.height(8.dp))
             BadgesRow(user.badges)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Points: ${user.points}", color = Color.White)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Created Games: ${user.createdGames?.size ?: 0}", color = Color.White)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Games History: ${user.gamesHistory?.size ?: 0}", color = Color.White)
+
+            if (isEmailVerified) {
+                Text("Points: ${user.points}", color = Color.White)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Created Games: ${user.createdGames?.size ?: 0}", color = Color.White)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Games History: ${user.gamesHistory?.size ?: 0}", color = Color.White)
+            } else {
+                Text("Please verify your email to get stats", color = Color.White)
+            }
         }
     }
 }
+
 
 @Composable
 fun BadgesRow(badges: List<Badge>?) {
@@ -157,7 +163,7 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
                     newEmail = newEmail,
                     password = currentPassword,
                     onSuccess = {
-                        successMessage = "Email changed successfully"
+                        successMessage = "Verification mail sent to new email address"
                         showSuccessDialog = true
                         showEmailDialog = false
                     },

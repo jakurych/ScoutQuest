@@ -33,6 +33,8 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+
+
     private fun fetchUserData() {
         viewModelScope.launch {
             val currentUser = authRepository.getCurrentUser()
@@ -42,6 +44,10 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+    fun isEmailVerified(): Boolean{
+        return authRepository.getCurrentUser()?.isEmailVerified ?: false
+    }
+
 
     fun logout() {
         authRepository.signOut()
