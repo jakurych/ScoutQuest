@@ -30,6 +30,7 @@ import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.ui.theme.*
+import com.google.android.gms.maps.CameraUpdateFactory
 
 @Composable
 fun CreateNewGameView(
@@ -58,6 +59,15 @@ fun CreateNewGameView(
 
     val fullscreenCameraPositionState = rememberCameraPositionState {
         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
+    }
+
+    LaunchedEffect(temporaryMarker) {
+        temporaryMarker?.let { CameraUpdateFactory.newLatLng(it) }?.let {
+            cameraPositionState.animate(
+                update = it,
+                durationMs = 1000
+            )
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize().padding(padding)) {
