@@ -45,7 +45,7 @@ fun MainScreenView(viewModel: UserViewModel) {
                 horizontalArrangement = Arrangement.Start
             ) {
                 CircleButton(
-                    text = "Join game",
+                    text = "Play",
                     onClick = { navController.navigate("/joingame") },
                     modifier = Modifier
                 )

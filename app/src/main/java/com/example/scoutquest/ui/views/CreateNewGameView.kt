@@ -1,6 +1,5 @@
 package com.example.scoutquest.ui.views
 
-import AddTaskDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,7 +32,10 @@ import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescript
 import com.example.scoutquest.ui.theme.*
 
 @Composable
-fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
+fun CreateNewGameView(
+    viewModel: CreateNewGameViewModel,
+    onEditTask: (Task) -> Unit
+) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
 
@@ -48,8 +50,6 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
     val selectedLongitude by viewModel.selectedLongitude.collectAsState()
     val temporaryMarker by viewModel.temporaryMarker.collectAsState()
 
-    var showAddTaskDialog by remember { mutableStateOf(false) }
-    var taskToEdit by remember { mutableStateOf<Task?>(null) }
     var isFullscreen by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
@@ -172,7 +172,9 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         }
 
                         Button(
-                            onClick = { showAddTaskDialog = true },
+                            onClick = {
+                                onEditTask(Task())
+                            },
                             modifier = Modifier.fillMaxWidth().padding(top = elementSpacing),
                             colors = ButtonDefaults.buttonColors(containerColor = button_green)
                         ) {
@@ -186,7 +188,9 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(elementSpacing)
-                            .clickable { taskToEdit = task; showAddTaskDialog = true },
+                            .clickable {
+                                onEditTask(task)
+                            },
                         shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(containerColor = moss_green)
                     ) {
@@ -197,7 +201,9 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                             Text("Task ${index + 1}: ${task.title ?: "No Title"}", color = Color.White)
                             Text("Description: ${task.description}", color = Color.White)
                             Text("Points: ${task.points}", color = Color.White)
-                            IconButton(onClick = { taskToEdit = task; showAddTaskDialog = true }) {
+                            IconButton(onClick = {
+                                onEditTask(task)
+                            }) {
                                 Icon(Icons.Default.Edit, contentDescription = "Edit Task", tint = Color.White)
                             }
                         }
@@ -206,7 +212,7 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
 
                 item {
                     Button(
-                        onClick = { /* Logika do tworzenia gry */ },
+                        onClick = { viewModel.saveGame() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(elementSpacing),
@@ -259,37 +265,6 @@ fun CreateNewGameView(viewModel: CreateNewGameViewModel) {
                     ) {
                         Text("Close", color = Color.White)
                     }
-                }
-            }
-        }
-
-        if (showAddTaskDialog) {
-            selectedLatitude?.let {
-                selectedLongitude?.let { it1 ->
-                    AddTaskDialog(
-                        onDismiss = { showAddTaskDialog = false },
-                        onSave = { task ->
-                            if (taskToEdit != null) {
-                                viewModel.addTask(task)
-                            } else {
-                                viewModel.addTask(task)
-                            }
-                            showAddTaskDialog = false
-                            taskToEdit = null
-                        },
-                        onDelete = { task ->
-                            viewModel.removeTask(task)
-                            showAddTaskDialog = false
-                            taskToEdit = null
-                        },
-                        initialLatitude = it,
-                        initialLongitude = it1,
-                        taskToEdit = taskToEdit,
-                        onUpdateSequence = { taskId, newSequenceNumber ->
-                            viewModel.updateTaskSequence(taskId, newSequenceNumber)
-                        },
-                        mapMarkers = tasks
-                    )
                 }
             }
         }

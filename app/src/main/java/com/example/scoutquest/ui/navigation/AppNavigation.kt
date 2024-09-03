@@ -30,6 +30,15 @@ fun AppNavigation() {
             composable(route = Profile) {
                 ProfileView(profileViewModel, userViewModel)
             }
+            composable(route = Register) {
+                RegisterView(registerViewModel)
+            }
+            composable(route = Login) {
+                LoginView(loginViewModel, userViewModel)
+            }
+            composable(route = JoinGame) {
+                JoinGameView(joinGameViewModel)
+            }
             composable(route = Settings) {
                 SettingsView(settingsViewModel)
             }
@@ -37,18 +46,27 @@ fun AppNavigation() {
                 NewGameView()
             }
             composable(route = Creator) {
-                CreateNewGameView(createNewGameViewModel)
+                CreateNewGameView(
+                    viewModel = createNewGameViewModel,
+                    onEditTask = { task ->
+                        createNewGameViewModel.setTaskToEdit(task)
+                        navController.navigate(AddTask)
+                    }
+                )
             }
-            composable(route = Login) {
-                LoginView(loginViewModel, userViewModel)
-            }
-            composable(route = Register) {
-                RegisterView(registerViewModel)
-            }
-            composable(route = JoinGame) {
-                JoinGameView(joinGameViewModel)
+            composable(route = AddTask) {
+                AddTaskView(
+                    onBack = { navController.popBackStack() },
+                    onSave = { task ->
+                        createNewGameViewModel.addOrUpdateTask(task)
+                        navController.popBackStack()
+                    },
+                    taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value,
+                    initialLatitude = 52.253126,
+                    initialLongitude = 20.900157,
+                    mapMarkers = createNewGameViewModel.tasks.collectAsState().value
+                )
             }
         }
     }
 }
-
