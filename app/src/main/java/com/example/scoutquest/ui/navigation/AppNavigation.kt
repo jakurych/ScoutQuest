@@ -54,43 +54,42 @@ fun AppNavigation() {
                     onEditTask = { task ->
                         createNewGameViewModel.setTaskToEdit(task)
                         navController.navigate(AddTask)
-                    }
+                    },
+                    navController = navController
                 )
             }
-
             composable(route = AddTask) {
+                val taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value
                 AddTaskView(
-                    onBack = { navController.popBackStack() },
+                    viewModel = createNewGameViewModel,
+                    navController = navController,
                     onSave = { task ->
                         if (task.taskType == "Quiz") {
                             navController.navigate(CreateQuiz)
                         } else {
                             createNewGameViewModel.addOrUpdateTask(task)
-                            navController.popBackStack()
+                            navController.navigate(Creator)
                         }
                     },
-                    taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value,
-                    initialLatitude = 52.253126,
-                    initialLongitude = 20.900157,
-                    mapMarkers = createNewGameViewModel.tasks.collectAsState().value
+                    taskToEdit = taskToEdit,
+                    mapMarkers = createNewGameViewModel.tasks.collectAsState().value,
+                    quizViewModel = quizViewModel
                 )
             }
-
             composable(route = CreateQuiz) {
+                val taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value
                 CreateQuizView(
                     quizViewModel = quizViewModel,
-                    onBack = { navController.popBackStack() },
+                    navController = navController,
                     onSaveQuiz = { quiz ->
-                        val taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value
                         if (taskToEdit != null) {
                             val quizTask = taskToEdit.copy(taskDetails = quiz)
                             createNewGameViewModel.addOrUpdateTask(quizTask)
                         }
-                        navController.popBackStack()
+                        navController.navigate(AddTask)
                     }
                 )
             }
-
         }
     }
 }

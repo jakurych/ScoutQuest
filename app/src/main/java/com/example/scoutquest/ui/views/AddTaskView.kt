@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.example.scoutquest.ui.views
 
@@ -18,22 +20,25 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.example.scoutquest.data.services.MarkersHelper
+import com.example.scoutquest.ui.navigation.CreateQuiz
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.ui.theme.*
-import com.google.android.gms.maps.CameraUpdateFactory
+import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 
 @Composable
 fun AddTaskView(
-    onBack: () -> Unit,
+    viewModel: CreateNewGameViewModel,
+    navController: NavController,
     onSave: (Task) -> Unit,
     taskToEdit: Task? = null,
-    initialLatitude: Double = 52.253126,
-    initialLongitude: Double = 20.900157,
-    mapMarkers: List<Task>
+    mapMarkers: List<Task>,
+    quizViewModel: QuizViewModel
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -44,12 +49,11 @@ fun AddTaskView(
     var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
     var taskDescription by remember { mutableStateOf(taskToEdit?.description ?: "") }
     var taskPoints by remember { mutableStateOf(taskToEdit?.points?.toString() ?: "") }
-    var latitude by remember { mutableStateOf(taskToEdit?.latitude ?: initialLatitude) }
-    var longitude by remember { mutableStateOf(taskToEdit?.longitude ?: initialLongitude) }
+    var latitude by remember { mutableStateOf(taskToEdit?.latitude ?: viewModel.getSelectedLocation().latitude) }
+    var longitude by remember { mutableStateOf(taskToEdit?.longitude ?: viewModel.getSelectedLocation().longitude) }
     var markerColor by remember { mutableStateOf(taskToEdit?.markerColor ?: "blue") }
 
-
-    var temporaryMarker by remember { mutableStateOf(LatLng(initialLatitude, initialLongitude)) }
+    var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
 
     val markerColors = listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
@@ -61,18 +65,12 @@ fun AddTaskView(
     val scrollState = rememberScrollState()
 
     var isMapFullScreen by remember { mutableStateOf(false) }
+
     val cameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-            LatLng(initialLatitude, initialLongitude), 10f
-        )
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
     }
 
-    /*LaunchedEffect(temporaryMarker) {
-        cameraPositionState.animate(
-            update = CameraUpdateFactory.newLatLng(temporaryMarker),
-            durationMs = 1000
-        )
-    }*/
+    val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
 
     Column(
         modifier = Modifier
@@ -151,23 +149,40 @@ fun AddTaskView(
             }
 
             Text("Select Task Type", color = Color.White)
-            Box {
-                OutlinedButton(onClick = { taskTypeExpanded = true }, colors = ButtonDefaults.buttonColors(containerColor = drab_dark_brown)) {
-                    Text(selectedTaskType, color = Color.White)
-                }
-                DropdownMenu(
-                    expanded = taskTypeExpanded,
-                    onDismissRequest = { taskTypeExpanded = false }
-                ) {
-                    taskTypes.forEach { type ->
-                        DropdownMenuItem(
-                            onClick = {
-                                selectedTaskType = type
-                                taskTypeExpanded = false
-                            },
-                            text = { Text(type) }
-                        )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box {
+                    OutlinedButton(onClick = { taskTypeExpanded = true }, colors = ButtonDefaults.buttonColors(containerColor = drab_dark_brown)) {
+                        Text(selectedTaskType, color = Color.White)
                     }
+                    DropdownMenu(
+                        expanded = taskTypeExpanded,
+                        onDismissRequest = { taskTypeExpanded = false }
+                    ) {
+                        taskTypes.forEach { type ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    selectedTaskType = type
+                                    taskTypeExpanded = false
+                                },
+                                text = { Text(type) }
+                            )
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        when (selectedTaskType) {
+                            "Quiz" -> navController.navigate(CreateQuiz)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                ) {
+                    Text("Add task details", color = Color.White)
                 }
             }
         }
@@ -181,6 +196,7 @@ fun AddTaskView(
                 latitude = latLng.latitude
                 longitude = latLng.longitude
                 temporaryMarker = latLng
+                viewModel.onLocationSelected(latitude, longitude)
             }
         ) {
             mapMarkers.forEachIndexed { index, task ->
@@ -215,7 +231,7 @@ fun AddTaskView(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = onBack,
+                    onClick = { navController.popBackStack() },
                     modifier = Modifier.padding(elementSpacing),
                     colors = ButtonDefaults.buttonColors(containerColor = button_green)
                 ) {
@@ -224,20 +240,28 @@ fun AddTaskView(
 
                 Button(
                     onClick = {
-                        val task = Task(
-                            taskId = taskToEdit?.taskId ?: 0,
-                            title = taskTitle,
-                            description = taskDescription,
-                            points = taskPoints.toIntOrNull() ?: 0,
-                            latitude = latitude,
-                            longitude = longitude,
-                            markerColor = markerColor,
-                            taskType = selectedTaskType
-                        )
-                        onSave(task)
+                        if (selectedTaskType == "Quiz" && !hasQuizQuestions) {
+                            navController.navigate(CreateQuiz)
+                        } else {
+                            val task = Task(
+                                taskId = taskToEdit?.taskId ?: 0,
+                                title = taskTitle,
+                                description = taskDescription,
+                                points = taskPoints.toIntOrNull() ?: 0,
+                                latitude = latitude,
+                                longitude = longitude,
+                                markerColor = markerColor,
+                                taskType = selectedTaskType
+                            )
+                            onSave(task)
+                        }
                     },
-                    modifier = Modifier.padding(elementSpacing),
-                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                    enabled = selectedTaskType != "Quiz" || hasQuizQuestions,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedTaskType != "Quiz" || hasQuizQuestions) button_green else Color.Gray,
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.padding(elementSpacing)
                 ) {
                     Text("Save Task", color = Color.White)
                 }
@@ -248,9 +272,13 @@ fun AddTaskView(
     if (isMapFullScreen) {
         Dialog(
             onDismissRequest = { isMapFullScreen = false },
-            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+            properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+            ) {
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = cameraPositionState,
@@ -258,6 +286,7 @@ fun AddTaskView(
                         latitude = latLng.latitude
                         longitude = latLng.longitude
                         temporaryMarker = latLng
+                        viewModel.onLocationSelected(latitude, longitude)
                     }
                 ) {
                     mapMarkers.forEachIndexed { index, task ->
@@ -277,14 +306,15 @@ fun AddTaskView(
                         icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
                     )
                 }
+
                 Button(
                     onClick = { isMapFullScreen = false },
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(Alignment.BottomCenter)
                         .padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = moss_green)
+                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
                 ) {
-                    Text("Close", color = Color.White)
+                    Text("Close Full Screen Map", color = Color.White)
                 }
             }
         }

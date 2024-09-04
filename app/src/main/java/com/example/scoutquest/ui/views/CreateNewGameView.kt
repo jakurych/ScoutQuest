@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.input.*
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -45,7 +45,8 @@ import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescript
 @Composable
 fun CreateNewGameView(
     viewModel: CreateNewGameViewModel,
-    onEditTask: (Task) -> Unit
+    onEditTask: (Task) -> Unit,
+    navController: NavController
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -311,6 +312,15 @@ fun CreateNewGameView(
                                 icon = bitmapDescriptor
                             )
                         }
+                    }
+                    Button(
+                        onClick = { isFullscreen = false },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                    ) {
+                        Text("Close Full Screen Map", color = Color.White)
                     }
                 }
             }

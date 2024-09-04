@@ -21,8 +21,9 @@ class CreateNewGameViewModel : ViewModel() {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
-    private val _selectedLatitude = MutableStateFlow(0.0)
-    private val _selectedLongitude = MutableStateFlow(0.0)
+    private val _selectedLatitude = MutableStateFlow(52.253126)
+    private val _selectedLongitude = MutableStateFlow(20.900157)
+
     private val _temporaryMarker = MutableStateFlow<LatLng?>(null)
     private val _taskToEdit = MutableStateFlow<Task?>(null)
     val taskToEdit: StateFlow<Task?> = _taskToEdit
@@ -48,6 +49,10 @@ class CreateNewGameViewModel : ViewModel() {
         _selectedLatitude.value = latitude
         _selectedLongitude.value = longitude
         _temporaryMarker.value = LatLng(latitude, longitude)
+    }
+
+    fun getSelectedLocation(): LatLng {
+        return LatLng(_selectedLatitude.value, _selectedLongitude.value)
     }
 
     fun setTaskToEdit(task: Task) {
