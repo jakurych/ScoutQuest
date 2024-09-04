@@ -22,13 +22,13 @@ class CreateNewGameViewModel : ViewModel() {
     val tasks: StateFlow<List<Task>> = _tasks
 
     private val _selectedLatitude = MutableStateFlow(0.0)
-
     private val _selectedLongitude = MutableStateFlow(0.0)
-
     private val _temporaryMarker = MutableStateFlow<LatLng?>(null)
-
     private val _taskToEdit = MutableStateFlow<Task?>(null)
     val taskToEdit: StateFlow<Task?> = _taskToEdit
+
+    private val _isReorderingEnabled = MutableStateFlow(false)
+    val isReorderingEnabled: StateFlow<Boolean> = _isReorderingEnabled
 
     private val taskIdGenerator = AtomicInteger(1)
 
@@ -60,7 +60,6 @@ class CreateNewGameViewModel : ViewModel() {
             if (existingTaskIndex >= 0) {
                 currentTasks.toMutableList().apply { set(existingTaskIndex, task) }
             } else {
-                //New unique ID for new task
                 val newTask = task.copy(taskId = taskIdGenerator.getAndIncrement())
                 currentTasks + newTask
             }
@@ -71,6 +70,19 @@ class CreateNewGameViewModel : ViewModel() {
         _tasks.update { currentTasks ->
             currentTasks.filter { it.taskId != task.taskId }
         }
+    }
+
+    fun moveTask(fromIndex: Int, toIndex: Int) {
+        _tasks.update { currentTasks ->
+            val mutableTasks = currentTasks.toMutableList()
+            val task = mutableTasks.removeAt(fromIndex)
+            mutableTasks.add(toIndex, task)
+            mutableTasks
+        }
+    }
+
+    fun toggleReordering() {
+        _isReorderingEnabled.value = !_isReorderingEnabled.value
     }
 
     fun saveGame() {

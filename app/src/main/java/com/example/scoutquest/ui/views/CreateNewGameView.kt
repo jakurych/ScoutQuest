@@ -1,12 +1,17 @@
 package com.example.scoutquest.ui.views
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -15,9 +20,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.*
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -29,8 +39,8 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
-import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.ui.theme.*
+import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 
 @Composable
 fun CreateNewGameView(
@@ -47,11 +57,20 @@ fun CreateNewGameView(
     val description by viewModel.description.collectAsState()
     val isPublic by viewModel.isPublic.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
+    val isReorderingEnabled by viewModel.isReorderingEnabled.collectAsState()
 
     var isFullscreen by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
+    }
+
+    var draggedItemIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+
+    fun calculateNewIndex(draggedIndex: Int, dragOffsetY: Float): Int {
+        val newIndex = draggedIndex + (dragOffsetY / 150).toInt()
+        return newIndex.coerceIn(0, tasks.size - 1)
     }
 
     Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -63,7 +82,9 @@ fun CreateNewGameView(
             Header()
 
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .let { if (isReorderingEnabled) it.border(BorderStroke(2.dp, Color.Yellow), RoundedCornerShape(8.dp)) else it },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(elementSpacing)
             ) {
@@ -145,7 +166,6 @@ fun CreateNewGameView(
                                     icon = bitmapDescriptor
                                 )
                             }
-
                         }
 
                         Button(
@@ -167,18 +187,68 @@ fun CreateNewGameView(
                         ) {
                             Text("Add Task", color = Color.White)
                         }
+
+                        Button(
+                            onClick = {
+                                viewModel.toggleReordering()
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(top = elementSpacing),
+                            colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                        ) {
+                            Text("Change Order", color = Color.White)
+                        }
                     }
                 }
 
                 itemsIndexed(tasks) { index, task ->
+                    val isDragging = draggedItemIndex == index
+                    val elevation by animateFloatAsState(targetValue = if (isDragging) 16.dp.value else 4.dp.value)
+                    val scale by animateFloatAsState(targetValue = if (isDragging) 1.1f else 1f)
+
+                    val newIndex = draggedItemIndex?.let { calculateNewIndex(it, dragOffset.y) }
+                    val actualOffset = if (newIndex != null && index == newIndex && draggedItemIndex != index) {
+                        if (newIndex < draggedItemIndex!!) Offset(0f, 150f) else Offset(0f, -150f)
+                    } else Offset.Zero
+                    val cardOffset by animateOffsetAsState(targetValue = if (isDragging) dragOffset else actualOffset)
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(elementSpacing)
-                            .clickable {
+                            .offset { IntOffset(cardOffset.x.toInt(), cardOffset.y.toInt()) }
+                            .pointerInput(isReorderingEnabled) {
+                                if (isReorderingEnabled) {
+                                    detectDragGestures(
+                                        onDragStart = {
+                                            draggedItemIndex = index
+                                        },
+                                        onDragEnd = {
+                                            draggedItemIndex?.let { fromIndex ->
+                                                val toIndex = calculateNewIndex(fromIndex, dragOffset.y)
+                                                if (fromIndex != toIndex) {
+                                                    viewModel.moveTask(fromIndex, toIndex)
+                                                }
+                                            }
+                                            draggedItemIndex = null
+                                            dragOffset = Offset.Zero
+                                        },
+                                        onDragCancel = {
+                                            draggedItemIndex = null
+                                            dragOffset = Offset.Zero
+                                        },
+                                        onDrag = { change, dragAmount ->
+                                            dragOffset += Offset(dragAmount.x, dragAmount.y)
+                                            change.consume()
+                                        }
+                                    )
+                                }
+                            }
+                            .clickable(enabled = !isReorderingEnabled) {
                                 onEditTask(task)
-                            },
+                            }
+                            .scale(scale),
                         shape = RoundedCornerShape(8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = elevation.dp),
                         colors = CardDefaults.cardColors(containerColor = moss_green)
                     ) {
                         Column(
@@ -226,9 +296,7 @@ fun CreateNewGameView(
                 Box(modifier = Modifier.fillMaxSize()) {
                     GoogleMap(
                         modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = rememberCameraPositionState {
-                            position = cameraPositionState.position
-                        },
+                        cameraPositionState = cameraPositionState,
                         onMapClick = { latLng ->
                             viewModel.onLocationSelected(latLng.latitude, latLng.longitude)
                         }
@@ -243,16 +311,6 @@ fun CreateNewGameView(
                                 icon = bitmapDescriptor
                             )
                         }
-
-                    }
-                    Button(
-                        onClick = {
-                            isFullscreen = false
-                        },
-                        modifier = Modifier.align(Alignment.TopEnd).padding(elementSpacing),
-                        colors = ButtonDefaults.buttonColors(containerColor = moss_green)
-                    ) {
-                        Text("Close", color = Color.White)
                     }
                 }
             }
