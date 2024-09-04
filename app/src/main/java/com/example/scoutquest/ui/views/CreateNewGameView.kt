@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,7 +31,6 @@ import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.ui.theme.*
-import com.google.android.gms.maps.CameraUpdateFactory
 
 @Composable
 fun CreateNewGameView(
@@ -47,27 +47,11 @@ fun CreateNewGameView(
     val description by viewModel.description.collectAsState()
     val isPublic by viewModel.isPublic.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
-    val selectedLatitude by viewModel.selectedLatitude.collectAsState()
-    val selectedLongitude by viewModel.selectedLongitude.collectAsState()
-    val temporaryMarker by viewModel.temporaryMarker.collectAsState()
 
     var isFullscreen by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
-    }
-
-    val fullscreenCameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
-    }
-
-    LaunchedEffect(temporaryMarker) {
-        temporaryMarker?.let { CameraUpdateFactory.newLatLng(it) }?.let {
-            cameraPositionState.animate(
-                update = it,
-                durationMs = 1000
-            )
-        }
     }
 
     Box(modifier = Modifier.fillMaxSize().padding(padding)) {
@@ -161,19 +145,12 @@ fun CreateNewGameView(
                                     icon = bitmapDescriptor
                                 )
                             }
-                            temporaryMarker?.let { latLng ->
-                                Marker(
-                                    state = com.google.maps.android.compose.MarkerState(position = latLng),
-                                    title = "Temporary Marker",
-                                    icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl("blue", ""), 0)
-                                )
-                            }
+
                         }
 
                         Button(
                             onClick = {
                                 isFullscreen = true
-                                fullscreenCameraPositionState.position = cameraPositionState.position
                             },
                             modifier = Modifier.fillMaxWidth().padding(top = elementSpacing),
                             colors = ButtonDefaults.buttonColors(containerColor = button_green)
@@ -211,10 +188,17 @@ fun CreateNewGameView(
                             Text("Task ${index + 1}: ${task.title ?: "No Title"}", color = Color.White)
                             Text("Description: ${task.description}", color = Color.White)
                             Text("Points: ${task.points}", color = Color.White)
-                            IconButton(onClick = {
-                                onEditTask(task)
-                            }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit Task", tint = Color.White)
+                            Row {
+                                IconButton(onClick = {
+                                    onEditTask(task)
+                                }) {
+                                    Icon(Icons.Default.Edit, contentDescription = "Edit Task", tint = Color.White)
+                                }
+                                IconButton(onClick = {
+                                    viewModel.removeTask(task)
+                                }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete Task", tint = Color.White)
+                                }
                             }
                         }
                     }
@@ -242,7 +226,9 @@ fun CreateNewGameView(
                 Box(modifier = Modifier.fillMaxSize()) {
                     GoogleMap(
                         modifier = Modifier.fillMaxSize(),
-                        cameraPositionState = fullscreenCameraPositionState,
+                        cameraPositionState = rememberCameraPositionState {
+                            position = cameraPositionState.position
+                        },
                         onMapClick = { latLng ->
                             viewModel.onLocationSelected(latLng.latitude, latLng.longitude)
                         }
@@ -257,18 +243,11 @@ fun CreateNewGameView(
                                 icon = bitmapDescriptor
                             )
                         }
-                        temporaryMarker?.let { latLng ->
-                            Marker(
-                                state = com.google.maps.android.compose.MarkerState(position = latLng),
-                                title = "Temporary Marker",
-                                icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl("blue", ""), 0)
-                            )
-                        }
+
                     }
                     Button(
                         onClick = {
                             isFullscreen = false
-                            cameraPositionState.position = fullscreenCameraPositionState.position
                         },
                         modifier = Modifier.align(Alignment.TopEnd).padding(elementSpacing),
                         colors = ButtonDefaults.buttonColors(containerColor = moss_green)

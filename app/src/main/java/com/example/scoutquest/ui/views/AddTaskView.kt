@@ -67,12 +67,12 @@ fun AddTaskView(
         )
     }
 
-    LaunchedEffect(temporaryMarker) {
+    /*LaunchedEffect(temporaryMarker) {
         cameraPositionState.animate(
             update = CameraUpdateFactory.newLatLng(temporaryMarker),
             durationMs = 1000
         )
-    }
+    }*/
 
     Column(
         modifier = Modifier
@@ -197,7 +197,7 @@ fun AddTaskView(
             Marker(
                 state = MarkerState(position = temporaryMarker),
                 title = "Selected Location",
-                icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl("blue", ""), 0)
+                icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
             )
         }
 

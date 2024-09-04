@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.Task
 import com.google.android.gms.maps.model.LatLng
+import java.util.concurrent.atomic.AtomicInteger
 
 class CreateNewGameViewModel : ViewModel() {
     private val _name = MutableStateFlow("")
@@ -21,16 +22,15 @@ class CreateNewGameViewModel : ViewModel() {
     val tasks: StateFlow<List<Task>> = _tasks
 
     private val _selectedLatitude = MutableStateFlow(0.0)
-    val selectedLatitude: StateFlow<Double> = _selectedLatitude
 
     private val _selectedLongitude = MutableStateFlow(0.0)
-    val selectedLongitude: StateFlow<Double> = _selectedLongitude
 
     private val _temporaryMarker = MutableStateFlow<LatLng?>(null)
-    val temporaryMarker: StateFlow<LatLng?> = _temporaryMarker
 
     private val _taskToEdit = MutableStateFlow<Task?>(null)
     val taskToEdit: StateFlow<Task?> = _taskToEdit
+
+    private val taskIdGenerator = AtomicInteger(1)
 
     fun onNameChange(newName: String) {
         _name.value = newName
@@ -60,8 +60,16 @@ class CreateNewGameViewModel : ViewModel() {
             if (existingTaskIndex >= 0) {
                 currentTasks.toMutableList().apply { set(existingTaskIndex, task) }
             } else {
-                currentTasks + task
+                //New unique ID for new task
+                val newTask = task.copy(taskId = taskIdGenerator.getAndIncrement())
+                currentTasks + newTask
             }
+        }
+    }
+
+    fun removeTask(task: Task) {
+        _tasks.update { currentTasks ->
+            currentTasks.filter { it.taskId != task.taskId }
         }
     }
 
