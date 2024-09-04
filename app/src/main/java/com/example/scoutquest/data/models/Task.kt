@@ -1,7 +1,9 @@
 package com.example.scoutquest.data.models
 import android.os.Parcelable
+import com.example.scoutquest.data.models.tasktypes.TaskType
 import kotlinx.parcelize.Parcelize
-
+import com.example.scoutquest.data.models.tasktypes.*
+import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class Task(
@@ -14,5 +16,6 @@ data class Task(
     var longitude: Double = 0.0, //Double dla długości geograficznej
     var gameId: Int = 0,
     var markerColor: String = "",
-    var taskType: String? = null
+    var taskType: String? = null,
+    var taskDetails: @RawValue TaskType? = null
 ) : Parcelable
