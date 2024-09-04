@@ -8,7 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.scoutquest.ui.views.*
+import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
 import com.example.scoutquest.viewmodels.*
+import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 
 @Composable
 fun AppNavigation() {
@@ -21,6 +23,7 @@ fun AppNavigation() {
     val registerViewModel: RegisterViewModel = viewModel()
     val loginViewModel: LoginViewModel = viewModel()
     val joinGameViewModel: JoinGameViewModel = viewModel()
+    val quizViewModel: QuizViewModel = viewModel()
 
     CompositionLocalProvider(LocalNavigation provides navController) {
         NavHost(navController = navController, startDestination = MainScreenRoute) {
@@ -54,12 +57,17 @@ fun AppNavigation() {
                     }
                 )
             }
+
             composable(route = AddTask) {
                 AddTaskView(
                     onBack = { navController.popBackStack() },
                     onSave = { task ->
-                        createNewGameViewModel.addOrUpdateTask(task)
-                        navController.popBackStack()
+                        if (task.taskType == "Quiz") {
+                            navController.navigate(CreateQuiz)
+                        } else {
+                            createNewGameViewModel.addOrUpdateTask(task)
+                            navController.popBackStack()
+                        }
                     },
                     taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value,
                     initialLatitude = 52.253126,
@@ -67,6 +75,22 @@ fun AppNavigation() {
                     mapMarkers = createNewGameViewModel.tasks.collectAsState().value
                 )
             }
+
+            composable(route = CreateQuiz) {
+                CreateQuizView(
+                    quizViewModel = quizViewModel,
+                    onBack = { navController.popBackStack() },
+                    onSaveQuiz = { quiz ->
+                        val taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value
+                        if (taskToEdit != null) {
+                            val quizTask = taskToEdit.copy(taskDetails = quiz)
+                            createNewGameViewModel.addOrUpdateTask(quizTask)
+                        }
+                        navController.popBackStack()
+                    }
+                )
+            }
+
         }
     }
 }
