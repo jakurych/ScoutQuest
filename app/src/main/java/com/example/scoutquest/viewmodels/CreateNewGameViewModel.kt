@@ -33,7 +33,6 @@ class CreateNewGameViewModel : ViewModel() {
 
     private val taskIdGenerator = AtomicInteger(1)
 
-    // New properties for task details
     var currentTaskTitle: String = ""
     var currentTaskDescription: String = ""
     var currentTaskPoints: String = "0"
@@ -75,15 +74,15 @@ class CreateNewGameViewModel : ViewModel() {
         currentMarkerColor = task.markerColor
     }
 
-
     fun addOrUpdateTask(task: Task) {
         _tasks.update { currentTasks ->
             val existingTaskIndex = currentTasks.indexOfFirst { it.taskId == task.taskId }
             if (existingTaskIndex >= 0) {
-                currentTasks.toMutableList().apply { set(existingTaskIndex, task) }
+                currentTasks.toMutableList().apply {
+                    set(existingTaskIndex, task)
+                }
             } else {
-                val newTask = task.copy(taskId = taskIdGenerator.getAndIncrement())
-                currentTasks + newTask
+                currentTasks + task
             }
         }
     }
@@ -105,6 +104,10 @@ class CreateNewGameViewModel : ViewModel() {
 
     fun toggleReordering() {
         _isReorderingEnabled.value = !_isReorderingEnabled.value
+    }
+
+    fun generateNewTaskId(): Int {
+        return taskIdGenerator.getAndIncrement()
     }
 
     fun saveGame() {

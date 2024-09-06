@@ -275,7 +275,7 @@ fun AddTaskView(
                             navController.navigate(CreateQuiz)
                         } else {
                             val task = Task(
-                                taskId = taskToEdit?.taskId ?: 0,
+                                taskId = taskToEdit?.taskId ?: viewModel.generateNewTaskId(),
                                 title = taskTitle,
                                 description = taskDescription,
                                 points = taskPoints.toIntOrNull() ?: 0,
