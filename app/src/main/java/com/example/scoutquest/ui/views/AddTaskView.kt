@@ -1,6 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
-)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.example.scoutquest.ui.views
 
@@ -47,12 +45,21 @@ fun AddTaskView(
     val padding = screenWidth * 0.05f
     val elementSpacing = screenWidth * 0.02f
 
-    var taskTitle by remember { mutableStateOf(taskToEdit?.title ?: "") }
-    var taskDescription by remember { mutableStateOf(taskToEdit?.description ?: "") }
-    var taskPoints by remember { mutableStateOf(taskToEdit?.points?.toString() ?: "") }
-    var latitude by remember { mutableStateOf(taskToEdit?.latitude ?: viewModel.getSelectedLocation().latitude) }
-    var longitude by remember { mutableStateOf(taskToEdit?.longitude ?: viewModel.getSelectedLocation().longitude) }
-    var markerColor by remember { mutableStateOf(taskToEdit?.markerColor ?: "blue") }
+    var taskTitle by remember { mutableStateOf("") }
+    var taskDescription by remember { mutableStateOf("") }
+    var taskPoints by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf(viewModel.getSelectedLocation().latitude) }
+    var longitude by remember { mutableStateOf(viewModel.getSelectedLocation().longitude) }
+    var markerColor by remember { mutableStateOf("blue") }
+
+    LaunchedEffect(taskToEdit) {
+        taskTitle = taskToEdit?.title ?: ""
+        taskDescription = taskToEdit?.description ?: ""
+        taskPoints = taskToEdit?.points?.toString() ?: ""
+        latitude = taskToEdit?.latitude ?: viewModel.getSelectedLocation().latitude
+        longitude = taskToEdit?.longitude ?: viewModel.getSelectedLocation().longitude
+        markerColor = taskToEdit?.markerColor ?: "blue"
+    }
 
     var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
 
@@ -254,7 +261,8 @@ fun AddTaskView(
                                 markerColor = markerColor,
                                 taskType = selectedTaskType
                             )
-                            onSave(task)
+                            viewModel.addOrUpdateTask(task)
+                            quizViewModel.resetQuestions()
                             navController.navigate(Creator)
                         }
                     },
