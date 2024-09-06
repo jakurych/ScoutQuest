@@ -54,13 +54,13 @@ fun AddTaskView(
     var longitude by remember { mutableStateOf(viewModel.currentLongitude) }
     var markerColor by remember { mutableStateOf(viewModel.currentMarkerColor) }
 
-    LaunchedEffect(taskToEdit) {
-        taskTitle = taskToEdit?.title ?: viewModel.currentTaskTitle
-        taskDescription = taskToEdit?.description ?: viewModel.currentTaskDescription
-        taskPoints = taskToEdit?.points?.toString() ?: viewModel.currentTaskPoints
-        latitude = taskToEdit?.latitude ?: viewModel.currentLatitude
-        longitude = taskToEdit?.longitude ?: viewModel.currentLongitude
-        markerColor = taskToEdit?.markerColor ?: viewModel.currentMarkerColor
+    LaunchedEffect(Unit) {
+        taskTitle = viewModel.currentTaskTitle
+        taskDescription = viewModel.currentTaskDescription
+        taskPoints = viewModel.currentTaskPoints
+        latitude = viewModel.currentLatitude
+        longitude = viewModel.currentLongitude
+        markerColor = viewModel.currentMarkerColor
     }
 
     var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
@@ -83,13 +83,16 @@ fun AddTaskView(
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
 
     fun updateViewModel() {
-        viewModel.currentTaskTitle = taskTitle
-        viewModel.currentTaskDescription = taskDescription
-        viewModel.currentTaskPoints = taskPoints
-        viewModel.currentLatitude = latitude
-        viewModel.currentLongitude = longitude
-        viewModel.currentMarkerColor = markerColor
+        viewModel.apply {
+            currentTaskTitle = taskTitle
+            currentTaskDescription = taskDescription
+            currentTaskPoints = taskPoints
+            currentLatitude = latitude
+            currentLongitude = longitude
+            currentMarkerColor = markerColor
+        }
     }
+
 
     Column(
         modifier = Modifier
@@ -205,6 +208,7 @@ fun AddTaskView(
 
                 Button(
                     onClick = {
+                        updateViewModel()
                         if (selectedTaskType == "Quiz") {
                             navController.navigate(CreateQuiz)
                         } else if (selectedTaskType == "Note") {
@@ -276,14 +280,15 @@ fun AddTaskView(
                         } else {
                             val task = Task(
                                 taskId = taskToEdit?.taskId ?: viewModel.generateNewTaskId(),
-                                title = taskTitle,
-                                description = taskDescription,
-                                points = taskPoints.toIntOrNull() ?: 0,
-                                latitude = latitude,
-                                longitude = longitude,
-                                markerColor = markerColor,
+                                title = viewModel.currentTaskTitle,
+                                description = viewModel.currentTaskDescription,
+                                points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
+                                latitude = viewModel.currentLatitude,
+                                longitude = viewModel.currentLongitude,
+                                markerColor = viewModel.currentMarkerColor,
                                 taskType = selectedTaskType
                             )
+
                             viewModel.addOrUpdateTask(task)
                             quizViewModel.resetQuestions()
                             navController.navigate(Creator)
