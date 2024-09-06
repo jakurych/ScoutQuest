@@ -233,11 +233,9 @@ fun CreateQuizView(
         item {
             Button(
                 onClick = {
-                    val quiz = Quiz(questions = quizViewModel.questions.value)
+                    val quiz = quizViewModel.getCurrentQuiz()
                     onSaveQuiz(quiz)
-                    //quizViewModel.resetQuestions()
-                    quizViewModel.saveQuiz()
-                    navController.navigate(AddTask) // Navigate back after saving
+                    navController.navigate(AddTask)
                 },
                 enabled = hasQuestions,
                 colors = ButtonDefaults.buttonColors(
@@ -247,6 +245,7 @@ fun CreateQuizView(
             ) {
                 Text("Save Quiz Task", color = Color.White)
             }
+
         }
 
         item {

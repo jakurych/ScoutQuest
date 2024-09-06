@@ -20,6 +20,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.example.scoutquest.data.services.MarkersHelper
@@ -210,6 +211,7 @@ fun AddTaskView(
                     onClick = {
                         updateViewModel()
                         if (selectedTaskType == "Quiz") {
+                            quizViewModel.setQuestionsFromQuiz(taskToEdit?.taskDetails as? Quiz)
                             navController.navigate(CreateQuiz)
                         } else if (selectedTaskType == "Note") {
                             navController.navigate(CreateNote)
@@ -286,11 +288,17 @@ fun AddTaskView(
                                 latitude = viewModel.currentLatitude,
                                 longitude = viewModel.currentLongitude,
                                 markerColor = viewModel.currentMarkerColor,
-                                taskType = selectedTaskType
+                                taskType = selectedTaskType,
+                                taskDetails = when (selectedTaskType) {
+                                    "Quiz" -> quizViewModel.getCurrentQuiz()
+                                    else -> null
+                                }
                             )
+                            viewModel.addOrUpdateTask(task)
+                            quizViewModel.resetQuiz()
 
                             viewModel.addOrUpdateTask(task)
-                            quizViewModel.resetQuestions()
+                            quizViewModel.resetQuiz()
                             navController.navigate(Creator)
                         }
                     },

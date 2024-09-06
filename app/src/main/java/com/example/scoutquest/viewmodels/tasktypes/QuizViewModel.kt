@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.tasktypes.Question
+import com.example.scoutquest.data.models.tasktypes.Quiz
 
 class QuizViewModel : ViewModel() {
     private val _questions = MutableStateFlow<List<Question>>(emptyList())
@@ -13,7 +14,6 @@ class QuizViewModel : ViewModel() {
     private val _hasQuestions = MutableStateFlow(false)
     val hasQuestions: StateFlow<Boolean> = _hasQuestions
 
-    // Przechowywanie aktualnych danych quizu
     var currentQuestionText: String = ""
     var currentOptions: List<String> = listOf("", "")
     var currentCorrectAnswerIndices: List<Int> = emptyList()
@@ -47,12 +47,21 @@ class QuizViewModel : ViewModel() {
         }
     }
 
-    fun resetQuestions() {
+    fun getCurrentQuiz(): Quiz {
+        return Quiz(questions = _questions.value)
+    }
+
+    fun setQuestionsFromQuiz(quiz: Quiz?) {
+        _questions.value = quiz?.questions ?: emptyList()
+        _hasQuestions.value = _questions.value.isNotEmpty()
+    }
+
+    fun resetQuiz() {
         _questions.value = emptyList()
         _hasQuestions.value = false
     }
 
     fun saveQuiz() {
-        // Implementacja logiki zapisu quizu
+
     }
 }

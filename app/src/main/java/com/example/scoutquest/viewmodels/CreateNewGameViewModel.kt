@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.models.tasktypes.TaskType
 import com.google.android.gms.maps.model.LatLng
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -40,6 +41,10 @@ class CreateNewGameViewModel : ViewModel() {
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
 
+    //task types
+    var currentTaskDetails: TaskType? = null
+
+
     fun onNameChange(newName: String) {
         _name.value = newName
     }
@@ -73,6 +78,8 @@ class CreateNewGameViewModel : ViewModel() {
         currentLongitude = task.longitude
         currentMarkerColor = task.markerColor
     }
+
+
 
     fun addOrUpdateTask(task: Task) {
         _tasks.update { currentTasks ->
@@ -111,6 +118,6 @@ class CreateNewGameViewModel : ViewModel() {
     }
 
     fun saveGame() {
-        // Logic for saving the game
+
     }
 }
