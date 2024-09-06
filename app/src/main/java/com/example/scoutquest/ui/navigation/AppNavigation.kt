@@ -9,7 +9,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.scoutquest.ui.views.*
 import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
+import com.example.scoutquest.ui.views.tasktypes.CreateNoteView
 import com.example.scoutquest.viewmodels.*
+import com.example.scoutquest.data.models.tasktypes.Note
+import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 
 @Composable
@@ -24,6 +27,7 @@ fun AppNavigation() {
     val loginViewModel: LoginViewModel = viewModel()
     val joinGameViewModel: JoinGameViewModel = viewModel()
     val quizViewModel: QuizViewModel = viewModel()
+    val noteViewModel: NoteViewModel = viewModel()
 
     CompositionLocalProvider(LocalNavigation provides navController) {
         NavHost(navController = navController, startDestination = MainScreenRoute) {
@@ -59,32 +63,41 @@ fun AppNavigation() {
                 )
             }
             composable(route = AddTask) {
-                val taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value
+                val taskToEdit by createNewGameViewModel.taskToEdit.collectAsState()
+                val mapMarkers by createNewGameViewModel.tasks.collectAsState()
                 AddTaskView(
                     viewModel = createNewGameViewModel,
                     navController = navController,
-                    onSave = { task ->
-                        if (task.taskType == "Quiz") {
-                            navController.navigate(CreateQuiz)
-                        } else {
-                            createNewGameViewModel.addOrUpdateTask(task)
-                            navController.navigate(Creator)
-                        }
-                    },
                     taskToEdit = taskToEdit,
-                    mapMarkers = createNewGameViewModel.tasks.collectAsState().value,
-                    quizViewModel = quizViewModel
+                    mapMarkers = mapMarkers,
+                    quizViewModel = quizViewModel,
+                    noteViewModel = noteViewModel
                 )
             }
             composable(route = CreateQuiz) {
-                val taskToEdit = createNewGameViewModel.taskToEdit.collectAsState().value
+                val taskToEdit by createNewGameViewModel.taskToEdit.collectAsState()
                 CreateQuizView(
                     quizViewModel = quizViewModel,
                     navController = navController,
                     onSaveQuiz = { quiz ->
-                        if (taskToEdit != null) {
-                            val quizTask = taskToEdit.copy(taskDetails = quiz)
+                        taskToEdit?.let {
+                            val quizTask = it.copy(taskDetails = quiz)
                             createNewGameViewModel.addOrUpdateTask(quizTask)
+                        }
+                        navController.navigate(AddTask)
+                    }
+                )
+            }
+            composable(route = CreateNote) {
+                val taskToEdit by createNewGameViewModel.taskToEdit.collectAsState()
+                CreateNoteView(
+                    navController = navController,
+                    noteViewModel = noteViewModel,
+                    onSaveNote = { noteText ->
+                        taskToEdit?.let {
+                            val noteTaskDetails = Note(noteText)
+                            val noteTask = it.copy(taskDetails = noteTaskDetails)
+                            createNewGameViewModel.addOrUpdateTask(noteTask)
                         }
                         navController.navigate(AddTask)
                     }

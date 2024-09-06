@@ -10,5 +10,6 @@ const val Register = "/register"
 const val JoinGame = "/joingame"
 const val AddTask = "/addtask"
 const val CreateQuiz = "/createquiz"
+const val CreateNote = "/createnote"
 
 

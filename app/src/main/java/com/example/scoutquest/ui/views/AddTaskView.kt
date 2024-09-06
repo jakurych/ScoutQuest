@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.example.scoutquest.ui.views
 
@@ -24,20 +24,22 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.navigation.CreateQuiz
+import com.example.scoutquest.ui.navigation.CreateNote
 import com.example.scoutquest.ui.navigation.Creator
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.ui.theme.*
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 
 @Composable
 fun AddTaskView(
     viewModel: CreateNewGameViewModel,
     navController: NavController,
-    onSave: (Task) -> Unit,
     taskToEdit: Task? = null,
     mapMarkers: List<Task>,
-    quizViewModel: QuizViewModel
+    quizViewModel: QuizViewModel,
+    noteViewModel: NoteViewModel
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -45,20 +47,20 @@ fun AddTaskView(
     val padding = screenWidth * 0.05f
     val elementSpacing = screenWidth * 0.02f
 
-    var taskTitle by remember { mutableStateOf("") }
-    var taskDescription by remember { mutableStateOf("") }
-    var taskPoints by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf(viewModel.getSelectedLocation().latitude) }
-    var longitude by remember { mutableStateOf(viewModel.getSelectedLocation().longitude) }
-    var markerColor by remember { mutableStateOf("blue") }
+    var taskTitle by remember { mutableStateOf(viewModel.currentTaskTitle) }
+    var taskDescription by remember { mutableStateOf(viewModel.currentTaskDescription) }
+    var taskPoints by remember { mutableStateOf(viewModel.currentTaskPoints) }
+    var latitude by remember { mutableStateOf(viewModel.currentLatitude) }
+    var longitude by remember { mutableStateOf(viewModel.currentLongitude) }
+    var markerColor by remember { mutableStateOf(viewModel.currentMarkerColor) }
 
     LaunchedEffect(taskToEdit) {
-        taskTitle = taskToEdit?.title ?: ""
-        taskDescription = taskToEdit?.description ?: ""
-        taskPoints = taskToEdit?.points?.toString() ?: ""
-        latitude = taskToEdit?.latitude ?: viewModel.getSelectedLocation().latitude
-        longitude = taskToEdit?.longitude ?: viewModel.getSelectedLocation().longitude
-        markerColor = taskToEdit?.markerColor ?: "blue"
+        taskTitle = taskToEdit?.title ?: viewModel.currentTaskTitle
+        taskDescription = taskToEdit?.description ?: viewModel.currentTaskDescription
+        taskPoints = taskToEdit?.points?.toString() ?: viewModel.currentTaskPoints
+        latitude = taskToEdit?.latitude ?: viewModel.currentLatitude
+        longitude = taskToEdit?.longitude ?: viewModel.currentLongitude
+        markerColor = taskToEdit?.markerColor ?: viewModel.currentMarkerColor
     }
 
     var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
@@ -66,7 +68,7 @@ fun AddTaskView(
     val markerColors = listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 
-    val taskTypes = listOf("Quiz")
+    val taskTypes = listOf("Quiz", "Note")
     var selectedTaskType by remember { mutableStateOf(taskToEdit?.taskType ?: taskTypes.first()) }
     var taskTypeExpanded by remember { mutableStateOf(false) }
 
@@ -80,6 +82,15 @@ fun AddTaskView(
 
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
 
+    fun updateViewModel() {
+        viewModel.currentTaskTitle = taskTitle
+        viewModel.currentTaskDescription = taskDescription
+        viewModel.currentTaskPoints = taskPoints
+        viewModel.currentLatitude = latitude
+        viewModel.currentLongitude = longitude
+        viewModel.currentMarkerColor = markerColor
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -91,7 +102,10 @@ fun AddTaskView(
         if (!isMapFullScreen) {
             TextField(
                 value = taskTitle,
-                onValueChange = { taskTitle = it },
+                onValueChange = {
+                    taskTitle = it
+                    updateViewModel()
+                },
                 label = { Text("Task Title", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
                 colors = TextFieldDefaults.textFieldColors(
@@ -106,7 +120,10 @@ fun AddTaskView(
 
             TextField(
                 value = taskDescription,
-                onValueChange = { taskDescription = it },
+                onValueChange = {
+                    taskDescription = it
+                    updateViewModel()
+                },
                 label = { Text("Task Description", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
                 colors = TextFieldDefaults.textFieldColors(
@@ -121,7 +138,10 @@ fun AddTaskView(
 
             TextField(
                 value = taskPoints,
-                onValueChange = { taskPoints = it },
+                onValueChange = {
+                    taskPoints = it
+                    updateViewModel()
+                },
                 label = { Text("Task Points", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -148,6 +168,7 @@ fun AddTaskView(
                         DropdownMenuItem(
                             onClick = {
                                 markerColor = color
+                                updateViewModel()
                                 expanded = false
                             },
                             text = { Text(color) }
@@ -184,8 +205,10 @@ fun AddTaskView(
 
                 Button(
                     onClick = {
-                        when (selectedTaskType) {
-                            "Quiz" -> navController.navigate(CreateQuiz)
+                        if (selectedTaskType == "Quiz") {
+                            navController.navigate(CreateQuiz)
+                        } else if (selectedTaskType == "Note") {
+                            navController.navigate(CreateNote)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = button_green)
@@ -204,7 +227,7 @@ fun AddTaskView(
                 latitude = latLng.latitude
                 longitude = latLng.longitude
                 temporaryMarker = latLng
-                viewModel.onLocationSelected(latitude, longitude)
+                updateViewModel()
             }
         ) {
             mapMarkers.forEachIndexed { index, task ->
@@ -266,7 +289,7 @@ fun AddTaskView(
                             navController.navigate(Creator)
                         }
                     },
-                    enabled = selectedTaskType != "Quiz" || hasQuizQuestions,
+                    enabled = (selectedTaskType != "Quiz" || hasQuizQuestions),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (selectedTaskType != "Quiz" || hasQuizQuestions) button_green else Color.Gray,
                         contentColor = Color.White
@@ -296,7 +319,7 @@ fun AddTaskView(
                         latitude = latLng.latitude
                         longitude = latLng.longitude
                         temporaryMarker = latLng
-                        viewModel.onLocationSelected(latitude, longitude)
+                        updateViewModel()
                     }
                 ) {
                     mapMarkers.forEachIndexed { index, task ->
@@ -315,16 +338,6 @@ fun AddTaskView(
                         title = "Selected Location",
                         icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
                     )
-                }
-
-                Button(
-                    onClick = { isMapFullScreen = false },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
-                ) {
-                    Text("Close Full Screen Map", color = Color.White)
                 }
             }
         }

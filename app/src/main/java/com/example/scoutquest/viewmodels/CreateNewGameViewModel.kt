@@ -33,6 +33,14 @@ class CreateNewGameViewModel : ViewModel() {
 
     private val taskIdGenerator = AtomicInteger(1)
 
+    // New properties for task details
+    var currentTaskTitle: String = ""
+    var currentTaskDescription: String = ""
+    var currentTaskPoints: String = "0"
+    var currentLatitude: Double = _selectedLatitude.value
+    var currentLongitude: Double = _selectedLongitude.value
+    var currentMarkerColor: String = "red"
+
     fun onNameChange(newName: String) {
         _name.value = newName
     }
@@ -49,6 +57,8 @@ class CreateNewGameViewModel : ViewModel() {
         _selectedLatitude.value = latitude
         _selectedLongitude.value = longitude
         _temporaryMarker.value = LatLng(latitude, longitude)
+        currentLatitude = latitude
+        currentLongitude = longitude
     }
 
     fun getSelectedLocation(): LatLng {
@@ -57,7 +67,14 @@ class CreateNewGameViewModel : ViewModel() {
 
     fun setTaskToEdit(task: Task) {
         _taskToEdit.value = task
+        currentTaskTitle = task.title ?: ""
+        currentTaskDescription = task.description
+        currentTaskPoints = task.points.toString()
+        currentLatitude = task.latitude
+        currentLongitude = task.longitude
+        currentMarkerColor = task.markerColor
     }
+
 
     fun addOrUpdateTask(task: Task) {
         _tasks.update { currentTasks ->
@@ -91,6 +108,6 @@ class CreateNewGameViewModel : ViewModel() {
     }
 
     fun saveGame() {
-
+        // Logic for saving the game
     }
 }

@@ -13,6 +13,11 @@ class QuizViewModel : ViewModel() {
     private val _hasQuestions = MutableStateFlow(false)
     val hasQuestions: StateFlow<Boolean> = _hasQuestions
 
+    // Przechowywanie aktualnych danych quizu
+    var currentQuestionText: String = ""
+    var currentOptions: List<String> = listOf("", "")
+    var currentCorrectAnswerIndices: List<Int> = emptyList()
+
     fun addQuestion(question: Question) {
         _questions.update { currentQuestions ->
             val newQuestions = currentQuestions + question
@@ -33,26 +38,21 @@ class QuizViewModel : ViewModel() {
         }
     }
 
+    fun swapQuestions(fromIndex: Int, toIndex: Int) {
+        _questions.update { currentQuestions ->
+            val mutableList = currentQuestions.toMutableList()
+            val item = mutableList.removeAt(fromIndex)
+            mutableList.add(toIndex, item)
+            mutableList
+        }
+    }
+
     fun resetQuestions() {
         _questions.value = emptyList()
         _hasQuestions.value = false
     }
 
     fun saveQuiz() {
-        _hasQuestions.value = _questions.value.isNotEmpty()
-    }
-
-    fun swapQuestions(index1: Int, index2: Int) {
-        _questions.update { currentQuestions ->
-            if (index1 in currentQuestions.indices && index2 in currentQuestions.indices) {
-                val mutableQuestions = currentQuestions.toMutableList()
-                val temp = mutableQuestions[index1]
-                mutableQuestions[index1] = mutableQuestions[index2]
-                mutableQuestions[index2] = temp
-                mutableQuestions
-            } else {
-                currentQuestions
-            }
-        }
+        // Implementacja logiki zapisu quizu
     }
 }
