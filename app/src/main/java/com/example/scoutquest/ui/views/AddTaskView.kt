@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
 package com.example.scoutquest.ui.views
@@ -26,6 +26,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.navigation.CreateQuiz
+import com.example.scoutquest.ui.navigation.Creator
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.ui.theme.*
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
@@ -254,6 +255,7 @@ fun AddTaskView(
                                 taskType = selectedTaskType
                             )
                             onSave(task)
+                            navController.navigate(Creator)
                         }
                     },
                     enabled = selectedTaskType != "Quiz" || hasQuizQuestions,

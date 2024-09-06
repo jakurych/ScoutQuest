@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.tasktypes.Question
 import com.example.scoutquest.data.models.tasktypes.Quiz
+import com.example.scoutquest.ui.navigation.AddTask
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.drab_dark_brown
@@ -234,8 +235,9 @@ fun CreateQuizView(
                 onClick = {
                     val quiz = Quiz(questions = quizViewModel.questions.value)
                     onSaveQuiz(quiz)
-                    quizViewModel.resetQuestions()
-                    navController.navigateUp() // Navigate back after saving
+                    //quizViewModel.resetQuestions()
+                    quizViewModel.saveQuiz()
+                    navController.navigate(AddTask) // Navigate back after saving
                 },
                 enabled = hasQuestions,
                 colors = ButtonDefaults.buttonColors(
@@ -260,7 +262,7 @@ fun CreateQuizView(
 
         item {
             Button(
-                onClick = { navController.navigateUp() }, // Navigate back
+                onClick = { navController.navigate(AddTask) },
                 colors = ButtonDefaults.buttonColors(containerColor = button_green)
             ) {
                 Text("Cancel", color = Color.White)
