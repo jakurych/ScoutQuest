@@ -51,7 +51,7 @@ fun CreateNoteView(
             onClick = {
                 if (noteText.isNotBlank()) {
                     onSaveNote(noteText)
-                    noteViewModel.clearNoteText()
+
                     navController.navigate(AddTask)
                 }
             },

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.example.scoutquest.ui.views
 
@@ -17,7 +17,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.Quiz
@@ -62,11 +61,16 @@ fun AddTaskView(
         latitude = viewModel.currentLatitude
         longitude = viewModel.currentLongitude
         markerColor = viewModel.currentMarkerColor
+
+        if (taskToEdit != null) {
+            viewModel.setTaskDetailsEntered(true)
+        }
     }
 
     var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
 
-    val markerColors = listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
+    val markerColors =
+        listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 
     val taskTypes = listOf("Quiz", "Note")
@@ -78,8 +82,12 @@ fun AddTaskView(
     var isMapFullScreen by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+            LatLng(52.253126, 20.900157), 10f
+        )
     }
+
+    val isTaskDetailsEntered by viewModel.isTaskDetailsEntered.collectAsState()
 
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
 
@@ -93,7 +101,6 @@ fun AddTaskView(
             currentMarkerColor = markerColor
         }
     }
-
 
     Column(
         modifier = Modifier
@@ -161,7 +168,10 @@ fun AddTaskView(
 
             Text("Select Marker Color", color = Color.White)
             Box {
-                OutlinedButton(onClick = { expanded = true }, colors = ButtonDefaults.buttonColors(containerColor = drab_dark_brown)) {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = drab_dark_brown)
+                ) {
                     Text(markerColor, color = Color.White)
                 }
                 DropdownMenu(
@@ -188,7 +198,10 @@ fun AddTaskView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box {
-                    OutlinedButton(onClick = { taskTypeExpanded = true }, colors = ButtonDefaults.buttonColors(containerColor = drab_dark_brown)) {
+                    OutlinedButton(
+                        onClick = { taskTypeExpanded = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = drab_dark_brown)
+                    ) {
                         Text(selectedTaskType, color = Color.White)
                     }
                     DropdownMenu(
@@ -268,7 +281,7 @@ fun AddTaskView(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = { navController.popBackStack() },
+                    onClick = { navController.navigate(Creator) },
                     modifier = Modifier.padding(elementSpacing),
                     colors = ButtonDefaults.buttonColors(containerColor = button_green)
                 ) {
@@ -291,20 +304,20 @@ fun AddTaskView(
                                 taskType = selectedTaskType,
                                 taskDetails = when (selectedTaskType) {
                                     "Quiz" -> quizViewModel.getCurrentQuiz()
+                                    "Note" -> noteViewModel.getCurrentNote()
                                     else -> null
                                 }
                             )
                             viewModel.addOrUpdateTask(task)
                             quizViewModel.resetQuiz()
-
-                            viewModel.addOrUpdateTask(task)
-                            quizViewModel.resetQuiz()
+                            noteViewModel.resetNote()
+                            viewModel.setTaskDetailsEntered(false)
                             navController.navigate(Creator)
                         }
                     },
-                    enabled = (selectedTaskType != "Quiz" || hasQuizQuestions),
+                    enabled = isTaskDetailsEntered || taskToEdit != null,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedTaskType != "Quiz" || hasQuizQuestions) button_green else Color.Gray,
+                        containerColor = if (isTaskDetailsEntered || taskToEdit != null) button_green else Color.Gray,
                         contentColor = Color.White
                     ),
                     modifier = Modifier.padding(elementSpacing)
@@ -318,7 +331,7 @@ fun AddTaskView(
     if (isMapFullScreen) {
         Dialog(
             onDismissRequest = { isMapFullScreen = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
                 modifier = Modifier
@@ -351,6 +364,16 @@ fun AddTaskView(
                         title = "Selected Location",
                         icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
                     )
+                }
+
+                Button(
+                    onClick = { isMapFullScreen = false },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                ) {
+                    Text("Close Full Screen Map", color = Color.White)
                 }
             }
         }

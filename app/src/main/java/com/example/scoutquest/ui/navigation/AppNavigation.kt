@@ -54,7 +54,7 @@ fun AppNavigation() {
             }
             composable(route = Creator) {
                 CreateNewGameView(
-                    viewModel = createNewGameViewModel,
+                    createNewGameViewModel = createNewGameViewModel,
                     onEditTask = { task ->
                         createNewGameViewModel.setTaskToEdit(task)
                         navController.navigate(AddTask)

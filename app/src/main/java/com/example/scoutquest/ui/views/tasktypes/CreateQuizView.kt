@@ -235,6 +235,7 @@ fun CreateQuizView(
                 onClick = {
                     val quiz = quizViewModel.getCurrentQuiz()
                     onSaveQuiz(quiz)
+                    quizViewModel.setTaskDetailsEntered(true)
                     navController.navigate(AddTask)
                 },
                 enabled = hasQuestions,

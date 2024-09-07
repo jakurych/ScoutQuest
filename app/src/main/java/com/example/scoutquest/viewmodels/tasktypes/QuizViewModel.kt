@@ -1,27 +1,37 @@
 package com.example.scoutquest.viewmodels.tasktypes
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.tasktypes.Question
 import com.example.scoutquest.data.models.tasktypes.Quiz
+import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class QuizViewModel : ViewModel() {
+@HiltViewModel
+class QuizViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
+    private lateinit var createNewGameViewModel: CreateNewGameViewModel
+
     private val _questions = MutableStateFlow<List<Question>>(emptyList())
     val questions: StateFlow<List<Question>> = _questions
 
     private val _hasQuestions = MutableStateFlow(false)
     val hasQuestions: StateFlow<Boolean> = _hasQuestions
 
-    var currentQuestionText: String = ""
-    var currentOptions: List<String> = listOf("", "")
-    var currentCorrectAnswerIndices: List<Int> = emptyList()
+    fun setCreateNewGameViewModel(viewModel: CreateNewGameViewModel) {
+        createNewGameViewModel = viewModel
+    }
 
     fun addQuestion(question: Question) {
         _questions.update { currentQuestions ->
             val newQuestions = currentQuestions + question
             _hasQuestions.value = newQuestions.isNotEmpty()
+            setTaskDetailsEntered(newQuestions.isNotEmpty())
             newQuestions
         }
     }
@@ -31,6 +41,7 @@ class QuizViewModel : ViewModel() {
             if (index in currentQuestions.indices) {
                 val newQuestions = currentQuestions.toMutableList().apply { removeAt(index) }
                 _hasQuestions.value = newQuestions.isNotEmpty()
+                setTaskDetailsEntered(newQuestions.isNotEmpty())
                 newQuestions
             } else {
                 currentQuestions
@@ -41,8 +52,10 @@ class QuizViewModel : ViewModel() {
     fun swapQuestions(fromIndex: Int, toIndex: Int) {
         _questions.update { currentQuestions ->
             val mutableList = currentQuestions.toMutableList()
-            val item = mutableList.removeAt(fromIndex)
-            mutableList.add(toIndex, item)
+            if (fromIndex in mutableList.indices && toIndex in mutableList.indices) {
+                val item = mutableList.removeAt(fromIndex)
+                mutableList.add(toIndex, item)
+            }
             mutableList
         }
     }
@@ -54,14 +67,19 @@ class QuizViewModel : ViewModel() {
     fun setQuestionsFromQuiz(quiz: Quiz?) {
         _questions.value = quiz?.questions ?: emptyList()
         _hasQuestions.value = _questions.value.isNotEmpty()
+        setTaskDetailsEntered(_questions.value.isNotEmpty())
     }
 
     fun resetQuiz() {
         _questions.value = emptyList()
         _hasQuestions.value = false
+        setTaskDetailsEntered(false)
+    }
+
+     fun setTaskDetailsEntered(entered: Boolean) {
+        createNewGameViewModel.setTaskDetailsEntered(entered)
     }
 
     fun saveQuiz() {
-
     }
 }

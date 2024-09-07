@@ -7,9 +7,12 @@ import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.TaskType
 import com.google.android.gms.maps.model.LatLng
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
 
-class CreateNewGameViewModel : ViewModel() {
+@HiltViewModel
+class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
 
@@ -34,6 +37,13 @@ class CreateNewGameViewModel : ViewModel() {
 
     private val taskIdGenerator = AtomicInteger(1)
 
+    private val _isTaskDetailsEntered = MutableStateFlow(false)
+    val isTaskDetailsEntered: StateFlow<Boolean> = _isTaskDetailsEntered
+
+    fun setTaskDetailsEntered(entered: Boolean) {
+        _isTaskDetailsEntered.value = entered
+    }
+
     var currentTaskTitle: String = ""
     var currentTaskDescription: String = ""
     var currentTaskPoints: String = "0"
@@ -41,9 +51,7 @@ class CreateNewGameViewModel : ViewModel() {
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
 
-    //task types
     var currentTaskDetails: TaskType? = null
-
 
     fun onNameChange(newName: String) {
         _name.value = newName
@@ -79,8 +87,6 @@ class CreateNewGameViewModel : ViewModel() {
         currentMarkerColor = task.markerColor
     }
 
-
-
     fun addOrUpdateTask(task: Task) {
         _tasks.update { currentTasks ->
             val existingTaskIndex = currentTasks.indexOfFirst { it.taskId == task.taskId }
@@ -114,7 +120,7 @@ class CreateNewGameViewModel : ViewModel() {
     }
 
     fun generateNewTaskId(): Int {
-        return taskIdGenerator.getAndIncrement()
+        return taskIdGenerator.incrementAndGet()
     }
 
     fun saveGame() {

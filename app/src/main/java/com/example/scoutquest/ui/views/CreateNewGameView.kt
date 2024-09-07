@@ -44,7 +44,7 @@ import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescript
 
 @Composable
 fun CreateNewGameView(
-    viewModel: CreateNewGameViewModel,
+    createNewGameViewModel: CreateNewGameViewModel,
     onEditTask: (Task) -> Unit,
     navController: NavController
 ) {
@@ -54,11 +54,11 @@ fun CreateNewGameView(
     val padding = screenWidth * 0.05f
     val elementSpacing = screenWidth * 0.02f
 
-    val name by viewModel.name.collectAsState()
-    val description by viewModel.description.collectAsState()
-    val isPublic by viewModel.isPublic.collectAsState()
-    val tasks by viewModel.tasks.collectAsState()
-    val isReorderingEnabled by viewModel.isReorderingEnabled.collectAsState()
+    val name by createNewGameViewModel.name.collectAsState()
+    val description by createNewGameViewModel.description.collectAsState()
+    val isPublic by createNewGameViewModel.isPublic.collectAsState()
+    val tasks by createNewGameViewModel.tasks.collectAsState()
+    val isReorderingEnabled by createNewGameViewModel.isReorderingEnabled.collectAsState()
 
     var isFullscreen by remember { mutableStateOf(false) }
 
@@ -92,7 +92,7 @@ fun CreateNewGameView(
                 item {
                     BasicTextField(
                         value = name,
-                        onValueChange = { viewModel.onNameChange(it) },
+                        onValueChange = { createNewGameViewModel.onNameChange(it) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
@@ -110,7 +110,7 @@ fun CreateNewGameView(
                 item {
                     BasicTextField(
                         value = description,
-                        onValueChange = { viewModel.onDescriptionChange(it) },
+                        onValueChange = { createNewGameViewModel.onDescriptionChange(it) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
@@ -135,7 +135,7 @@ fun CreateNewGameView(
                         Text("Public: ", color = Color.White)
                         Switch(
                             checked = isPublic,
-                            onCheckedChange = { viewModel.onIsPublicChange(it) },
+                            onCheckedChange = { createNewGameViewModel.onIsPublicChange(it) },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = moss_green,
                                 uncheckedThumbColor = Color.White,
@@ -154,7 +154,7 @@ fun CreateNewGameView(
                                 .aspectRatio(16f / 9f),
                             cameraPositionState = cameraPositionState,
                             onMapClick = { latLng ->
-                                viewModel.onLocationSelected(latLng.latitude, latLng.longitude)
+                                createNewGameViewModel.onLocationSelected(latLng.latitude, latLng.longitude)
                             }
                         ) {
                             tasks.forEachIndexed { index, task ->
@@ -191,7 +191,7 @@ fun CreateNewGameView(
 
                         Button(
                             onClick = {
-                                viewModel.toggleReordering()
+                                createNewGameViewModel.toggleReordering()
                             },
                             modifier = Modifier.fillMaxWidth().padding(top = elementSpacing),
                             colors = ButtonDefaults.buttonColors(containerColor = button_green)
@@ -227,7 +227,7 @@ fun CreateNewGameView(
                                             draggedItemIndex?.let { fromIndex ->
                                                 val toIndex = calculateNewIndex(fromIndex, dragOffset.y)
                                                 if (fromIndex != toIndex) {
-                                                    viewModel.moveTask(fromIndex, toIndex)
+                                                    createNewGameViewModel.moveTask(fromIndex, toIndex)
                                                 }
                                             }
                                             draggedItemIndex = null
@@ -266,7 +266,7 @@ fun CreateNewGameView(
                                     Icon(Icons.Default.Edit, contentDescription = "Edit Task", tint = Color.White)
                                 }
                                 IconButton(onClick = {
-                                    viewModel.removeTask(task)
+                                    createNewGameViewModel.removeTask(task)
                                 }) {
                                     Icon(Icons.Default.Delete, contentDescription = "Delete Task", tint = Color.White)
                                 }
@@ -277,7 +277,7 @@ fun CreateNewGameView(
 
                 item {
                     Button(
-                        onClick = { viewModel.saveGame() },
+                        onClick = { createNewGameViewModel.saveGame() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(elementSpacing),
@@ -299,7 +299,7 @@ fun CreateNewGameView(
                         modifier = Modifier.fillMaxSize(),
                         cameraPositionState = cameraPositionState,
                         onMapClick = { latLng ->
-                            viewModel.onLocationSelected(latLng.latitude, latLng.longitude)
+                            createNewGameViewModel.onLocationSelected(latLng.latitude, latLng.longitude)
                         }
                     ) {
                         tasks.forEachIndexed { index, task ->
