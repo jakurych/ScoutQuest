@@ -36,6 +36,14 @@ class QuizViewModel @Inject constructor(
         }
     }
 
+    fun saveCurrentQuiz() {
+        val currentQuiz = getCurrentQuiz()
+        createNewGameViewModel.currentTaskDetails = currentQuiz
+    }
+
+
+
+
     fun removeQuestion(index: Int) {
         _questions.update { currentQuestions ->
             if (index in currentQuestions.indices) {
