@@ -8,7 +8,6 @@ import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.TaskType
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,7 +34,9 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     private val _isReorderingEnabled = MutableStateFlow(false)
     val isReorderingEnabled: StateFlow<Boolean> = _isReorderingEnabled
 
-    private val taskIdGenerator = AtomicInteger(1)
+    //private val taskIdGenerator = AtomicInteger(1)
+    private val _highestTaskId = MutableStateFlow(0)
+
 
     private val _isTaskDetailsEntered = MutableStateFlow(false)
     val isTaskDetailsEntered: StateFlow<Boolean> = _isTaskDetailsEntered
@@ -51,7 +52,14 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
 
-    var currentTaskDetails: TaskType? = null
+    private var _currentTaskDetails: TaskType? = null
+    var currentTaskDetails: TaskType?
+        get() = _currentTaskDetails
+        set(value) {
+            _currentTaskDetails = value
+            setTaskDetailsEntered(value != null)
+        }
+
 
     fun onNameChange(newName: String) {
         _name.value = newName
@@ -77,26 +85,22 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
         return LatLng(_selectedLatitude.value, _selectedLongitude.value)
     }
 
-    fun setTaskToEdit(task: Task) {
+    fun setTaskToEdit(task: Task?) {
         _taskToEdit.value = task
-        currentTaskTitle = task.title ?: ""
-        currentTaskDescription = task.description
-        currentTaskPoints = task.points.toString()
-        currentLatitude = task.latitude
-        currentLongitude = task.longitude
-        currentMarkerColor = task.markerColor
-    }
-
-    fun addOrUpdateTask(task: Task) {
-        _tasks.update { currentTasks ->
-            val existingTaskIndex = currentTasks.indexOfFirst { it.taskId == task.taskId }
-            if (existingTaskIndex >= 0) {
-                currentTasks.toMutableList().apply {
-                    set(existingTaskIndex, task)
-                }
-            } else {
-                currentTasks + task
-            }
+        if (task != null) {
+            currentTaskTitle = task.title ?: ""
+            currentTaskDescription = task.description
+            currentTaskPoints = task.points.toString()
+            currentLatitude = task.latitude
+            currentLongitude = task.longitude
+            currentMarkerColor = task.markerColor
+        } else {
+            currentTaskTitle = ""
+            currentTaskDescription = ""
+            currentTaskPoints = "0"
+            currentLatitude = _selectedLatitude.value
+            currentLongitude = _selectedLongitude.value
+            currentMarkerColor = "red"
         }
     }
 
@@ -120,10 +124,27 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     }
 
     fun generateNewTaskId(): Int {
-        return taskIdGenerator.incrementAndGet()
+        _highestTaskId.update { it + 1 }
+        return _highestTaskId.value
+    }
+
+    fun addOrUpdateTask(task: Task) {
+        _tasks.update { currentTasks ->
+            val existingTaskIndex = currentTasks.indexOfFirst { it.taskId == task.taskId }
+
+            if (existingTaskIndex >= 0) {
+                currentTasks.toMutableList().apply {
+                    set(existingTaskIndex, task)
+                }
+            } else {
+                val newTask = task.copy(taskId = generateNewTaskId())
+                currentTasks + newTask
+            }
+        }
     }
 
     fun saveGame() {
 
     }
+
 }

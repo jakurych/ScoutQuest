@@ -2,6 +2,7 @@
 
 package com.example.scoutquest.ui.views
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -55,6 +56,7 @@ fun AddTaskView(
     var markerColor by remember { mutableStateOf(viewModel.currentMarkerColor) }
 
     LaunchedEffect(Unit) {
+        quizViewModel.setCreateNewGameViewModel(viewModel)
         taskTitle = viewModel.currentTaskTitle
         taskDescription = viewModel.currentTaskDescription
         taskPoints = viewModel.currentTaskPoints
@@ -73,7 +75,7 @@ fun AddTaskView(
         listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 
-    val taskTypes = listOf("Quiz", "Note")
+    val taskTypes = listOf("Quiz", "Note","None")
     var selectedTaskType by remember { mutableStateOf(taskToEdit?.taskType ?: taskTypes.first()) }
     var taskTypeExpanded by remember { mutableStateOf(false) }
 
@@ -230,7 +232,8 @@ fun AddTaskView(
                             navController.navigate(CreateNote)
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                    enabled = selectedTaskType != "None",
+                    colors = ButtonDefaults.buttonColors(containerColor = if (selectedTaskType != "None") button_green else Color.Gray)
                 ) {
                     Text("Add task details", color = Color.White)
                 }
@@ -294,7 +297,7 @@ fun AddTaskView(
                             navController.navigate(CreateQuiz)
                         } else {
                             val task = Task(
-                                taskId = taskToEdit?.taskId ?: viewModel.generateNewTaskId(),
+                                taskId = taskToEdit?.taskId ?: 0,
                                 title = viewModel.currentTaskTitle,
                                 description = viewModel.currentTaskDescription,
                                 points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
@@ -302,17 +305,25 @@ fun AddTaskView(
                                 longitude = viewModel.currentLongitude,
                                 markerColor = viewModel.currentMarkerColor,
                                 taskType = selectedTaskType,
-                                taskDetails = when (selectedTaskType) {
-                                    "Quiz" -> quizViewModel.getCurrentQuiz()
-                                    "Note" -> noteViewModel.getCurrentNote()
-                                    else -> null
-                                }
+                                taskDetails = viewModel.currentTaskDetails
                             )
+
+                            Log.d("TaskDebug", "Adding task with ID: ${task.taskId}")
                             viewModel.addOrUpdateTask(task)
                             quizViewModel.resetQuiz()
                             noteViewModel.resetNote()
                             viewModel.setTaskDetailsEntered(false)
+                            viewModel.setTaskToEdit(null)
+                            //viewModel.setCurrentTaskDetails(null)
                             navController.navigate(Creator)
+
+                            // Reset values after saving the task
+                            viewModel.currentTaskTitle = ""
+                            viewModel.currentTaskDescription = ""
+                            viewModel.currentTaskPoints = "0"
+                            viewModel.currentLatitude = viewModel.getSelectedLocation().latitude
+                            viewModel.currentLongitude = viewModel.getSelectedLocation().longitude
+                            viewModel.currentMarkerColor = "red"
                         }
                     },
                     enabled = isTaskDetailsEntered || taskToEdit != null,
