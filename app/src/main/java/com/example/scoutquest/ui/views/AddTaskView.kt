@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.example.scoutquest.ui.views
 
@@ -20,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -233,6 +236,7 @@ fun AddTaskView(
                             quizViewModel.setQuestionsFromQuiz(taskToEdit?.taskDetails as? Quiz)
                             navController.navigate(CreateQuiz)
                         } else if (selectedTaskType == "Note") {
+                            noteViewModel.setNotesFromNote(taskToEdit?.taskDetails as? Note)
                             navController.navigate(CreateNote)
                         }
                     },

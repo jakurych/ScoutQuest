@@ -1,6 +1,5 @@
 package com.example.scoutquest.viewmodels.tasktypes
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
@@ -22,6 +21,17 @@ class NoteViewModel @Inject constructor() : ViewModel() {
 
     fun setCreateNewGameViewModel(viewModel: CreateNewGameViewModel) {
         createNewGameViewModel = viewModel
+    }
+
+    fun setNotesFromNote(note: Note?) {
+        _notes.value = note?.notes ?: emptyList()
+        _hasNotes.value = _notes.value.isNotEmpty()
+        setTaskDetailsEntered(_notes.value.isNotEmpty())
+    }
+
+    fun saveCurrentNote() {
+        val currentNote = getCurrentNote()
+        createNewGameViewModel.currentTaskDetails = currentNote
     }
 
     fun addNote(note: String) {
@@ -54,10 +64,6 @@ class NoteViewModel @Inject constructor() : ViewModel() {
         _notes.value = emptyList()
         _hasNotes.value = false
         setTaskDetailsEntered(false)
-    }
-
-    fun isNoteEntered(): Boolean {
-        return _notes.value.isNotEmpty()
     }
 
     fun setTaskDetailsEntered(entered: Boolean) {
