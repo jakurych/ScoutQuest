@@ -123,7 +123,7 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
         _isReorderingEnabled.value = !_isReorderingEnabled.value
     }
 
-    fun generateNewTaskId(): Int {
+    private fun generateNewTaskId(): Int {
         _highestTaskId.update { it + 1 }
         return _highestTaskId.value
     }

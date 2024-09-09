@@ -78,14 +78,7 @@ fun AppNavigation() {
                 val taskToEdit by createNewGameViewModel.taskToEdit.collectAsState()
                 CreateQuizView(
                     quizViewModel = quizViewModel,
-                    navController = navController,
-                    onSaveQuiz = { quiz ->
-                        taskToEdit?.let {
-                            val quizTask = it.copy(taskDetails = quiz)
-                            createNewGameViewModel.addOrUpdateTask(quizTask)
-                        }
-                        navController.navigate(AddTask)
-                    }
+                    navController = navController
                 )
             }
             composable(route = CreateNote) {

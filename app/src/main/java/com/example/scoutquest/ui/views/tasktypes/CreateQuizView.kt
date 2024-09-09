@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.tasktypes.Question
-import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.ui.navigation.AddTask
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.ui.theme.button_green
@@ -34,8 +33,7 @@ import com.example.scoutquest.ui.theme.drab_dark_brown
 @Composable
 fun CreateQuizView(
     quizViewModel: QuizViewModel,
-    navController: NavController,
-    onSaveQuiz: (Quiz) -> Unit
+    navController: NavController
 ) {
     var questionText by remember { mutableStateOf("") }
     var options by remember { mutableStateOf(List(2) { "" }) }
@@ -234,10 +232,11 @@ fun CreateQuizView(
             Button(
                 onClick = {
                     val quiz = quizViewModel.getCurrentQuiz()
-                    onSaveQuiz(quiz)
-                    quizViewModel.saveCurrentQuiz()
-                    quizViewModel.setTaskDetailsEntered(true)
-                    navController.navigate(AddTask)
+                    if (quiz.questions.isNotEmpty()) {
+                        quizViewModel.saveCurrentQuiz()
+                        quizViewModel.setTaskDetailsEntered(true)
+                        navController.navigate(AddTask)
+                    }
                 },
                 enabled = hasQuestions,
                 colors = ButtonDefaults.buttonColors(
@@ -247,6 +246,7 @@ fun CreateQuizView(
             ) {
                 Text("Save Quiz Task", color = Color.White)
             }
+
 
         }
 

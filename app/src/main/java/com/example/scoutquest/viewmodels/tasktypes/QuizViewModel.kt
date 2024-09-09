@@ -1,6 +1,5 @@
 package com.example.scoutquest.viewmodels.tasktypes
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,9 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class QuizViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle
-) : ViewModel() {
+class QuizViewModel @Inject constructor() : ViewModel() {
     private lateinit var createNewGameViewModel: CreateNewGameViewModel
 
     private val _questions = MutableStateFlow<List<Question>>(emptyList())

@@ -51,8 +51,8 @@ fun AddTaskView(
     var taskTitle by remember { mutableStateOf(viewModel.currentTaskTitle) }
     var taskDescription by remember { mutableStateOf(viewModel.currentTaskDescription) }
     var taskPoints by remember { mutableStateOf(viewModel.currentTaskPoints) }
-    var latitude by remember { mutableStateOf(viewModel.currentLatitude) }
-    var longitude by remember { mutableStateOf(viewModel.currentLongitude) }
+    var latitude by remember { mutableDoubleStateOf(viewModel.currentLatitude) }
+    var longitude by remember { mutableDoubleStateOf(viewModel.currentLongitude) }
     var markerColor by remember { mutableStateOf(viewModel.currentMarkerColor) }
 
     LaunchedEffect(Unit) {
