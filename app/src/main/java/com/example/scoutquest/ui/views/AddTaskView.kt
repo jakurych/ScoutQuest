@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.example.scoutquest.ui.views
 
@@ -57,6 +57,7 @@ fun AddTaskView(
 
     LaunchedEffect(Unit) {
         quizViewModel.setCreateNewGameViewModel(viewModel)
+        noteViewModel.setCreateNewGameViewModel(viewModel)
         taskTitle = viewModel.currentTaskTitle
         taskDescription = viewModel.currentTaskDescription
         taskPoints = viewModel.currentTaskPoints
@@ -76,7 +77,8 @@ fun AddTaskView(
     var expanded by remember { mutableStateOf(false) }
 
     val taskTypes = listOf("Quiz", "Note","None")
-    var selectedTaskType by remember { mutableStateOf(taskToEdit?.taskType ?: taskTypes.first()) }
+
+    val selectedTaskType by viewModel.selectedTaskType.collectAsState()
     var taskTypeExpanded by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
@@ -92,6 +94,7 @@ fun AddTaskView(
     val isTaskDetailsEntered by viewModel.isTaskDetailsEntered.collectAsState()
 
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
+    val hasNotesNote by noteViewModel.hasNotes.collectAsState()
 
     fun updateViewModel() {
         viewModel.apply {
@@ -213,11 +216,12 @@ fun AddTaskView(
                         taskTypes.forEach { type ->
                             DropdownMenuItem(
                                 onClick = {
-                                    selectedTaskType = type
+                                    viewModel.setSelectedTaskType(type)
                                     taskTypeExpanded = false
                                 },
                                 text = { Text(type) }
                             )
+
                         }
                     }
                 }
@@ -295,6 +299,8 @@ fun AddTaskView(
                     onClick = {
                         if (selectedTaskType == "Quiz" && !hasQuizQuestions) {
                             navController.navigate(CreateQuiz)
+                        } else if (selectedTaskType == "Note" && !hasNotesNote) {
+                            navController.navigate(CreateNote)
                         } else {
                             val task = Task(
                                 taskId = taskToEdit?.taskId ?: 0,
@@ -305,25 +311,18 @@ fun AddTaskView(
                                 longitude = viewModel.currentLongitude,
                                 markerColor = viewModel.currentMarkerColor,
                                 taskType = selectedTaskType,
-                                taskDetails = viewModel.currentTaskDetails
+                                taskDetails = when (selectedTaskType) {
+                                    "Quiz" -> quizViewModel.getCurrentQuiz()
+                                     "Note" -> noteViewModel.getCurrentNote()
+                                    else -> null
+                                }
                             )
-
-                            Log.d("TaskDebug", "Adding task with ID: ${task.taskId}")
                             viewModel.addOrUpdateTask(task)
                             quizViewModel.resetQuiz()
                             noteViewModel.resetNote()
                             viewModel.setTaskDetailsEntered(false)
                             viewModel.setTaskToEdit(null)
-                            //viewModel.setCurrentTaskDetails(null)
                             navController.navigate(Creator)
-
-                            // Reset values after saving the task
-                            viewModel.currentTaskTitle = ""
-                            viewModel.currentTaskDescription = ""
-                            viewModel.currentTaskPoints = "0"
-                            viewModel.currentLatitude = viewModel.getSelectedLocation().latitude
-                            viewModel.currentLongitude = viewModel.getSelectedLocation().longitude
-                            viewModel.currentMarkerColor = "red"
                         }
                     },
                     enabled = isTaskDetailsEntered || taskToEdit != null,

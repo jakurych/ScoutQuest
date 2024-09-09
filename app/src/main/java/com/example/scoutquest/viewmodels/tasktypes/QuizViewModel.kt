@@ -38,9 +38,6 @@ class QuizViewModel @Inject constructor() : ViewModel() {
         createNewGameViewModel.currentTaskDetails = currentQuiz
     }
 
-
-
-
     fun removeQuestion(index: Int) {
         _questions.update { currentQuestions ->
             if (index in currentQuestions.indices) {
@@ -85,6 +82,4 @@ class QuizViewModel @Inject constructor() : ViewModel() {
         createNewGameViewModel.setTaskDetailsEntered(entered)
     }
 
-    fun saveQuiz() {
-    }
 }

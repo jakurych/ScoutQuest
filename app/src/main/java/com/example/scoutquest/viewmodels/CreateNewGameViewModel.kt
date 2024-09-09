@@ -34,12 +34,13 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     private val _isReorderingEnabled = MutableStateFlow(false)
     val isReorderingEnabled: StateFlow<Boolean> = _isReorderingEnabled
 
-    //private val taskIdGenerator = AtomicInteger(1)
     private val _highestTaskId = MutableStateFlow(0)
-
 
     private val _isTaskDetailsEntered = MutableStateFlow(false)
     val isTaskDetailsEntered: StateFlow<Boolean> = _isTaskDetailsEntered
+
+    private val _selectedTaskType = MutableStateFlow("Quiz")
+    val selectedTaskType: StateFlow<String> get() = _selectedTaskType
 
     fun setTaskDetailsEntered(entered: Boolean) {
         _isTaskDetailsEntered.value = entered
@@ -73,16 +74,16 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
         _isPublic.value = newIsPublic
     }
 
+    fun setSelectedTaskType(taskType: String) {
+        _selectedTaskType.value = taskType
+    }
+
     fun onLocationSelected(latitude: Double, longitude: Double) {
         _selectedLatitude.value = latitude
         _selectedLongitude.value = longitude
         _temporaryMarker.value = LatLng(latitude, longitude)
         currentLatitude = latitude
         currentLongitude = longitude
-    }
-
-    fun getSelectedLocation(): LatLng {
-        return LatLng(_selectedLatitude.value, _selectedLongitude.value)
     }
 
     fun setTaskToEdit(task: Task?) {
