@@ -4,14 +4,35 @@
 
 package com.example.scoutquest.ui.views
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,21 +41,26 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.*
 import com.example.scoutquest.data.services.MarkersHelper
-import com.example.scoutquest.ui.navigation.CreateQuiz
 import com.example.scoutquest.ui.navigation.CreateNote
+import com.example.scoutquest.ui.navigation.CreateQuiz
 import com.example.scoutquest.ui.navigation.Creator
+import com.example.scoutquest.ui.theme.button_green
+import com.example.scoutquest.ui.theme.drab_dark_brown
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
-import com.example.scoutquest.ui.theme.*
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun AddTaskView(
@@ -57,6 +83,12 @@ fun AddTaskView(
     var latitude by remember { mutableDoubleStateOf(viewModel.currentLatitude) }
     var longitude by remember { mutableDoubleStateOf(viewModel.currentLongitude) }
     var markerColor by remember { mutableStateOf(viewModel.currentMarkerColor) }
+
+    val fullscreenCameraPositionState = rememberCameraPositionState {
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+            LatLng(52.253126, 20.900157), 10f
+        )
+    }
 
     LaunchedEffect(Unit) {
         quizViewModel.setCreateNewGameViewModel(viewModel)
@@ -342,10 +374,12 @@ fun AddTaskView(
         }
     }
 
+
+
     if (isMapFullScreen) {
         Dialog(
             onDismissRequest = { isMapFullScreen = false },
-            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+            properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
                 modifier = Modifier
@@ -354,7 +388,7 @@ fun AddTaskView(
             ) {
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
-                    cameraPositionState = cameraPositionState,
+                    cameraPositionState = fullscreenCameraPositionState,
                     onMapClick = { latLng ->
                         latitude = latLng.latitude
                         longitude = latLng.longitude

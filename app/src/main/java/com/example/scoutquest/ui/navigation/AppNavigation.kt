@@ -2,16 +2,30 @@ package com.example.scoutquest.ui.navigation
 
 import RegisterView
 import RegisterViewModel
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.scoutquest.ui.views.*
-import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
+import com.example.scoutquest.ui.views.AddTaskView
+import com.example.scoutquest.ui.views.CreateNewGameView
+import com.example.scoutquest.ui.views.JoinGameView
+import com.example.scoutquest.ui.views.LoginView
+import com.example.scoutquest.ui.views.MainScreenView
+import com.example.scoutquest.ui.views.NewGameView
+import com.example.scoutquest.ui.views.ProfileView
+import com.example.scoutquest.ui.views.SettingsView
 import com.example.scoutquest.ui.views.tasktypes.CreateNoteView
-import com.example.scoutquest.viewmodels.*
-import com.example.scoutquest.data.models.tasktypes.Note
+import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
+import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.JoinGameViewModel
+import com.example.scoutquest.viewmodels.LoginViewModel
+import com.example.scoutquest.viewmodels.ProfileViewModel
+import com.example.scoutquest.viewmodels.SettingsViewModel
+import com.example.scoutquest.viewmodels.UserViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 
@@ -58,8 +72,7 @@ fun AppNavigation() {
                     onEditTask = { task ->
                         createNewGameViewModel.setTaskToEdit(task)
                         navController.navigate(AddTask)
-                    },
-                    navController = navController
+                    }
                 )
             }
             composable(route = AddTask) {
@@ -75,14 +88,12 @@ fun AppNavigation() {
                 )
             }
             composable(route = CreateQuiz) {
-                val taskToEdit by createNewGameViewModel.taskToEdit.collectAsState()
                 CreateQuizView(
                     quizViewModel = quizViewModel,
                     navController = navController
                 )
             }
             composable(route = CreateNote) {
-                val taskToEdit by createNewGameViewModel.taskToEdit.collectAsState()
                 CreateNoteView(
                     noteViewModel = noteViewModel,
                     navController = navController
