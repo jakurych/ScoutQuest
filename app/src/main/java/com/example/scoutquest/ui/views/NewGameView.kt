@@ -1,27 +1,28 @@
 package com.example.scoutquest.ui.views
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
+import com.example.scoutquest.ui.navigation.Creator
 import com.example.scoutquest.ui.navigation.LocalNavigation
-import com.example.scoutquest.viewmodels.MainScreenViewModel
+import com.example.scoutquest.ui.navigation.MainScreenRoute
+import com.google.firebase.auth.FirebaseAuth
+import com.example.scoutquest.ui.theme.bistre
 
 @Composable
 fun NewGameView() {
     val navController = LocalNavigation.current
+    val auth = FirebaseAuth.getInstance()
+
+    var showLoginDialog by remember { mutableStateOf(false) }
+    var showVerificationDialog by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -35,14 +36,12 @@ fun NewGameView() {
             .padding(padding)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Header()
 
-            // Join Game button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -51,12 +50,22 @@ fun NewGameView() {
             ) {
                 CircleButton(
                     text = "Create new game",
-                    onClick = { navController.navigate("/creator") },
+                    onClick = {
+                        val user = auth.currentUser
+                        if (user != null) {
+                            if (user.isEmailVerified) {
+                                navController.navigate(Creator)
+                            } else {
+                                showVerificationDialog = true
+                            }
+                        } else {
+                            showLoginDialog = true
+                        }
+                    },
                     modifier = Modifier
                 )
             }
 
-            // New Game button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -65,7 +74,7 @@ fun NewGameView() {
             ) {
                 CircleButton(
                     text = "<---",
-                    onClick = { navController.navigate("/mainscreen") },
+                    onClick = { navController.navigate(MainScreenRoute) },
                     modifier = Modifier
                 )
             }
@@ -82,6 +91,63 @@ fun NewGameView() {
                     modifier = Modifier
                 )
             }
+        }
+
+        if (showLoginDialog) {
+            AlertDialog(
+                onDismissRequest = { showLoginDialog = false },
+                title = { Text("Login Required") },
+                text = { Text("To create a new game, login is required.") },
+                confirmButton = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircleButton(
+                            text = "Login",
+                            onClick = {
+                                navController.navigate("/login")
+                                showLoginDialog = false
+                            },
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                },
+                dismissButton = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircleButton(
+                            text = "Cancel",
+                            onClick = { showLoginDialog = false },
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                },
+                containerColor = bistre
+            )
+        }
+
+        if (showVerificationDialog) {
+            AlertDialog(
+                onDismissRequest = { showVerificationDialog = false },
+                title = { Text("Email Verification Required") },
+                text = { Text("Please verify your email address to create a new game.") },
+                confirmButton = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircleButton(
+                            text = "Okay",
+                            onClick = { showVerificationDialog = false },
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                },
+                containerColor = bistre
+            )
         }
     }
 }
