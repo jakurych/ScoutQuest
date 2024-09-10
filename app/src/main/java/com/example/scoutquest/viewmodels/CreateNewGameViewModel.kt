@@ -1,10 +1,13 @@
 package com.example.scoutquest.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.models.tasktypes.Note
+import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TaskType
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -146,6 +149,47 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
 
     fun saveGame() {
 
+        //Game data logs
+        Log.d("GameData", "=== Game ===")
+        Log.d("GameData", "Game ID: ${_highestTaskId.value}")
+        Log.d("GameData", "Creator: ${_name.value}")
+        Log.d("GameData", "Name: ${_name.value}")
+        Log.d("GameData", "Description: ${_description.value}")
+        Log.d("GameData", "Is Public: ${_isPublic.value}")
+        Log.d("GameData", "Number of Tasks: ${_tasks.value.size}")
+
+        //Task data logs
+        _tasks.value.forEachIndexed { index, task ->
+            Log.d("TaskData", "----- Task ${index + 1} -----")
+            Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
+            Log.d("TaskData", "Description: ${task.description}")
+            Log.d("TaskData", "Points: ${task.points}")
+            Log.d("TaskData", "Location: (${task.latitude}, ${task.longitude})")
+            Log.d("TaskData", "Marker Color: ${task.markerColor}")
+            Log.d("TaskData", "Task Type: ${task.taskType}")
+
+            //Task details logs
+            when (val details = task.taskDetails) {
+                is Quiz -> {
+                    Log.d("TaskDetails", "---- Task Details ----")
+                    details.questions.forEachIndexed { questionIndex, question ->
+                        Log.d("TaskDetails", "Question ${questionIndex + 1}: ${question.questionText}")
+                        Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
+                        Log.d("TaskDetails", "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}")
+                    }
+                }
+                is Note -> {
+                    Log.d("TaskDetails", "---- Task Details ----")
+                    Log.d("TaskDetails", "Notes: ${details.notes.joinToString(", ")}")
+                }
+                else -> {
+                    Log.d("TaskDetails", "---- Task Details ----")
+                    Log.d("TaskDetails", "No specific task details.")
+                }
+            }
+        }
     }
+
+
 
 }

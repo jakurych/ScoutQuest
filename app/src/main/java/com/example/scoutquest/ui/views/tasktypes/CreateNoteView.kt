@@ -81,6 +81,5 @@ fun CreateNoteView(
         ) {
             Text("Save Notes")
         }
-
     }
 }

@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
 package com.example.scoutquest.ui.views
@@ -131,6 +131,9 @@ fun AddTaskView(
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
     val hasNotesNote by noteViewModel.hasNotes.collectAsState()
 
+    //val notes by noteViewModel.notes.collectAsState()
+
+
     fun updateViewModel() {
         viewModel.apply {
             currentTaskTitle = taskTitle
@@ -150,6 +153,7 @@ fun AddTaskView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(elementSpacing)
     ) {
+
         if (!isMapFullScreen) {
             TextField(
                 value = taskTitle,
