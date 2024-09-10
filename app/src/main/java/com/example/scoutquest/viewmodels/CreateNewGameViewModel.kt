@@ -10,6 +10,7 @@ import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TaskType
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -45,9 +46,8 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     private val _selectedTaskType = MutableStateFlow("Quiz")
     val selectedTaskType: StateFlow<String> get() = _selectedTaskType
 
-    fun setTaskDetailsEntered(entered: Boolean) {
-        _isTaskDetailsEntered.value = entered
-    }
+    private val _creatorMail = MutableStateFlow("")
+    //val creatorMail: StateFlow<String> = _creatorMail
 
     var currentTaskTitle: String = ""
     var currentTaskDescription: String = ""
@@ -55,6 +55,7 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     var currentLatitude: Double = _selectedLatitude.value
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
+
 
     private var _currentTaskDetails: TaskType? = null
     var currentTaskDetails: TaskType?
@@ -64,6 +65,16 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
             setTaskDetailsEntered(value != null)
         }
 
+    init {
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.let { firebaseUser ->
+            _creatorMail.value = firebaseUser.email ?: "Somehow error happen in getting email lol"
+        }
+    }
+
+    fun setTaskDetailsEntered(entered: Boolean) {
+        _isTaskDetailsEntered.value = entered
+    }
 
     fun onNameChange(newName: String) {
         _name.value = newName
@@ -152,7 +163,7 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
         //Game data logs
         Log.d("GameData", "=== Game ===")
         Log.d("GameData", "Game ID: ${_highestTaskId.value}")
-        Log.d("GameData", "Creator: ${_name.value}")
+        Log.d("GameData", "Creator: ${_creatorMail.value}")
         Log.d("GameData", "Name: ${_name.value}")
         Log.d("GameData", "Description: ${_description.value}")
         Log.d("GameData", "Is Public: ${_isPublic.value}")
