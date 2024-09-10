@@ -2,6 +2,8 @@ package com.example.scoutquest.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.scoutquest.data.models.Game
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -9,15 +11,19 @@ import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TaskType
+import com.example.scoutquest.data.repositories.GameRepository
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
+
+    private val gameRepository: GameRepository = GameRepository()
 
     private val _description = MutableStateFlow("")
     val description: StateFlow<String> = _description
@@ -160,47 +166,79 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
 
     fun saveGame() {
 
-        //Game data logs
-        Log.d("GameData", "=== Game ===")
-        Log.d("GameData", "Game ID: ${_highestTaskId.value}")
-        Log.d("GameData", "Creator: ${_creatorMail.value}")
-        Log.d("GameData", "Name: ${_name.value}")
-        Log.d("GameData", "Description: ${_description.value}")
-        Log.d("GameData", "Is Public: ${_isPublic.value}")
-        Log.d("GameData", "Number of Tasks: ${_tasks.value.size}")
+        viewModelScope.launch {
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user == null) {
+                Log.e("SaveGame", "No user logged in")
+                return@launch
+            }
 
-        //Task data logs
-        _tasks.value.forEachIndexed { index, task ->
-            Log.d("TaskData", "----- Task ${index + 1} -----")
-            Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
-            Log.d("TaskData", "Description: ${task.description}")
-            Log.d("TaskData", "Points: ${task.points}")
-            Log.d("TaskData", "Location: (${task.latitude}, ${task.longitude})")
-            Log.d("TaskData", "Marker Color: ${task.markerColor}")
-            Log.d("TaskData", "Task Type: ${task.taskType}")
+            val newGame = Game(
+                creatorId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
+                creatorEmail = _creatorMail.value,
+                name = _name.value,
+                description = _description.value,
+                tasks = _tasks.value,
+                isPublic = _isPublic.value
+            )
 
-            //Task details logs
-            when (val details = task.taskDetails) {
-                is Quiz -> {
-                    Log.d("TaskDetails", "---- Task Details ----")
-                    details.questions.forEachIndexed { questionIndex, question ->
-                        Log.d("TaskDetails", "Question ${questionIndex + 1}: ${question.questionText}")
-                        Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
-                        Log.d("TaskDetails", "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}")
+            try {
+                gameRepository.addGame(newGame)
+                Log.d("SaveGame", "Game saved successfully to db")
+            } catch (e: Exception) {
+                Log.e("SaveGame", "Error saving game to db", e)
+            }
+
+
+            //Game data logs
+            Log.d("GameData", "=== Game ===")
+            Log.d("GameData", "Game ID: ${_highestTaskId.value}")
+            Log.d("GameData", "Creator: ${_creatorMail.value}")
+            Log.d("GameData", "Name: ${_name.value}")
+            Log.d("GameData", "Description: ${_description.value}")
+            Log.d("GameData", "Is Public: ${_isPublic.value}")
+            Log.d("GameData", "Number of Tasks: ${_tasks.value.size}")
+
+            //Task data logs
+            _tasks.value.forEachIndexed { index, task ->
+                Log.d("TaskData", "----- Task ${index + 1} -----")
+                Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
+                Log.d("TaskData", "Description: ${task.description}")
+                Log.d("TaskData", "Points: ${task.points}")
+                Log.d("TaskData", "Location: (${task.latitude}, ${task.longitude})")
+                Log.d("TaskData", "Marker Color: ${task.markerColor}")
+                Log.d("TaskData", "Task Type: ${task.taskType}")
+
+                //Task details logs
+                when (val details = task.taskDetails) {
+                    is Quiz -> {
+                        Log.d("TaskDetails", "---- Task Details ----")
+                        details.questions.forEachIndexed { questionIndex, question ->
+                            Log.d(
+                                "TaskDetails",
+                                "Question ${questionIndex + 1}: ${question.questionText}"
+                            )
+                            Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
+                            Log.d(
+                                "TaskDetails",
+                                "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}"
+                            )
+                        }
                     }
-                }
-                is Note -> {
-                    Log.d("TaskDetails", "---- Task Details ----")
-                    Log.d("TaskDetails", "Notes: ${details.notes.joinToString(", ")}")
-                }
-                else -> {
-                    Log.d("TaskDetails", "---- Task Details ----")
-                    Log.d("TaskDetails", "No specific task details.")
+
+                    is Note -> {
+                        Log.d("TaskDetails", "---- Task Details ----")
+                        Log.d("TaskDetails", "Notes: ${details.notes.joinToString(", ")}")
+                    }
+
+                    else -> {
+                        Log.d("TaskDetails", "---- Task Details ----")
+                        Log.d("TaskDetails", "No specific task details.")
+                    }
                 }
             }
         }
+
+
     }
-
-
-
 }
