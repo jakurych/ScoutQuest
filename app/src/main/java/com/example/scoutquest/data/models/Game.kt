@@ -1,10 +1,16 @@
 package com.example.scoutquest.data.models
 
+import com.google.firebase.firestore.DocumentId
+
 data class Game(
-    val gameId: Int = 0,
-    val creator: String? = null,
-    val name: String = "",
-    val description: String = "",
-    val tasks: List<Task> = emptyList(),
-    val isPublic: Boolean = false
+    @DocumentId
+    val gameId: String = "",
+    val creatorId: String,
+    val creatorEmail: String,
+    val name: String,
+    val description: String,
+    val tasks: List<Task>,
+    val isPublic: Boolean,
+    val playCount: Int? = null,
+    val rating: Rating? = null
 )

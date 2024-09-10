@@ -1,27 +1,54 @@
 package com.example.scoutquest.data.repositories
 
 import com.example.scoutquest.data.models.Game
-import com.google.firebase.Firebase
+import com.example.scoutquest.data.models.Comment
+import com.example.scoutquest.data.models.Rating
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 class GameRepository {
-    private val games = mutableListOf<Game>()
+    private val firestore = FirebaseFirestore.getInstance()
+    private val gamesCollection = firestore.collection("games")
 
-
-
-    fun addGame(game: Game) {
-        games.add(game)
+    suspend fun addGame(game: Game) {
+        gamesCollection.add(game).await()
     }
 
-    fun removeGame(gameId: Int) {
-        games.removeAll { it.gameId == gameId }
+    suspend fun removeGame(gameId: String) {
+        gamesCollection.document(gameId).delete().await()
     }
 
-    fun getGameById(gameId: Int): Game? {
-        return games.find { it.gameId == gameId }
+    suspend fun getGameById(gameId: String): Game? {
+        return gamesCollection.document(gameId).get().await().toObject(Game::class.java)
     }
 
-    fun getAllGames(): List<Game> {
-        return games
+    suspend fun getAllGames(): List<Game> {
+        return gamesCollection.get().await().toObjects(Game::class.java)
+    }
+
+    suspend fun addCommentToGame(gameId: String, userId: String, userName: String, commentText: String) {
+        val game = getGameById(gameId) ?: return
+        val newComment = Comment(userId, userName, commentText)
+        val updatedRating = (game.rating ?: Rating()).addComment(userId, newComment)
+        val updatedGame = game.copy(rating = updatedRating)
+        updateGame(gameId, updatedGame)
+    }
+
+    suspend fun removeCommentFromGame(gameId: String, userId: String) {
+        val game = getGameById(gameId) ?: return
+        val updatedRating = game.rating?.removeComment(userId) ?: return
+        val updatedGame = game.copy(rating = updatedRating)
+        updateGame(gameId, updatedGame)
+    }
+
+    suspend fun updateCommentInGame(gameId: String, userId: String, newCommentText: String) {
+        val game = getGameById(gameId) ?: return
+        val updatedRating = game.rating?.updateComment(userId, newCommentText) ?: return
+        val updatedGame = game.copy(rating = updatedRating)
+        updateGame(gameId, updatedGame)
+    }
+
+    private suspend fun updateGame(gameId: String, game: Game) {
+        gamesCollection.document(gameId).set(game).await()
     }
 }
