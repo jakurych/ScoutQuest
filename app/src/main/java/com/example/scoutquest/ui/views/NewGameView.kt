@@ -10,8 +10,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
+import com.example.scoutquest.ui.navigation.Browser
 import com.example.scoutquest.ui.navigation.Creator
 import com.example.scoutquest.ui.navigation.LocalNavigation
+import com.example.scoutquest.ui.navigation.Login
 import com.example.scoutquest.ui.navigation.MainScreenRoute
 import com.google.firebase.auth.FirebaseAuth
 import com.example.scoutquest.ui.theme.bistre
@@ -87,7 +89,7 @@ fun NewGameView() {
             ) {
                 CircleButton(
                     text = "Browse games",
-                    onClick = { navController.navigate("/browser") },
+                    onClick = { navController.navigate(Browser) },
                     modifier = Modifier
                 )
             }
@@ -106,7 +108,7 @@ fun NewGameView() {
                         CircleButton(
                             text = "Login",
                             onClick = {
-                                navController.navigate("/login")
+                                navController.navigate(Login)
                                 showLoginDialog = false
                             },
                             modifier = Modifier.padding(8.dp)

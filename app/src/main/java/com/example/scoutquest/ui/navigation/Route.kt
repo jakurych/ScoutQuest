@@ -11,5 +11,5 @@ const val JoinGame = "/joingame"
 const val AddTask = "/addtask"
 const val CreateQuiz = "/createquiz"
 const val CreateNote = "/createnote"
-
+const val Browser = "/browser"
 

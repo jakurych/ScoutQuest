@@ -5,8 +5,9 @@ import com.example.scoutquest.data.models.Comment
 import com.example.scoutquest.data.models.Rating
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class GameRepository {
+class GameRepository @Inject constructor() {
     private val firestore = FirebaseFirestore.getInstance()
     private val gamesCollection = firestore.collection("games")
 

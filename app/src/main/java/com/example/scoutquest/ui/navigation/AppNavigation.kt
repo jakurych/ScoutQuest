@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.scoutquest.ui.views.AddTaskView
+import com.example.scoutquest.ui.views.BrowseGamesView
 import com.example.scoutquest.ui.views.CreateNewGameView
 import com.example.scoutquest.ui.views.JoinGameView
 import com.example.scoutquest.ui.views.LoginView
@@ -20,6 +21,7 @@ import com.example.scoutquest.ui.views.ProfileView
 import com.example.scoutquest.ui.views.SettingsView
 import com.example.scoutquest.ui.views.tasktypes.CreateNoteView
 import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
+import com.example.scoutquest.viewmodels.BrowseGamesViewModel
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.JoinGameViewModel
 import com.example.scoutquest.viewmodels.LoginViewModel
@@ -42,6 +44,7 @@ fun AppNavigation() {
     val joinGameViewModel: JoinGameViewModel = viewModel()
     val quizViewModel: QuizViewModel = viewModel()
     val noteViewModel: NoteViewModel = viewModel()
+    val browseGamesViewModel: BrowseGamesViewModel = viewModel()
 
     CompositionLocalProvider(LocalNavigation provides navController) {
         NavHost(navController = navController, startDestination = MainScreenRoute) {
@@ -96,6 +99,12 @@ fun AppNavigation() {
             composable(route = CreateNote) {
                 CreateNoteView(
                     noteViewModel = noteViewModel,
+                    navController = navController
+                )
+            }
+            composable(route = Browser) {
+                BrowseGamesView(
+                    browseGamesViewModel = browseGamesViewModel,
                     navController = navController
                 )
             }
