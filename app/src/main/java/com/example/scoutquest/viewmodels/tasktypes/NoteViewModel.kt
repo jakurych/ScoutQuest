@@ -5,8 +5,8 @@ import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
+import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,7 +31,7 @@ class NoteViewModel @Inject constructor() : ViewModel() {
 
     fun saveCurrentNote() {
         val currentNote = getCurrentNote()
-        createNewGameViewModel.currentTaskDetails = currentNote
+        createNewGameViewModel.currentNoteDetails = currentNote
     }
 
     fun addNote(note: String) {
@@ -70,4 +70,3 @@ class NoteViewModel @Inject constructor() : ViewModel() {
         createNewGameViewModel.setTaskDetailsEntered(entered)
     }
 }
-

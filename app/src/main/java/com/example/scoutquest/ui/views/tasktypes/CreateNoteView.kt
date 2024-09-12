@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.scoutquest.ui.views.tasktypes
 
 import androidx.compose.foundation.layout.*

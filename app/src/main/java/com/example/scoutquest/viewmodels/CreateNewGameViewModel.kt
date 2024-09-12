@@ -4,17 +4,16 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.models.Game
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
-import com.example.scoutquest.data.models.tasktypes.TaskType
 import com.example.scoutquest.data.repositories.GameRepository
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -62,14 +61,10 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
 
+    //task types
 
-    private var _currentTaskDetails: TaskType? = null
-    var currentTaskDetails: TaskType?
-        get() = _currentTaskDetails
-        set(value) {
-            _currentTaskDetails = value
-            setTaskDetailsEntered(value != null)
-        }
+    var currentQuizDetails: Quiz? = null
+    var currentNoteDetails: Note? = null
 
     init {
         val user = FirebaseAuth.getInstance().currentUser
@@ -165,7 +160,6 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     }
 
     fun saveGame() {
-
         viewModelScope.launch {
             val user = FirebaseAuth.getInstance().currentUser
             if (user == null) {
@@ -189,10 +183,8 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
                 Log.e("SaveGame", "Error saving game to db", e)
             }
 
-
             //Game data logs
             Log.d("GameData", "=== Game ===")
-            Log.d("GameData", "Game ID: ${_highestTaskId.value}")
             Log.d("GameData", "Creator: ${_creatorMail.value}")
             Log.d("GameData", "Name: ${_name.value}")
             Log.d("GameData", "Description: ${_description.value}")
@@ -209,36 +201,27 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
                 Log.d("TaskData", "Marker Color: ${task.markerColor}")
                 Log.d("TaskData", "Task Type: ${task.taskType}")
 
-                //Task details logs
-                when (val details = task.taskDetails) {
-                    is Quiz -> {
-                        Log.d("TaskDetails", "---- Task Details ----")
-                        details.questions.forEachIndexed { questionIndex, question ->
-                            Log.d(
-                                "TaskDetails",
-                                "Question ${questionIndex + 1}: ${question.questionText}"
-                            )
-                            Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
-                            Log.d(
-                                "TaskDetails",
-                                "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}"
-                            )
-                        }
+                // Task details logs
+                task.quizDetails?.let { quiz ->
+                    Log.d("TaskDetails", "---- Quiz Details ----")
+                    quiz.questions.forEachIndexed { questionIndex, question ->
+                        Log.d(
+                            "TaskDetails",
+                            "Question ${questionIndex + 1}: ${question.questionText}"
+                        )
+                        Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
+                        Log.d(
+                            "TaskDetails",
+                            "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}"
+                        )
                     }
+                }
 
-                    is Note -> {
-                        Log.d("TaskDetails", "---- Task Details ----")
-                        Log.d("TaskDetails", "Notes: ${details.notes.joinToString(", ")}")
-                    }
-
-                    else -> {
-                        Log.d("TaskDetails", "---- Task Details ----")
-                        Log.d("TaskDetails", "No specific task details.")
-                    }
+                task.noteDetails?.let { note ->
+                    Log.d("TaskDetails", "---- Note Details ----")
+                    Log.d("TaskDetails", "Notes: ${note.notes.joinToString(", ")}")
                 }
             }
         }
-
-
     }
 }

@@ -35,7 +35,7 @@ class QuizViewModel @Inject constructor() : ViewModel() {
 
     fun saveCurrentQuiz() {
         val currentQuiz = getCurrentQuiz()
-        createNewGameViewModel.currentTaskDetails = currentQuiz
+        createNewGameViewModel.currentQuizDetails = currentQuiz
     }
 
     fun removeQuestion(index: Int) {
@@ -78,8 +78,7 @@ class QuizViewModel @Inject constructor() : ViewModel() {
         setTaskDetailsEntered(false)
     }
 
-     fun setTaskDetailsEntered(entered: Boolean) {
+    fun setTaskDetailsEntered(entered: Boolean) {
         createNewGameViewModel.setTaskDetailsEntered(entered)
     }
-
 }
