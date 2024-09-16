@@ -88,18 +88,18 @@ fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
             Text(
                 text = game.description,
                 fontSize = 14.sp,
-                color = drab_dark_brown
+                color = detailTextColor
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Tasks: ${game.tasks.size}",
                 fontSize = 14.sp,
-                color = drab_dark_brown
+                color = detailTextColor
             )
             Text(
                 text = "Rating: ${game.rating?.averageRating ?: "No ratings yet"}",
                 fontSize = 14.sp,
-                color = drab_dark_brown
+                color = detailTextColor
             )
             if (expanded) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -107,29 +107,30 @@ fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
                 Text(
                     text = "Cities: $cities",
                     fontSize = 14.sp,
-                    color = drab_dark_brown
+                    color = expandedDetailTextColor
                 )
                 Text(
                     text = "Distance: ${viewModel.calculateTotalDistance(game.tasks)} km",
                     fontSize = 14.sp,
-                    color = drab_dark_brown
+                    color = expandedDetailTextColor
                 )
                 Text(
                     text = "Points: ${game.tasks.sumOf { it.points }}",
                     fontSize = 14.sp,
-                    color = drab_dark_brown
+                    color = expandedDetailTextColor
                 )
                 Text(
                     text = "Task Types: ${game.tasks.joinToString { it.taskType ?: "Unknown" }}",
                     fontSize = 14.sp,
-                    color = drab_dark_brown
+                    color = expandedDetailTextColor
                 )
                 Text(
                     text = "Creator: ${creatorUsername ?: "Unknown"}",
                     fontSize = 14.sp,
-                    color = drab_dark_brown
+                    color = expandedDetailTextColor
                 )
             }
         }
     }
 }
+
