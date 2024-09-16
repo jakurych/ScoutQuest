@@ -8,6 +8,7 @@ import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.repositories.GameRepository
+import com.example.scoutquest.gameoperations.GameCalculations
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,11 +19,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CreateNewGameViewModel @Inject constructor() : ViewModel() {
+class CreateNewGameViewModel @Inject constructor(
+    private val gameRepository: GameRepository,
+    private val gameCalculations: GameCalculations
+) : ViewModel() {
+
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
-
-    private val gameRepository: GameRepository = GameRepository()
 
     private val _description = MutableStateFlow("")
     val description: StateFlow<String> = _description
@@ -61,8 +64,7 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
 
-    //task types
-
+    // Task types
     var currentQuizDetails: Quiz? = null
     var currentNoteDetails: Note? = null
 
@@ -183,7 +185,7 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
                 Log.e("SaveGame", "Error saving game to db", e)
             }
 
-            //Game data logs
+            // Game data logs
             Log.d("GameData", "=== Game ===")
             Log.d("GameData", "Creator: ${_creatorMail.value}")
             Log.d("GameData", "Name: ${_name.value}")
@@ -191,7 +193,7 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
             Log.d("GameData", "Is Public: ${_isPublic.value}")
             Log.d("GameData", "Number of Tasks: ${_tasks.value.size}")
 
-            //Task data logs
+            // Task data logs
             _tasks.value.forEachIndexed { index, task ->
                 Log.d("TaskData", "----- Task ${index + 1} -----")
                 Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
@@ -223,5 +225,9 @@ class CreateNewGameViewModel @Inject constructor() : ViewModel() {
                 }
             }
         }
+    }
+
+    fun calculateTotalDistance(): String {
+        return gameCalculations.calculateTotalDistance(_tasks.value)
     }
 }

@@ -18,7 +18,7 @@ import javax.inject.Inject
 class BrowseGamesViewModel @Inject constructor(
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
-    private val application: Application
+    application: Application
 ) : ViewModel() {
 
     private val _games = MutableStateFlow<List<Game>>(emptyList())

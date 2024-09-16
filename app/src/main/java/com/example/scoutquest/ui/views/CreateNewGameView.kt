@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.components.Header
@@ -69,7 +68,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun CreateNewGameView(
     createNewGameViewModel: CreateNewGameViewModel,
     onEditTask: (Task) -> Unit,
-
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -86,7 +84,9 @@ fun CreateNewGameView(
     var isMapFullScreen by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(LatLng(52.253126, 20.900157), 10f)
+        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+            LatLng(52.253126, 20.900157), 10f
+        )
     }
 
     val fullscreenCameraPositionState = rememberCameraPositionState {
@@ -209,6 +209,12 @@ fun CreateNewGameView(
                                 )
                             }
                         }
+
+                        Text(
+                            text = "Total Distance: ${createNewGameViewModel.calculateTotalDistance()} km",
+                            color = Color.White,
+                            modifier = Modifier.padding(top = elementSpacing)
+                        )
 
                         Button(
                             onClick = {
@@ -348,7 +354,6 @@ fun CreateNewGameView(
                 }
             }
         }
-
 
         if (isMapFullScreen) {
             Dialog(
