@@ -104,8 +104,7 @@ fun AppNavigation() {
             }
             composable(route = Browser) {
                 BrowseGamesView(
-                    browseGamesViewModel = browseGamesViewModel,
-                    navController = navController
+                    browseGamesViewModel = browseGamesViewModel
                 )
             }
         }

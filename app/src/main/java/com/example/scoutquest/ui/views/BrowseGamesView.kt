@@ -7,10 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,25 +15,71 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.theme.*
 import com.example.scoutquest.viewmodels.BrowseGamesViewModel
 import kotlinx.coroutines.launch
+import java.util.Locale
+import kotlin.math.ln
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 @Composable
 fun BrowseGamesView(
-    navController: NavController,
     browseGamesViewModel: BrowseGamesViewModel = hiltViewModel()
 ) {
-    val games by browseGamesViewModel.games.collectAsState()
+    val games by browseGamesViewModel.filteredGames.collectAsState()
+    val allGames by browseGamesViewModel.games.collectAsState()
+
+    val allCities = remember(allGames) {
+        allGames.flatMap { browseGamesViewModel.determineCities(it.tasks) }.distinct()
+    }
+
+    var selectedCities by remember { mutableStateOf(setOf<String>()) }
+    var minDistance by remember { mutableStateOf<Double?>(null) }
+    var maxDistance by remember { mutableStateOf<Double?>(null) }
+    var showFilters by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
         Header()
+        Button(
+            onClick = { showFilters = true },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally),
+            colors = ButtonDefaults.buttonColors(containerColor = button_green)
+        ) {
+            Text("Filters")
+        }
+        if (showFilters) {
+            FilterDialog(
+                allCities = allCities,
+                selectedCities = selectedCities,
+                onCitiesSelected = { selectedCities = it },
+                minDistance = minDistance,
+                maxDistance = maxDistance,
+                onMinDistanceChanged = { minDistance = it },
+                onMaxDistanceChanged = { maxDistance = it },
+                onDismissRequest = { showFilters = false },
+                onApplyFilters = {
+                    browseGamesViewModel.updateCityFilter(selectedCities)
+                    browseGamesViewModel.updateDistanceFilter(minDistance, maxDistance)
+                    showFilters = false
+                },
+                onResetFilters = {
+                    selectedCities = setOf()
+                    minDistance = null
+                    maxDistance = null
+                    browseGamesViewModel.updateCityFilter(selectedCities)
+                    browseGamesViewModel.updateDistanceFilter(minDistance, maxDistance)
+                    showFilters = false
+                }
+            )
+        }
         LazyColumn {
             items(games) { game ->
                 GameItem(game, browseGamesViewModel)
@@ -44,6 +87,122 @@ fun BrowseGamesView(
         }
     }
 }
+
+@Composable
+fun FilterDialog(
+    allCities: List<String>,
+    selectedCities: Set<String>,
+    onCitiesSelected: (Set<String>) -> Unit,
+    minDistance: Double?,
+    maxDistance: Double?,
+    onMinDistanceChanged: (Double?) -> Unit,
+    onMaxDistanceChanged: (Double?) -> Unit,
+    onDismissRequest: () -> Unit,
+    onApplyFilters: () -> Unit,
+    onResetFilters: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text("Filter Games", fontWeight = FontWeight.Bold, color = moss_green)
+        },
+        text = {
+            Column {
+                Text("Filter by Cities", fontWeight = FontWeight.Bold)
+
+                Box(
+                    modifier = Modifier
+                        .height(200.dp)
+                        .fillMaxWidth()
+                ) {
+                    LazyColumn {
+                        items(allCities.filter { it != "Unknown" }) { city ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val newSelection = selectedCities.toMutableSet()
+                                        if (newSelection.contains(city)) {
+                                            newSelection.remove(city)
+                                        } else {
+                                            newSelection.add(city)
+                                        }
+                                        onCitiesSelected(newSelection)
+                                    }
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = selectedCities.contains(city),
+                                    onCheckedChange = null
+                                )
+                                Text(city)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text("Filter by Distance (km)", fontWeight = FontWeight.Bold)
+
+                // minimum
+                Text("Min Distance: ${if (minDistance == Double.POSITIVE_INFINITY) "∞" else "${minDistance?.toInt() ?: 0}"} km")
+                Slider(
+                    value = minDistance?.let {
+                        if (it == Double.POSITIVE_INFINITY) 1f
+                        else (ln(it + 1) / ln(501.0)).toFloat()
+                    } ?: 0f,
+                    onValueChange = {
+                        val newValue = when {
+                            it >= 0.99f -> Double.POSITIVE_INFINITY
+                            else -> (500.0.pow(it.toDouble()) - 1).roundToInt().toDouble()
+                        }
+                        onMinDistanceChanged(newValue)
+                    },
+                    valueRange = 0f..1f,
+                    steps = 100
+                )
+
+                //maximum distance
+                Text("Max Distance: ${if (maxDistance == Double.POSITIVE_INFINITY) "∞" else "${maxDistance?.toInt() ?: 0}"} km")
+                Slider(
+                    value = maxDistance?.let {
+                        if (it == Double.POSITIVE_INFINITY) 1f
+                        else (ln(it + 1) / ln(501.0)).toFloat()
+                    } ?: 0f,
+                    onValueChange = {
+                        val newValue = when {
+                            it >= 0.99f -> Double.POSITIVE_INFINITY
+                            else -> (500.0.pow(it.toDouble()) - 1).roundToInt().toDouble()
+                        }
+                        onMaxDistanceChanged(newValue)
+                    },
+                    valueRange = 0f..1f,
+                    steps = 100
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onApplyFilters,
+                colors = ButtonDefaults.textButtonColors(containerColor = button_green)
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onResetFilters,
+                colors = ButtonDefaults.textButtonColors(containerColor = button_green)
+            ) {
+                Text("Reset filters")
+            }
+        },
+        containerColor = black_olive
+    )
+}
+
 
 @Composable
 fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
@@ -110,7 +269,7 @@ fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
                     color = expandedDetailTextColor
                 )
                 Text(
-                    text = "Distance: ${viewModel.calculateTotalDistance(game.tasks)} km",
+                    text = "Distance: ${String.format(Locale.US, "%.2f", viewModel.calculateTotalDistance(game.tasks))} km",
                     fontSize = 14.sp,
                     color = expandedDetailTextColor
                 )
@@ -133,4 +292,3 @@ fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
         }
     }
 }
-
