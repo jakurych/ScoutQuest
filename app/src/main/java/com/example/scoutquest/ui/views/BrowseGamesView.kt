@@ -1,6 +1,5 @@
 package com.example.scoutquest.ui.views
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,8 +20,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Game
+import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.theme.*
 import com.example.scoutquest.viewmodels.BrowseGamesViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun BrowseGamesView(
@@ -34,20 +35,27 @@ fun BrowseGamesView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(eerie_black)
     ) {
         Header()
         LazyColumn {
             items(games) { game ->
-                GameItem(game)
+                GameItem(game, browseGamesViewModel)
             }
         }
     }
 }
 
 @Composable
-fun GameItem(game: Game) {
+fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
     var expanded by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    var creatorUsername by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(game.creatorId) {
+        coroutineScope.launch {
+            creatorUsername = viewModel.getCreatorUsername(game.creatorId)
+        }
+    }
 
     Card(
         modifier = Modifier
@@ -95,29 +103,33 @@ fun GameItem(game: Game) {
             )
             if (expanded) {
                 Spacer(modifier = Modifier.height(8.dp))
+                val cities = viewModel.determineCities(game.tasks).joinToString(", ")
                 Text(
-                    text = "Created by: ${game.creatorEmail}",
-                    fontSize = 12.sp,
-                    color = bistre
+                    text = "Cities: $cities",
+                    fontSize = 14.sp,
+                    color = drab_dark_brown
+                )
+                Text(
+                    text = "Distance: ${viewModel.calculateTotalDistance(game.tasks)} km",
+                    fontSize = 14.sp,
+                    color = drab_dark_brown
+                )
+                Text(
+                    text = "Points: ${game.tasks.sumOf { it.points }}",
+                    fontSize = 14.sp,
+                    color = drab_dark_brown
+                )
+                Text(
+                    text = "Task Types: ${game.tasks.joinToString { it.taskType ?: "Unknown" }}",
+                    fontSize = 14.sp,
+                    color = drab_dark_brown
+                )
+                Text(
+                    text = "Creator: ${creatorUsername ?: "Unknown"}",
+                    fontSize = 14.sp,
+                    color = drab_dark_brown
                 )
             }
         }
-    }
-}
-
-@Composable
-fun Header() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(bistre)
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Browse Games",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = moss_green
-        )
     }
 }
