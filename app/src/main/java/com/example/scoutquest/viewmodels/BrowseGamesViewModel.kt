@@ -33,6 +33,12 @@ class BrowseGamesViewModel @Inject constructor(
     private var minDistance: Double? = null
     private var maxDistance: Double? = null
 
+    private val _sortByDistance = MutableStateFlow(true)
+    val sortByDistance: StateFlow<Boolean> = _sortByDistance
+
+    private val _ascendingOrder = MutableStateFlow(true)
+    val ascendingOrder: StateFlow<Boolean> = _ascendingOrder
+
     init {
         loadGames()
     }
@@ -41,7 +47,7 @@ class BrowseGamesViewModel @Inject constructor(
         viewModelScope.launch {
             val allGames = gameRepository.getAllGames()
             _games.value = allGames
-            _filteredGames.value = allGames
+            applyFiltersAndSort()
         }
     }
 
@@ -61,19 +67,29 @@ class BrowseGamesViewModel @Inject constructor(
 
     fun updateCityFilter(selectedCities: Set<String>) {
         this.selectedCities = selectedCities.toMutableSet()
-        applyFilters()
+        applyFiltersAndSort()
     }
 
     fun updateDistanceFilter(minDistance: Double?, maxDistance: Double?) {
         this.minDistance = minDistance
         this.maxDistance = maxDistance
-        applyFilters()
+        applyFiltersAndSort()
     }
 
-    private fun applyFilters() {
+    fun toggleSortCriteria() {
+        _sortByDistance.value = !_sortByDistance.value
+        applyFiltersAndSort()
+    }
+
+    fun toggleSortOrder() {
+        _ascendingOrder.value = !_ascendingOrder.value
+        applyFiltersAndSort()
+    }
+
+    private fun applyFiltersAndSort() {
         val currentMinDistance = minDistance
         val currentMaxDistance = maxDistance
-        val filtered = _games.value.filter { game ->
+        var filtered = _games.value.filter { game ->
             val gameCities = determineCities(game.tasks)
             val distance = try {
                 calculateTotalDistance(game.tasks)
@@ -88,6 +104,21 @@ class BrowseGamesViewModel @Inject constructor(
 
             cityMatch && distanceMatch
         }
+
+        filtered = if (_sortByDistance.value) {
+            if (_ascendingOrder.value) {
+                filtered.sortedBy { calculateTotalDistance(it.tasks) }
+            } else {
+                filtered.sortedByDescending { calculateTotalDistance(it.tasks) }
+            }
+        } else {
+            if (_ascendingOrder.value) {
+                filtered.sortedBy { it.rating?.averageRating ?: 0.0f }
+            } else {
+                filtered.sortedByDescending { it.rating?.averageRating ?: 0.0f }
+            }
+        }
+
         _filteredGames.value = filtered
     }
 }
