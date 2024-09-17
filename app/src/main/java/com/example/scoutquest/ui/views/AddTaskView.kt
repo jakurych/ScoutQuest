@@ -25,6 +25,7 @@ import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.navigation.CreateNote
 import com.example.scoutquest.ui.navigation.CreateQuiz
+import com.example.scoutquest.ui.navigation.CreateTrueFalse
 import com.example.scoutquest.ui.navigation.Creator
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.drab_dark_brown
@@ -32,6 +33,7 @@ import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescript
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
+import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -45,7 +47,8 @@ fun AddTaskView(
     taskToEdit: Task? = null,
     mapMarkers: List<Task>,
     quizViewModel: QuizViewModel,
-    noteViewModel: NoteViewModel
+    noteViewModel: NoteViewModel,
+    trueFalseViewModel: TrueFalseViewModel
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -67,8 +70,11 @@ fun AddTaskView(
     }
 
     LaunchedEffect(Unit) {
+        //task types Vms
         quizViewModel.setCreateNewGameViewModel(viewModel)
         noteViewModel.setCreateNewGameViewModel(viewModel)
+        trueFalseViewModel.setCreateNewGameViewModel(viewModel)
+
         taskTitle = viewModel.currentTaskTitle
         taskDescription = viewModel.currentTaskDescription
         taskPoints = viewModel.currentTaskPoints
@@ -87,7 +93,7 @@ fun AddTaskView(
         listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 
-    val taskTypes = listOf("Quiz", "Note", "None")
+    val taskTypes = listOf("Quiz", "Note","True/False" ,"None")
 
     val selectedTaskType by viewModel.selectedTaskType.collectAsState()
     var taskTypeExpanded by remember { mutableStateOf(false) }
@@ -104,8 +110,11 @@ fun AddTaskView(
 
     val isTaskDetailsEntered by viewModel.isTaskDetailsEntered.collectAsState()
 
+    //spr czy zostały wprowadzone detale tasków
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
     val hasNotesNote by noteViewModel.hasNotes.collectAsState()
+    val hasTrueFalseQuestions by trueFalseViewModel.hasQuestions.collectAsState()
+
 
     fun updateViewModel() {
         viewModel.apply {
@@ -241,12 +250,19 @@ fun AddTaskView(
                 Button(
                     onClick = {
                         updateViewModel()
-                        if (selectedTaskType == "Quiz") {
-                            quizViewModel.setQuestionsFromQuiz(taskToEdit?.quizDetails)
-                            navController.navigate(CreateQuiz)
-                        } else if (selectedTaskType == "Note") {
-                            noteViewModel.setNotesFromNote(taskToEdit?.noteDetails)
-                            navController.navigate(CreateNote)
+                        when (selectedTaskType) {
+                            "Quiz" -> {
+                                quizViewModel.setQuestionsFromQuiz(taskToEdit?.quizDetails)
+                                navController.navigate(CreateQuiz)
+                            }
+                            "Note" -> {
+                                noteViewModel.setNotesFromNote(taskToEdit?.noteDetails)
+                                navController.navigate(CreateNote)
+                            }
+                            "True/False" -> {
+                                trueFalseViewModel.setQuestionsFromTrueFalse(taskToEdit?.trueFalseDetails)
+                                navController.navigate(CreateTrueFalse)
+                            }
                         }
                     },
                     enabled = selectedTaskType != "None",
@@ -254,7 +270,6 @@ fun AddTaskView(
                 ) {
                     Text("Add task details", color = Color.White)
                 }
-            }
         }
 
         GoogleMap(
@@ -314,6 +329,8 @@ fun AddTaskView(
                             navController.navigate(CreateQuiz)
                         } else if (selectedTaskType == "Note" && !hasNotesNote) {
                             navController.navigate(CreateNote)
+                        } else if (selectedTaskType == "True/False" && !hasTrueFalseQuestions) {
+                            navController.navigate(CreateTrueFalse)
                         } else {
                             val task = Task(
                                 taskId = taskToEdit?.taskId ?: 0,
@@ -325,11 +342,16 @@ fun AddTaskView(
                                 markerColor = viewModel.currentMarkerColor,
                                 taskType = selectedTaskType,
                                 quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
-                                noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null
+                                noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
+                                trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null
                             )
                             viewModel.addOrUpdateTask(task)
+
+                            //task types vms reset
                             quizViewModel.resetQuiz()
                             noteViewModel.resetNote()
+                            trueFalseViewModel.resetTrueFalse()
+
                             viewModel.setTaskDetailsEntered(false)
                             viewModel.setTaskToEdit(null)
                             navController.navigate(Creator)
@@ -344,6 +366,7 @@ fun AddTaskView(
                 ) {
                     Text("Save Task", color = Color.White)
                 }
+            }
             }
         }
     }
@@ -398,4 +421,6 @@ fun AddTaskView(
             }
         }
     }
-}
+    }
+
+

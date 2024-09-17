@@ -21,6 +21,7 @@ import com.example.scoutquest.ui.views.ProfileView
 import com.example.scoutquest.ui.views.SettingsView
 import com.example.scoutquest.ui.views.tasktypes.CreateNoteView
 import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
+import com.example.scoutquest.ui.views.tasktypes.CreateTrueFalseView
 import com.example.scoutquest.viewmodels.BrowseGamesViewModel
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.JoinGameViewModel
@@ -30,6 +31,7 @@ import com.example.scoutquest.viewmodels.SettingsViewModel
 import com.example.scoutquest.viewmodels.UserViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
+import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
 
 @Composable
 fun AppNavigation() {
@@ -44,6 +46,7 @@ fun AppNavigation() {
     val joinGameViewModel: JoinGameViewModel = viewModel()
     val quizViewModel: QuizViewModel = viewModel()
     val noteViewModel: NoteViewModel = viewModel()
+    val trueFalseViewModel: TrueFalseViewModel = viewModel()
     val browseGamesViewModel: BrowseGamesViewModel = viewModel()
 
     CompositionLocalProvider(LocalNavigation provides navController) {
@@ -86,8 +89,11 @@ fun AppNavigation() {
                     navController = navController,
                     taskToEdit = taskToEdit,
                     mapMarkers = mapMarkers,
+
+                    //typy taskow
                     quizViewModel = quizViewModel,
-                    noteViewModel = noteViewModel
+                    noteViewModel = noteViewModel,
+                    trueFalseViewModel = trueFalseViewModel
                 )
             }
             composable(route = CreateQuiz) {
@@ -99,6 +105,12 @@ fun AppNavigation() {
             composable(route = CreateNote) {
                 CreateNoteView(
                     noteViewModel = noteViewModel,
+                    navController = navController
+                )
+            }
+            composable(route = CreateTrueFalse) {
+                CreateTrueFalseView(
+                    trueFalseViewModel = trueFalseViewModel,
                     navController = navController
                 )
             }

@@ -3,6 +3,7 @@ package com.example.scoutquest.data.models
 import android.os.Parcelable
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
+import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
 
@@ -20,5 +21,6 @@ data class Task(
     var taskType: String? = null,
     //task types
     var quizDetails: @RawValue Quiz? = null,
-    var noteDetails: @RawValue Note? = null
+    var noteDetails: @RawValue Note? = null,
+    var trueFalseDetails: @RawValue TrueFalse? = null
 ) : Parcelable

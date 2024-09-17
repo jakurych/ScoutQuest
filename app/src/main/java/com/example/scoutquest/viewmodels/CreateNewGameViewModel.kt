@@ -7,6 +7,7 @@ import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
+import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.repositories.GameRepository
 import com.example.scoutquest.gameoperations.GameCalculations
 import com.google.android.gms.maps.model.LatLng
@@ -23,6 +24,13 @@ class CreateNewGameViewModel @Inject constructor(
     private val gameRepository: GameRepository,
     private val gameCalculations: GameCalculations
 ) : ViewModel() {
+
+
+    // Task types
+    var currentQuizDetails: Quiz? = null
+    var currentNoteDetails: Note? = null
+    var currentTrueFalseDetails: TrueFalse? = null
+
 
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
@@ -64,9 +72,7 @@ class CreateNewGameViewModel @Inject constructor(
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
 
-    // Task types
-    var currentQuizDetails: Quiz? = null
-    var currentNoteDetails: Note? = null
+
 
     init {
         val user = FirebaseAuth.getInstance().currentUser
@@ -185,7 +191,7 @@ class CreateNewGameViewModel @Inject constructor(
                 Log.e("SaveGame", "Error saving game to db", e)
             }
 
-            // Game data logs
+            // Game logs
             Log.d("GameData", "=== Game ===")
             Log.d("GameData", "Creator: ${_creatorMail.value}")
             Log.d("GameData", "Name: ${_name.value}")
@@ -193,7 +199,7 @@ class CreateNewGameViewModel @Inject constructor(
             Log.d("GameData", "Is Public: ${_isPublic.value}")
             Log.d("GameData", "Number of Tasks: ${_tasks.value.size}")
 
-            // Task data logs
+            // Task logs
             _tasks.value.forEachIndexed { index, task ->
                 Log.d("TaskData", "----- Task ${index + 1} -----")
                 Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
@@ -203,25 +209,29 @@ class CreateNewGameViewModel @Inject constructor(
                 Log.d("TaskData", "Marker Color: ${task.markerColor}")
                 Log.d("TaskData", "Task Type: ${task.taskType}")
 
-                // Task details logs
+                // Quiz logs
                 task.quizDetails?.let { quiz ->
                     Log.d("TaskDetails", "---- Quiz Details ----")
                     quiz.questions.forEachIndexed { questionIndex, question ->
-                        Log.d(
-                            "TaskDetails",
-                            "Question ${questionIndex + 1}: ${question.questionText}"
-                        )
+                        Log.d("TaskDetails", "Question ${questionIndex + 1}: ${question.questionText}")
                         Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
-                        Log.d(
-                            "TaskDetails",
-                            "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}"
-                        )
+                        Log.d("TaskDetails", "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}")
                     }
                 }
 
+                // Note logs
                 task.noteDetails?.let { note ->
                     Log.d("TaskDetails", "---- Note Details ----")
                     Log.d("TaskDetails", "Notes: ${note.notes.joinToString(", ")}")
+                }
+
+                // True/False logs
+                task.trueFalseDetails?.let { trueFalse ->
+                    Log.d("TaskDetails", "---- True/False Details ----")
+                    trueFalse.questionsTf.forEachIndexed { questionIndex, question ->
+                        Log.d("TaskDetails", "Question ${questionIndex + 1}: $question")
+                        Log.d("TaskDetails", "Answer: ${trueFalse.answersTf[questionIndex]}")
+                    }
                 }
             }
         }
