@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
+import com.example.scoutquest.ui.navigation.Browser
 import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.viewmodels.JoinGameViewModel
 
@@ -65,6 +66,15 @@ fun JoinGameView(joinGameViewModel: JoinGameViewModel) {
             onClick = { joinGameViewModel.joinGame() },
             modifier = Modifier
                 .size(buttonSize)
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        CircleButton(
+            text = "Browse games",
+            onClick = { navController.navigate(Browser) },
+            modifier = Modifier
+
         )
     }
 }

@@ -11,9 +11,11 @@ class GameRepository @Inject constructor() {
     private val firestore = FirebaseFirestore.getInstance()
     private val gamesCollection = firestore.collection("games")
 
-    suspend fun addGame(game: Game) {
-        gamesCollection.add(game).await()
+    suspend fun addGame(game: Game): String {
+        val documentReference = gamesCollection.add(game).await()
+        return documentReference.id //identyfikator nowo utworzonej gry aby utworzyć referencję
     }
+
 
     suspend fun removeGame(gameId: String) {
         gamesCollection.document(gameId).delete().await()

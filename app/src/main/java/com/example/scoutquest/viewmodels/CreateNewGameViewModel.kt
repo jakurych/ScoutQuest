@@ -5,18 +5,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.models.User
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.repositories.GameRepository
 import com.example.scoutquest.gameoperations.GameCalculations
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -180,7 +184,7 @@ class CreateNewGameViewModel @Inject constructor(
             }
 
             val newGame = Game(
-                creatorId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
+                creatorId = user.uid,
                 creatorEmail = _creatorMail.value,
                 name = _name.value,
                 description = _description.value,
@@ -189,14 +193,23 @@ class CreateNewGameViewModel @Inject constructor(
             )
 
             try {
-                gameRepository.addGame(newGame)
-                Log.d("SaveGame", "Game saved successfully to db")
+
+                val newGameId = gameRepository.addGame(newGame)
+                Log.d("SaveGame", "Game saved successfully with ID: $newGameId")
+                val userId = user.uid
+                val userRef = Firebase.firestore.collection("users").document(userId)
+                val currentUserData = userRef.get().await().toObject(User::class.java)
+                val updatedGameIds = currentUserData?.createdGames.orEmpty().toMutableList()
+                updatedGameIds.add(newGameId)
+
+                userRef.update("createdGames", updatedGameIds).await()
+
+                Log.d("SaveGame", "Game added to user's list")
                 _gameSaveStatus.value = GameSaveStatus.Success
 
             } catch (e: Exception) {
-                Log.e("SaveGame", "Error saving game to db", e)
-                _gameSaveStatus.value = GameSaveStatus.Failure("Error saving game")
-
+                Log.e("SaveGame", "Error saving game or updating user", e)
+                _gameSaveStatus.value = GameSaveStatus.Failure("Error saving game or updating user")
             }
 
             // Game logs
