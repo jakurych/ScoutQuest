@@ -32,6 +32,9 @@ class CreateNewGameViewModel @Inject constructor(
     var currentTrueFalseDetails: TrueFalse? = null
 
 
+    private val _gameSaveStatus = MutableStateFlow<GameSaveStatus>(GameSaveStatus.Idle)
+    val gameSaveStatus: StateFlow<GameSaveStatus> = _gameSaveStatus
+
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
 
@@ -167,6 +170,7 @@ class CreateNewGameViewModel @Inject constructor(
         }
     }
 
+
     fun saveGame() {
         viewModelScope.launch {
             val user = FirebaseAuth.getInstance().currentUser
@@ -187,8 +191,12 @@ class CreateNewGameViewModel @Inject constructor(
             try {
                 gameRepository.addGame(newGame)
                 Log.d("SaveGame", "Game saved successfully to db")
+                _gameSaveStatus.value = GameSaveStatus.Success
+
             } catch (e: Exception) {
                 Log.e("SaveGame", "Error saving game to db", e)
+                _gameSaveStatus.value = GameSaveStatus.Failure("Error saving game")
+
             }
 
             // Game logs
@@ -240,4 +248,35 @@ class CreateNewGameViewModel @Inject constructor(
     fun calculateTotalDistance(): String {
         return gameCalculations.calculateTotalDistance(_tasks.value)
     }
+
+    fun resetGameData() {
+        _name.value = ""
+        _description.value = ""
+        _isPublic.value = false
+        _tasks.value = emptyList()
+        _selectedLatitude.value = 52.253126
+        _selectedLongitude.value = 20.900157
+        _temporaryMarker.value = null
+        _taskToEdit.value = null
+        _isReorderingEnabled.value = false
+        _highestTaskId.value = 0
+        _isTaskDetailsEntered.value = false
+        _selectedTaskType.value = "Quiz"
+        currentTaskTitle = ""
+        currentTaskDescription = ""
+        currentTaskPoints = "0"
+        currentLatitude = _selectedLatitude.value
+        currentLongitude = _selectedLongitude.value
+        currentMarkerColor = "red"
+        currentQuizDetails = null
+        currentNoteDetails = null
+        currentTrueFalseDetails = null
+        _gameSaveStatus.value = GameSaveStatus.Idle
+    }
+}
+
+sealed class GameSaveStatus {
+    data object Idle : GameSaveStatus()
+    data object Success : GameSaveStatus()
+    data class Failure(val message: String) : GameSaveStatus()
 }

@@ -78,6 +78,9 @@ fun AppNavigation() {
                     onEditTask = { task ->
                         createNewGameViewModel.setTaskToEdit(task)
                         navController.navigate(AddTask)
+                    },
+                    onNavigateToMainScreen = {
+                        navController.navigate(MainScreenRoute)
                     }
                 )
             }

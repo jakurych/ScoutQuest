@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +25,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,6 +36,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,12 +56,15 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
+import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
+import com.example.scoutquest.ui.theme.bistre
 import com.example.scoutquest.ui.theme.black_olive
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.moss_green
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.GameSaveStatus
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -68,6 +74,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun CreateNewGameView(
     createNewGameViewModel: CreateNewGameViewModel,
     onEditTask: (Task) -> Unit,
+    onNavigateToMainScreen: () -> Unit // Callback for navigation
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -97,6 +104,8 @@ fun CreateNewGameView(
 
     var draggedItemIndex by remember { mutableStateOf<Int?>(null) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var showDialog by remember { mutableStateOf(false) }
+
 
     fun calculateNewIndex(draggedIndex: Int, dragOffsetY: Float): Int {
         val newIndex = draggedIndex + (dragOffsetY / 150).toInt()
@@ -395,5 +404,55 @@ fun CreateNewGameView(
                 }
             }
         }
+
+        // Observe game save status
+        val gameSaveStatus by createNewGameViewModel.gameSaveStatus.collectAsState()
+        when (gameSaveStatus) {
+            is GameSaveStatus.Success -> {
+                LaunchedEffect(Unit) {
+                    showDialog = true
+                }
+            }
+
+            is GameSaveStatus.Failure -> {
+
+            }
+
+            else -> {
+            }
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDialog = false
+                },
+                title = {
+                    Text(text = "Sukces")
+                },
+                text = {
+                    Text("Gra została pomyślnie zapisana!")
+                },
+                confirmButton = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        CircleButton(
+                            text = "OK",
+                            onClick = {
+                                createNewGameViewModel.resetGameData()
+
+                                showDialog = false
+                                onNavigateToMainScreen()
+                            },
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                },
+                containerColor = black_olive
+            )
+        }
+
+
     }
 }
