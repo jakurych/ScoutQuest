@@ -65,6 +65,10 @@ class AuthRepository @Inject constructor(
         return auth.currentUser
     }
 
+    fun getCurrentUserId(): String? {
+        return auth.currentUser?.uid
+    }
+
     private suspend fun reauthenticateUser(password: String) {
         val user = auth.currentUser
         user?.let {

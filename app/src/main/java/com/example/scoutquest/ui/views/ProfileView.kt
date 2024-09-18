@@ -24,12 +24,17 @@ import com.example.scoutquest.ui.theme.*
 import com.example.scoutquest.viewmodels.ProfileViewModel
 import com.example.scoutquest.viewmodels.UserViewModel
 import com.example.scoutquest.data.models.Badge
+import com.example.scoutquest.ui.navigation.UserBrowser
 
 @Composable
 fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel) {
     val navController = LocalNavigation.current
     val isUserLoggedIn by userViewModel.isUserLoggedIn.collectAsState()
     val user by profileViewModel.user.collectAsState()
+
+    LaunchedEffect(Unit) {
+        profileViewModel.fetchUserData()
+    }
 
     if (isUserLoggedIn == false) {
         LaunchedEffect(Unit) {
@@ -155,6 +160,8 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
+    val userHasGames = profileViewModel.user.value?.createdGames?.isNotEmpty() == true
+
     if (showEmailDialog) {
         ChangeEmailDialog(
             onDismiss = { showEmailDialog = false },
@@ -236,6 +243,18 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(16.dp)
         ) {
+            if (userHasGames) {
+                Button(
+                    onClick = {
+                        navController.navigate(UserBrowser)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = button_green),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("My Games", color = Color.White)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             Button(
                 onClick = { showEmailDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = button_green),
@@ -267,6 +286,7 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)

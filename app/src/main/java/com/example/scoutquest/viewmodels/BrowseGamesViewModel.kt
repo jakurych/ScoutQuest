@@ -9,8 +9,7 @@ import com.example.scoutquest.data.repositories.GameRepository
 import com.example.scoutquest.data.repositories.UserRepository
 import com.example.scoutquest.gameoperations.GameCalculations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +25,9 @@ class BrowseGamesViewModel @Inject constructor(
 
     private val _filteredGames = MutableStateFlow<List<Game>>(emptyList())
     val filteredGames: StateFlow<List<Game>> = _filteredGames
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
 
     private val gameCalculations = GameCalculations(application.applicationContext)
 
@@ -47,6 +49,14 @@ class BrowseGamesViewModel @Inject constructor(
         viewModelScope.launch {
             val allGames = gameRepository.getAllGames()
             _games.value = allGames
+            applyFiltersAndSort()
+        }
+    }
+
+    fun loadUserGames(userId: String) {
+        viewModelScope.launch {
+            val userGames = gameRepository.getGamesByUserId(userId)
+            _games.value = userGames
             applyFiltersAndSort()
         }
     }
@@ -86,9 +96,16 @@ class BrowseGamesViewModel @Inject constructor(
         applyFiltersAndSort()
     }
 
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        applyFiltersAndSort()
+    }
+
     private fun applyFiltersAndSort() {
         val currentMinDistance = minDistance
         val currentMaxDistance = maxDistance
+        val currentQuery = _searchQuery.value
+
         var filtered = _games.value.filter { game ->
             val gameCities = determineCities(game.tasks)
             val distance = try {
@@ -101,8 +118,10 @@ class BrowseGamesViewModel @Inject constructor(
             val cityMatch = selectedCities.isEmpty() || gameCities.any { it in selectedCities }
             val distanceMatch = (currentMinDistance == null || distance >= currentMinDistance) &&
                     (currentMaxDistance == null || distance <= currentMaxDistance)
+            val searchMatch = currentQuery.isBlank() || game.name.contains(currentQuery, ignoreCase = true) ||
+                    game.description.contains(currentQuery, ignoreCase = true)
 
-            cityMatch && distanceMatch
+            cityMatch && distanceMatch && searchMatch
         }
 
         filtered = if (_sortByDistance.value) {

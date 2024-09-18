@@ -19,6 +19,7 @@ import com.example.scoutquest.ui.views.MainScreenView
 import com.example.scoutquest.ui.views.NewGameView
 import com.example.scoutquest.ui.views.ProfileView
 import com.example.scoutquest.ui.views.SettingsView
+import com.example.scoutquest.ui.views.UserGamesBrowserView
 import com.example.scoutquest.ui.views.tasktypes.CreateNoteView
 import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
 import com.example.scoutquest.ui.views.tasktypes.CreateTrueFalseView
@@ -122,6 +123,13 @@ fun AppNavigation() {
                     browseGamesViewModel = browseGamesViewModel
                 )
             }
+            composable(route = UserBrowser) {
+                val userId = userViewModel.getCurrentUserId()
+                if (userId != null) {
+                    UserGamesBrowserView(userId = userId, browseGamesViewModel = browseGamesViewModel)
+                }
+            }
+
         }
     }
 }

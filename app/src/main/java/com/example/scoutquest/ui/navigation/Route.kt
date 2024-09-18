@@ -13,5 +13,6 @@ const val CreateQuiz = "/createquiz"
 const val CreateNote = "/createnote"
 const val Browser = "/browser"
 const val CreateTrueFalse = "/createtruefalse"
+const val UserBrowser = "/userbrowser"
 
 

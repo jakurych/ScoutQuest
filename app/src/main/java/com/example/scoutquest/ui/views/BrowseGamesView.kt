@@ -1,9 +1,11 @@
 package com.example.scoutquest.ui.views
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -11,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +34,7 @@ fun BrowseGamesView(
 
     val sortByDistance = browseGamesViewModel.sortByDistance.collectAsState().value
     val ascendingOrder = browseGamesViewModel.ascendingOrder.collectAsState().value
+    val searchQuery by browseGamesViewModel.searchQuery.collectAsState()
 
     val allCities = remember(allGames) {
         allGames.flatMap { browseGamesViewModel.determineCities(it.tasks) }.distinct()
@@ -46,6 +50,28 @@ fun BrowseGamesView(
             .fillMaxSize()
     ) {
         Header()
+        // Wyszukiwanie
+        BasicTextField(
+            value = searchQuery,
+            onValueChange = { browseGamesViewModel.updateSearchQuery(it) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier
+                        .background(Color.Gray, shape = MaterialTheme.shapes.small)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    if (searchQuery.isEmpty()) {
+                        Text("Search games...", color = Color.LightGray)
+                    }
+                    innerTextField()
+                }
+            }
+        )
+
         Row(
             modifier = Modifier
                 .padding(16.dp)
@@ -102,16 +128,14 @@ fun BrowseGamesView(
         }
         LazyColumn {
             items(games) { game ->
-                GameItem(game = game, viewModel = browseGamesViewModel)
+                GameItemWithPlay(game = game, viewModel = browseGamesViewModel)
             }
         }
     }
 }
 
-
-
 @Composable
-fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
+fun GameItemWithPlay(game: Game, viewModel: BrowseGamesViewModel) {
     var expanded by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var creatorUsername by remember { mutableStateOf<String?>(null) }
@@ -194,10 +218,26 @@ fun GameItem(game: Game, viewModel: BrowseGamesViewModel) {
                     fontSize = 14.sp,
                     color = expandedDetailTextColor
                 )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                        .clickable {
+
+                        }
+                        .background(Color.Gray, shape = MaterialTheme.shapes.small)
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Play!", color = Color.Yellow, fontSize = 16.sp)
+                }
             }
         }
     }
 }
+
+
 
 @Composable
 fun FilterDialog(

@@ -25,6 +25,20 @@ class GameRepository @Inject constructor() {
         return gamesCollection.document(gameId).get().await().toObject(Game::class.java)
     }
 
+    suspend fun getGamesByUserId(userId: String): List<Game> {
+        return try {
+            val querySnapshot = gamesCollection
+                .whereEqualTo("creatorId", userId)
+                .get()
+                .await()
+            querySnapshot.toObjects(Game::class.java)
+        } catch (e: Exception) {
+            println("Error fetching games by user ID: ${e.message}")
+            emptyList()
+        }
+    }
+
+
     suspend fun getAllGames(): List<Game> {
         return gamesCollection.get().await().toObjects(Game::class.java)
     }

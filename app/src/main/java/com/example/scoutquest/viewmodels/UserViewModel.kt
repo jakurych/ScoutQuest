@@ -52,4 +52,8 @@ class UserViewModel @Inject constructor(
             onResult(success)
         }
     }
+
+    fun getCurrentUserId(): String? {
+        return authRepository.getCurrentUserId()
+    }
 }
