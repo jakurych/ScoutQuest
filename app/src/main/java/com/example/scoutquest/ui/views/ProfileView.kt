@@ -46,8 +46,6 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
         return
     }
 
-    Header()
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,6 +53,9 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        Header()
+        //Spacer(modifier = Modifier.height(1.dp))
+
         user?.let {
             ProfileHeader(user = it)
             Spacer(modifier = Modifier.height(16.dp))
