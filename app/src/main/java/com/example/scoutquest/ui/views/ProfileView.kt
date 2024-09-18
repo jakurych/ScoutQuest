@@ -54,14 +54,14 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
         verticalArrangement = Arrangement.Top
     ) {
         Header()
-        //Spacer(modifier = Modifier.height(1.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         user?.let {
             ProfileHeader(user = it)
             Spacer(modifier = Modifier.height(16.dp))
             ProfileDetails(user = it, isEmailVerified = profileViewModel.isEmailVerified())
             Spacer(modifier = Modifier.height(16.dp))
-            ProfileActions(profileViewModel, navController)
+            ProfileActions(it, profileViewModel, navController)
         }
     }
 }
@@ -132,7 +132,6 @@ fun ProfileDetails(user: User, isEmailVerified: Boolean) {
     }
 }
 
-
 @Composable
 fun BadgesRow(badges: List<Badge>?) {
     Row {
@@ -156,7 +155,7 @@ fun BadgesRow(badges: List<Badge>?) {
 }
 
 @Composable
-fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavController) {
+fun ProfileActions(user: User, profileViewModel: ProfileViewModel, navController: NavController) {
     var showEmailDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -164,7 +163,7 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-    val userHasGames = profileViewModel.user.value?.createdGames?.isNotEmpty() == true
+    val userHasGames = user.createdGames?.isNotEmpty() == true
 
     if (showEmailDialog) {
         ChangeEmailDialog(
@@ -290,8 +289,6 @@ fun ProfileActions(profileViewModel: ProfileViewModel, navController: NavControl
         }
     }
 }
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -451,4 +448,3 @@ fun ChangePasswordDialog(onDismiss: () -> Unit, onConfirm: (String, String) -> U
         containerColor = drab_dark_brown
     )
 }
-

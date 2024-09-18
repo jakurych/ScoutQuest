@@ -43,10 +43,13 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun isEmailVerified(): Boolean{
-        return authRepository.getCurrentUser()?.isEmailVerified ?: false
+    fun refreshUserData() {
+        fetchUserData()
     }
 
+    fun isEmailVerified(): Boolean {
+        return authRepository.getCurrentUser()?.isEmailVerified ?: false
+    }
 
     fun logout() {
         authRepository.signOut()
@@ -59,12 +62,12 @@ class ProfileViewModel @Inject constructor(
                 _userEmail.value = newEmail
                 authRepository.sendEmailVerification()
                 onSuccess()
+                refreshUserData()
             } catch (e: Exception) {
                 onError(e.message ?: "Failed to update email")
             }
         }
     }
-
 
     fun updatePassword(newPassword: String, password: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
@@ -72,6 +75,7 @@ class ProfileViewModel @Inject constructor(
                 val success = authRepository.changePassword(newPassword, password)
                 if (success) {
                     onSuccess()
+                    refreshUserData()
                 }
             } catch (e: Exception) {
                 onError(e.message ?: "Failed to update password")
@@ -79,3 +83,4 @@ class ProfileViewModel @Inject constructor(
         }
     }
 }
+

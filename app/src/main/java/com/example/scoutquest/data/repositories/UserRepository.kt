@@ -41,7 +41,23 @@ class UserRepository @Inject constructor() {
         }
     }
 
+    suspend fun getUserIdByEmail(email: String): String? {
+        return try {
+            val querySnapshot = db.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .await()
 
+            if (querySnapshot.documents.isNotEmpty()) {
+                querySnapshot.documents[0].id
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            println("Error fetching user ID by email: ${e.message}")
+            null
+        }
+    }
 
     suspend fun updateUserEmail(userId: String, newEmail: String) {
         try {
@@ -51,4 +67,19 @@ class UserRepository @Inject constructor() {
             println("Error updating user email: ${e.message}")
         }
     }
+
+    suspend fun removeGameFromUser(userId: String, gameId: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val createdGames = snapshot.get("createdGames") as? List<String> ?: emptyList()
+                val updatedGames = createdGames.filter { it != gameId }
+                transaction.update(userRef, "createdGames", updatedGames)
+            }.await()
+        } catch (e: Exception) {
+            println("Error removing game from user: ${e.message}")
+        }
+    }
+
 }

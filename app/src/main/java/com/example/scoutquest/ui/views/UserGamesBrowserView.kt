@@ -54,7 +54,7 @@ import java.util.Locale
 
 @Composable
 fun UserGamesBrowserView(
-    userId: String = "",
+    userId: String,
     browseGamesViewModel: BrowseGamesViewModel = hiltViewModel(),
     onEditGame: (Game) -> Unit
 ) {
@@ -94,14 +94,15 @@ fun UserGamesBrowserView(
 
         LazyColumn {
             items(games) { game ->
-                GameItemWithEdit(game = game, viewModel = browseGamesViewModel, onEditGame = onEditGame)
+                GameItemWithEdit(game = game, viewModel = browseGamesViewModel, userId = userId, onEditGame = onEditGame)
             }
         }
     }
 }
 
+
 @Composable
-fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel, onEditGame: (Game) -> Unit) {
+fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel, userId: String, onEditGame: (Game) -> Unit) {
     var expanded by rememberSaveable(game.gameId) { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var creatorUsername by remember { mutableStateOf<String?>(null) }
@@ -122,7 +123,7 @@ fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel, onEditGame: (G
                 androidx.compose.material3.TextButton(
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.removeGame(game.gameId)
+                            viewModel.removeGame(game.gameId, userId)
                             showDialog = false
                         }
                     },

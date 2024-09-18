@@ -53,12 +53,14 @@ class BrowseGamesViewModel @Inject constructor(
         }
     }
 
-    fun removeGame(gameId: String) {
+    fun removeGame(gameId: String, userId: String) {
         viewModelScope.launch {
             gameRepository.removeGame(gameId)
-            loadGames()
+            userRepository.removeGameFromUser(userId, gameId)
+            loadUserGames(userId)
         }
     }
+
 
     fun loadUserGames(userId: String) {
         viewModelScope.launch {
