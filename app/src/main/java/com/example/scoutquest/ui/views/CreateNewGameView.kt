@@ -428,9 +428,13 @@ fun CreateNewGameView(
                 }
             }
 
-            is GameSaveStatus.Failure -> TODO()
-            GameSaveStatus.Idle -> TODO()
+            is GameSaveStatus.Failure -> {
+            }
+
+            GameSaveStatus.Idle -> {
+            }
         }
+
 
         if (showDialog) {
             AlertDialog(

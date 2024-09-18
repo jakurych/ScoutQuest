@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -29,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +44,7 @@ import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.theme.black_olive
 import com.example.scoutquest.ui.theme.detailTextColor
+import com.example.scoutquest.ui.theme.eerie_black
 import com.example.scoutquest.ui.theme.expandedDetailTextColor
 import com.example.scoutquest.ui.theme.moss_green
 import com.example.scoutquest.viewmodels.BrowseGamesViewModel
@@ -98,14 +102,56 @@ fun UserGamesBrowserView(
 
 @Composable
 fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel, onEditGame: (Game) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable(game.gameId) { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var creatorUsername by remember { mutableStateOf<String?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(game.creatorId) {
         coroutineScope.launch {
             creatorUsername = viewModel.getCreatorUsername(game.creatorId)
         }
+    }
+
+    if (showDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Confirm Delete") },
+            text = { Text("Are you sure you want to delete: ${game.name}?") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.removeGame(game.gameId)
+                            showDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color.Red
+                    )
+                ) {
+                    Text(
+                        "Delete",
+                        color = Color.Red,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { showDialog = false },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text(
+                        "Cancel",
+                        color = Color.White
+                    )
+                }
+            },
+            containerColor = eerie_black
+        )
     }
 
     Card(
@@ -181,18 +227,39 @@ fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel, onEditGame: (G
                     color = expandedDetailTextColor
                 )
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                        .clickable {
-                            onEditGame(game)
-                        }
-                        .background(Color.Gray, shape = MaterialTheme.shapes.small)
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text("Edit", color = Color.White, fontSize = 16.sp)
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 12.dp)
+                            .clickable {
+                                showDialog = true
+                            }
+                            .background(Color.Red, shape = MaterialTheme.shapes.small)
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Delete", color = Color.White, fontSize = 16.sp)
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 12.dp)
+                            .clickable {
+                                onEditGame(game)
+                            }
+                            .background(Color.Gray, shape = MaterialTheme.shapes.small)
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Edit", color = Color.White, fontSize = 16.sp)
+                    }
                 }
             }
         }

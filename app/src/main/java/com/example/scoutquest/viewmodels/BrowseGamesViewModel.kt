@@ -53,6 +53,13 @@ class BrowseGamesViewModel @Inject constructor(
         }
     }
 
+    fun removeGame(gameId: String) {
+        viewModelScope.launch {
+            gameRepository.removeGame(gameId)
+            loadGames()
+        }
+    }
+
     fun loadUserGames(userId: String) {
         viewModelScope.launch {
             val userGames = gameRepository.getGamesByUserId(userId)

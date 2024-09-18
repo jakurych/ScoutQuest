@@ -24,6 +24,7 @@ import com.example.scoutquest.ui.theme.*
 import com.example.scoutquest.viewmodels.ProfileViewModel
 import com.example.scoutquest.viewmodels.UserViewModel
 import com.example.scoutquest.data.models.Badge
+import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.UserBrowser
 
 @Composable
@@ -44,6 +45,8 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
         }
         return
     }
+
+    Header()
 
     Column(
         modifier = Modifier
