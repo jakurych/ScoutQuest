@@ -51,7 +51,8 @@ import java.util.Locale
 @Composable
 fun UserGamesBrowserView(
     userId: String = "",
-    browseGamesViewModel: BrowseGamesViewModel = hiltViewModel()
+    browseGamesViewModel: BrowseGamesViewModel = hiltViewModel(),
+    onEditGame: (Game) -> Unit
 ) {
     LaunchedEffect(userId) {
         browseGamesViewModel.loadUserGames(userId)
@@ -89,14 +90,14 @@ fun UserGamesBrowserView(
 
         LazyColumn {
             items(games) { game ->
-                GameItemWithEdit(game = game, viewModel = browseGamesViewModel)
+                GameItemWithEdit(game = game, viewModel = browseGamesViewModel, onEditGame = onEditGame)
             }
         }
     }
 }
 
 @Composable
-fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel) {
+fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel, onEditGame: (Game) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var creatorUsername by remember { mutableStateOf<String?>(null) }
@@ -185,7 +186,7 @@ fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel) {
                         .fillMaxWidth()
                         .padding(vertical = 12.dp)
                         .clickable {
-
+                            onEditGame(game)
                         }
                         .background(Color.Gray, shape = MaterialTheme.shapes.small)
                         .padding(vertical = 12.dp),

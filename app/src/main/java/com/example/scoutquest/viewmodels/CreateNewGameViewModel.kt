@@ -29,6 +29,7 @@ class CreateNewGameViewModel @Inject constructor(
     private val gameCalculations: GameCalculations
 ) : ViewModel() {
 
+    private var currentGameId: String? = null
 
     // Task types
     var currentQuizDetails: Quiz? = null
@@ -38,6 +39,9 @@ class CreateNewGameViewModel @Inject constructor(
 
     private val _gameSaveStatus = MutableStateFlow<GameSaveStatus>(GameSaveStatus.Idle)
     val gameSaveStatus: StateFlow<GameSaveStatus> = _gameSaveStatus
+
+    private val _editMode = MutableStateFlow(false)
+    val editMode: StateFlow<Boolean> get() = _editMode
 
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
@@ -174,92 +178,31 @@ class CreateNewGameViewModel @Inject constructor(
         }
     }
 
+    fun loadGame(game: Game) {
+        _editMode.value = true
+        currentGameId = gameRepository.getGameId(game)
 
-    fun saveGame() {
-        viewModelScope.launch {
-            val user = FirebaseAuth.getInstance().currentUser
-            if (user == null) {
-                Log.e("SaveGame", "No user logged in")
-                return@launch
-            }
-
-            val newGame = Game(
-                creatorId = user.uid,
-                creatorEmail = _creatorMail.value,
-                name = _name.value,
-                description = _description.value,
-                tasks = _tasks.value,
-                isPublic = _isPublic.value
-            )
-
-            try {
-
-                val newGameId = gameRepository.addGame(newGame)
-                Log.d("SaveGame", "Game saved successfully with ID: $newGameId")
-                val userId = user.uid
-                val userRef = Firebase.firestore.collection("users").document(userId)
-                val currentUserData = userRef.get().await().toObject(User::class.java)
-                val updatedGameIds = currentUserData?.createdGames.orEmpty().toMutableList()
-                updatedGameIds.add(newGameId)
-
-                userRef.update("createdGames", updatedGameIds).await()
-
-                Log.d("SaveGame", "Game added to user's list")
-                _gameSaveStatus.value = GameSaveStatus.Success
-
-            } catch (e: Exception) {
-                Log.e("SaveGame", "Error saving game or updating user", e)
-                _gameSaveStatus.value = GameSaveStatus.Failure("Error saving game or updating user")
-            }
-
-            // Game logs
-            Log.d("GameData", "=== Game ===")
-            Log.d("GameData", "Creator: ${_creatorMail.value}")
-            Log.d("GameData", "Name: ${_name.value}")
-            Log.d("GameData", "Description: ${_description.value}")
-            Log.d("GameData", "Is Public: ${_isPublic.value}")
-            Log.d("GameData", "Number of Tasks: ${_tasks.value.size}")
-
-            // Task logs
-            _tasks.value.forEachIndexed { index, task ->
-                Log.d("TaskData", "----- Task ${index + 1} -----")
-                Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
-                Log.d("TaskData", "Description: ${task.description}")
-                Log.d("TaskData", "Points: ${task.points}")
-                Log.d("TaskData", "Location: (${task.latitude}, ${task.longitude})")
-                Log.d("TaskData", "Marker Color: ${task.markerColor}")
-                Log.d("TaskData", "Task Type: ${task.taskType}")
-
-                // Quiz logs
-                task.quizDetails?.let { quiz ->
-                    Log.d("TaskDetails", "---- Quiz Details ----")
-                    quiz.questions.forEachIndexed { questionIndex, question ->
-                        Log.d("TaskDetails", "Question ${questionIndex + 1}: ${question.questionText}")
-                        Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
-                        Log.d("TaskDetails", "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}")
-                    }
-                }
-
-                // Note logs
-                task.noteDetails?.let { note ->
-                    Log.d("TaskDetails", "---- Note Details ----")
-                    Log.d("TaskDetails", "Notes: ${note.notes.joinToString(", ")}")
-                }
-
-                // True/False logs
-                task.trueFalseDetails?.let { trueFalse ->
-                    Log.d("TaskDetails", "---- True/False Details ----")
-                    trueFalse.questionsTf.forEachIndexed { questionIndex, question ->
-                        Log.d("TaskDetails", "Question ${questionIndex + 1}: $question")
-                        Log.d("TaskDetails", "Answer: ${trueFalse.answersTf[questionIndex]}")
-                    }
-                }
-            }
-        }
+        _name.value = game.name
+        _description.value = game.description
+        _isPublic.value = game.isPublic
+        _tasks.value = game.tasks
+        _highestTaskId.value = game.tasks.maxOfOrNull { it.taskId } ?: 0
+        currentTaskTitle = ""
+        currentTaskDescription = ""
+        currentTaskPoints = "0"
+        currentLatitude = game.tasks.firstOrNull()?.latitude ?: 52.253126
+        currentLongitude = game.tasks.firstOrNull()?.longitude ?: 20.900157
+        currentMarkerColor = "red"
     }
+
 
     fun calculateTotalDistance(): String {
         return gameCalculations.calculateTotalDistance(_tasks.value)
+    }
+
+    private fun resetEditMode() {
+        _editMode.value = false
+        currentGameId = null
     }
 
     fun resetGameData() {
@@ -286,10 +229,137 @@ class CreateNewGameViewModel @Inject constructor(
         currentTrueFalseDetails = null
         _gameSaveStatus.value = GameSaveStatus.Idle
     }
+
+    fun saveGame() {
+        viewModelScope.launch {
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user == null) {
+                Log.e("SaveGame", "No user logged in")
+                return@launch
+            }
+
+            val game = Game(
+                gameId = "",
+                creatorId = user.uid,
+                creatorEmail = _creatorMail.value,
+                name = _name.value,
+                description = _description.value,
+                tasks = _tasks.value,
+                isPublic = _isPublic.value
+            )
+
+            try {
+                val newGameId = gameRepository.addGame(game)
+                Log.d("SaveGame", "Game saved successfully with ID: $newGameId")
+                val userId = user.uid
+                val userRef = Firebase.firestore.collection("users").document(userId)
+                val currentUserData = userRef.get().await().toObject(User::class.java)
+                val updatedGameIds = currentUserData?.createdGames.orEmpty().toMutableList()
+                updatedGameIds.add(newGameId)
+
+                userRef.update("createdGames", updatedGameIds).await()
+
+                Log.d("SaveGame", "Game added to user's list")
+                _gameSaveStatus.value = GameSaveStatus.Success("Game created successfully!")
+
+            } catch (e: Exception) {
+                Log.e("SaveGame", "Error saving game", e)
+                _gameSaveStatus.value = GameSaveStatus.Failure("Error saving game")
+            }
+
+            logGameDetails(game)
+        }
+    }
+
+    fun updateGame() {
+        viewModelScope.launch {
+            val user = FirebaseAuth.getInstance().currentUser
+            if (user == null) {
+                Log.e("UpdateGame", "No user logged in")
+                return@launch
+            }
+
+            Log.d("UpdateGame", "Current game ID: $currentGameId")
+            Log.d("UpdateGame", "Edit mode: ${_editMode.value}")
+
+            if (currentGameId.isNullOrEmpty()) {
+                Log.e("UpdateGame", "No game ID set")
+                _gameSaveStatus.value = GameSaveStatus.Failure("No game ID set")
+                return@launch
+            }
+
+            val game = Game(
+                gameId = currentGameId!!,
+                creatorId = user.uid,
+                creatorEmail = _creatorMail.value,
+                name = _name.value,
+                description = _description.value,
+                tasks = _tasks.value,
+                isPublic = _isPublic.value
+            )
+
+            try {
+                val gameRef = Firebase.firestore.collection("games").document(currentGameId!!)
+                gameRef.set(game).await()
+
+                Log.d("UpdateGame", "Game updated successfully with ID: $currentGameId")
+                _gameSaveStatus.value = GameSaveStatus.Success("Game updated successfully!")
+                resetEditMode()
+
+            } catch (e: Exception) {
+                Log.e("UpdateGame", "Error updating game", e)
+                _gameSaveStatus.value = GameSaveStatus.Failure("Error updating game")
+            }
+
+            logGameDetails(game)
+        }
+    }
+
+    private fun logGameDetails(game: Game) {
+        Log.d("GameData", "=== Game ===")
+        Log.d("GameData", "Creator: ${game.creatorEmail}")
+        Log.d("GameData", "Name: ${game.name}")
+        Log.d("GameData", "Description: ${game.description}")
+        Log.d("GameData", "Is Public: ${game.isPublic}")
+        Log.d("GameData", "Number of Tasks: ${game.tasks.size}")
+
+        game.tasks.forEachIndexed { index, task ->
+            Log.d("TaskData", "----- Task ${index + 1} -----")
+            Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
+            Log.d("TaskData", "Description: ${task.description}")
+            Log.d("TaskData", "Points: ${task.points}")
+            Log.d("TaskData", "Location: (${task.latitude}, ${task.longitude})")
+            Log.d("TaskData", "Marker Color: ${task.markerColor}")
+            Log.d("TaskData", "Task Type: ${task.taskType}")
+
+            task.quizDetails?.let { quiz ->
+                Log.d("TaskDetails", "---- Quiz Details ----")
+                quiz.questions.forEachIndexed { questionIndex, question ->
+                    Log.d("TaskDetails", "Question ${questionIndex + 1}: ${question.questionText}")
+                    Log.d("TaskDetails", "Options: ${question.options.joinToString(", ")}")
+                    Log.d("TaskDetails", "Correct Answer Index: ${question.correctAnswerIndex.joinToString(", ")}")
+                }
+            }
+
+            task.noteDetails?.let { note ->
+                Log.d("TaskDetails", "---- Note Details ----")
+                Log.d("TaskDetails", "Notes: ${note.notes.joinToString(", ")}")
+            }
+
+            task.trueFalseDetails?.let { trueFalse ->
+                Log.d("TaskDetails", "---- True/False Details ----")
+                trueFalse.questionsTf.forEachIndexed { questionIndex, question ->
+                    Log.d("TaskDetails", "Question ${questionIndex + 1}: $question")
+                    Log.d("TaskDetails", "Answer: ${trueFalse.answersTf[questionIndex]}")
+                }
+            }
+        }
+    }
+
 }
 
 sealed class GameSaveStatus {
     data object Idle : GameSaveStatus()
-    data object Success : GameSaveStatus()
+    data class Success(val message: String) : GameSaveStatus()
     data class Failure(val message: String) : GameSaveStatus()
 }

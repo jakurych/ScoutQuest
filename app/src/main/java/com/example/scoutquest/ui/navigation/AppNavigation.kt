@@ -10,29 +10,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.scoutquest.ui.views.AddTaskView
-import com.example.scoutquest.ui.views.BrowseGamesView
-import com.example.scoutquest.ui.views.CreateNewGameView
-import com.example.scoutquest.ui.views.JoinGameView
-import com.example.scoutquest.ui.views.LoginView
-import com.example.scoutquest.ui.views.MainScreenView
-import com.example.scoutquest.ui.views.NewGameView
-import com.example.scoutquest.ui.views.ProfileView
-import com.example.scoutquest.ui.views.SettingsView
-import com.example.scoutquest.ui.views.UserGamesBrowserView
-import com.example.scoutquest.ui.views.tasktypes.CreateNoteView
-import com.example.scoutquest.ui.views.tasktypes.CreateQuizView
-import com.example.scoutquest.ui.views.tasktypes.CreateTrueFalseView
-import com.example.scoutquest.viewmodels.BrowseGamesViewModel
-import com.example.scoutquest.viewmodels.CreateNewGameViewModel
-import com.example.scoutquest.viewmodels.JoinGameViewModel
-import com.example.scoutquest.viewmodels.LoginViewModel
-import com.example.scoutquest.viewmodels.ProfileViewModel
-import com.example.scoutquest.viewmodels.SettingsViewModel
-import com.example.scoutquest.viewmodels.UserViewModel
-import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
-import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
-import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
+import com.example.scoutquest.ui.views.*
+import com.example.scoutquest.ui.views.tasktypes.*
+import com.example.scoutquest.viewmodels.*
+import com.example.scoutquest.viewmodels.tasktypes.*
 
 @Composable
 fun AppNavigation() {
@@ -93,8 +74,6 @@ fun AppNavigation() {
                     navController = navController,
                     taskToEdit = taskToEdit,
                     mapMarkers = mapMarkers,
-
-                    //typy taskow
                     quizViewModel = quizViewModel,
                     noteViewModel = noteViewModel,
                     trueFalseViewModel = trueFalseViewModel
@@ -126,10 +105,16 @@ fun AppNavigation() {
             composable(route = UserBrowser) {
                 val userId = userViewModel.getCurrentUserId()
                 if (userId != null) {
-                    UserGamesBrowserView(userId = userId, browseGamesViewModel = browseGamesViewModel)
+                    UserGamesBrowserView(
+                        userId = userId,
+                        browseGamesViewModel = browseGamesViewModel,
+                        onEditGame = { game ->
+                            createNewGameViewModel.loadGame(game)
+                            navController.navigate(Creator)
+                        }
+                    )
                 }
             }
-
         }
     }
 }

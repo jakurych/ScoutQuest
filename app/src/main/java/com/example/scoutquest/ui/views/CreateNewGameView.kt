@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,11 +53,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
-import com.example.scoutquest.ui.theme.bistre
 import com.example.scoutquest.ui.theme.black_olive
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.moss_green
@@ -74,10 +73,12 @@ import com.google.maps.android.compose.rememberCameraPositionState
 fun CreateNewGameView(
     createNewGameViewModel: CreateNewGameViewModel,
     onEditTask: (Task) -> Unit,
-    onNavigateToMainScreen: () -> Unit // Callback for navigation
+    onNavigateToMainScreen: () -> Unit,
+    existingGame: Game? = null
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
+    val editMode by createNewGameViewModel.editMode.collectAsState()
 
     val padding = screenWidth * 0.05f
     val elementSpacing = screenWidth * 0.02f
@@ -106,6 +107,11 @@ fun CreateNewGameView(
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     var showDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(existingGame) {
+        existingGame?.let {
+            createNewGameViewModel.loadGame(it)
+        }
+    }
 
     fun calculateNewIndex(draggedIndex: Int, dragOffsetY: Float): Int {
         val newIndex = draggedIndex + (dragOffsetY / 150).toInt()
@@ -352,14 +358,22 @@ fun CreateNewGameView(
 
                 item {
                     Button(
-                        onClick = { createNewGameViewModel.saveGame() },
+                        onClick = {
+                            if (editMode) {
+                                createNewGameViewModel.updateGame()
+                            } else {
+                                createNewGameViewModel.saveGame()
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(elementSpacing),
                         colors = ButtonDefaults.buttonColors(containerColor = button_green)
                     ) {
-                        Text("Create game!", color = Color.White)
+                        Text(if (editMode) "Update game" else "Create game", color = Color.White)
                     }
+
+
                 }
             }
         }
@@ -414,12 +428,8 @@ fun CreateNewGameView(
                 }
             }
 
-            is GameSaveStatus.Failure -> {
-
-            }
-
-            else -> {
-            }
+            is GameSaveStatus.Failure -> TODO()
+            GameSaveStatus.Idle -> TODO()
         }
 
         if (showDialog) {
@@ -428,10 +438,11 @@ fun CreateNewGameView(
                     showDialog = false
                 },
                 title = {
-                    Text(text = "Sukces")
+                    Text(text = "Success")
                 },
                 text = {
-                    Text("Gra została pomyślnie zapisana!")
+                    val successMessage = (gameSaveStatus as? GameSaveStatus.Success)?.message ?: "Operation successful!"
+                    Text(successMessage)
                 },
                 confirmButton = {
                     Box(
@@ -441,7 +452,6 @@ fun CreateNewGameView(
                             text = "OK",
                             onClick = {
                                 createNewGameViewModel.resetGameData()
-
                                 showDialog = false
                                 onNavigateToMainScreen()
                             },
@@ -453,6 +463,6 @@ fun CreateNewGameView(
             )
         }
 
-
     }
 }
+

@@ -16,6 +16,10 @@ class GameRepository @Inject constructor() {
         return documentReference.id //identyfikator nowo utworzonej gry aby utworzyć referencję
     }
 
+    fun getGameId(game: Game): String {
+        return game.gameId.takeIf { it.isNotEmpty() } ?: throw IllegalArgumentException("Game ID is empty")
+    }
+
 
     suspend fun removeGame(gameId: String) {
         gamesCollection.document(gameId).delete().await()
@@ -65,7 +69,9 @@ class GameRepository @Inject constructor() {
         updateGame(gameId, updatedGame)
     }
 
-    private suspend fun updateGame(gameId: String, game: Game) {
+    suspend fun updateGame(gameId: String, game: Game) {
         gamesCollection.document(gameId).set(game).await()
     }
+
+
 }
