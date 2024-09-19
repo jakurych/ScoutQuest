@@ -12,8 +12,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.scoutquest.ui.views.*
 import com.example.scoutquest.ui.views.tasktypes.*
+import com.example.scoutquest.ui.views.gamesession.GameMapView
 import com.example.scoutquest.viewmodels.*
 import com.example.scoutquest.viewmodels.tasktypes.*
+import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 
 @Composable
 fun AppNavigation() {
@@ -30,6 +32,7 @@ fun AppNavigation() {
     val noteViewModel: NoteViewModel = viewModel()
     val trueFalseViewModel: TrueFalseViewModel = viewModel()
     val browseGamesViewModel: BrowseGamesViewModel = viewModel()
+    val gameSessionViewModel: GameSessionViewModel = viewModel()
 
     CompositionLocalProvider(LocalNavigation provides navController) {
         NavHost(navController = navController, startDestination = MainScreenRoute) {
@@ -99,7 +102,11 @@ fun AppNavigation() {
             }
             composable(route = Browser) {
                 BrowseGamesView(
-                    browseGamesViewModel = browseGamesViewModel
+                    browseGamesViewModel = browseGamesViewModel,
+                    onPlayGame = { game ->
+                        gameSessionViewModel.setGame(game) // Przekaż grę do ViewModel
+                        navController.navigate(GameMap) // Nawiguj do GameMap
+                    }
                 )
             }
             composable(route = UserBrowser) {
@@ -114,6 +121,14 @@ fun AppNavigation() {
                         }
                     )
                 }
+            }
+            composable(route = GameMap) {
+                GameMapView(
+                    viewModel = gameSessionViewModel,
+                    onTaskReached = { task ->
+                        gameSessionViewModel.onTaskReached(task)
+                    }
+                )
             }
         }
     }

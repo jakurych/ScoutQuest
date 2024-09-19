@@ -27,7 +27,8 @@ import java.util.Locale
 
 @Composable
 fun BrowseGamesView(
-    browseGamesViewModel: BrowseGamesViewModel = hiltViewModel()
+    browseGamesViewModel: BrowseGamesViewModel = hiltViewModel(),
+    onPlayGame: (Game) -> Unit // Callback do obsługi rozpoczęcia gry
 ) {
     val games by browseGamesViewModel.filteredGames.collectAsState()
     val allGames by browseGamesViewModel.games.collectAsState()
@@ -128,14 +129,20 @@ fun BrowseGamesView(
         }
         LazyColumn {
             items(games) { game ->
-                GameItemWithPlay(game = game, viewModel = browseGamesViewModel)
+                GameItemWithPlay(game = game, viewModel = browseGamesViewModel) { selectedGame ->
+                    onPlayGame(selectedGame) // Przekaż wybraną grę
+                }
             }
         }
     }
 }
 
 @Composable
-fun GameItemWithPlay(game: Game, viewModel: BrowseGamesViewModel) {
+fun GameItemWithPlay(
+    game: Game,
+    viewModel: BrowseGamesViewModel,
+    onPlayGame: (Game) -> Unit // Dodaj callback do obsługi kliknięcia "Play!"
+) {
     var expanded by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var creatorUsername by remember { mutableStateOf<String?>(null) }
@@ -224,7 +231,7 @@ fun GameItemWithPlay(game: Game, viewModel: BrowseGamesViewModel) {
                         .fillMaxWidth()
                         .padding(vertical = 12.dp)
                         .clickable {
-
+                            onPlayGame(game) // Wywołaj callback z grą
                         }
                         .background(Color.Gray, shape = MaterialTheme.shapes.small)
                         .padding(vertical = 12.dp),
@@ -236,8 +243,6 @@ fun GameItemWithPlay(game: Game, viewModel: BrowseGamesViewModel) {
         }
     }
 }
-
-
 
 @Composable
 fun FilterDialog(
@@ -348,5 +353,3 @@ fun FilterDialog(
         containerColor = black_olive
     )
 }
-
-

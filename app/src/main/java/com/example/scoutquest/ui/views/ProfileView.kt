@@ -1,5 +1,8 @@
 package com.example.scoutquest.ui.views
 
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,9 +32,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel) {
@@ -79,32 +85,78 @@ fun ProfileHeader(user: User, profileViewModel: ProfileViewModel) {
 
     var showPhotoUpdateDialog by remember { mutableStateOf(false) }
     var photoUpdateMessage by remember { mutableStateOf("") }
-    var photoUpdateSuccess by remember { mutableStateOf(false) }
+    var photoUpdateSuccess by remember { mutableStateOf<Boolean?>(null) }
+    var showImagePickerDialog by remember { mutableStateOf(false) }
 
-    val launcher = rememberLauncherForActivityResult(
+    val imageUri = remember { mutableStateOf<Uri?>(null) }
+
+    //picture with the camera
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            imageUri.value?.let {
+                showPhotoUpdateDialog = true
+                photoUpdateSuccess = null
+                photoUpdateMessage = "Changing photo process in progress. Your photo should be updated soon!"
+                handleImageUri(it, context, profileViewModel, scope, onSuccess = {
+                    photoUpdateSuccess = true
+                    photoUpdateMessage = "Profile picture updated successfully!"
+                }, onError = {
+                    photoUpdateSuccess = false
+                    photoUpdateMessage = "Failed to update profile picture."
+                })
+            }
+        }
+    }
+
+    //picture from gallery
+    val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-
-            photoUpdateMessage = "Changing profile photo process started! Your photo will be updated soon."
-            photoUpdateSuccess = true
             showPhotoUpdateDialog = true
-
-            scope.launch {
-                profileViewModel.uploadProfilePicture(
-                    uri,
-                    context,
-                    onSuccess = {
-                        profileViewModel.fetchUserData()
-                    },
-                    onError = { error ->
-                        photoUpdateMessage = error
-                        photoUpdateSuccess = false
-                        showPhotoUpdateDialog = true
-                    }
-                )
-            }
+            photoUpdateSuccess = null
+            photoUpdateMessage = "Changing photo process in progress. Your photo should be updated soon!"
+            handleImageUri(it, context, profileViewModel, scope, onSuccess = {
+                photoUpdateSuccess = true
+                photoUpdateMessage = "Profile picture updated successfully!"
+            }, onError = {
+                photoUpdateSuccess = false
+                photoUpdateMessage = "Failed to update profile picture."
+            })
         }
+    }
+
+    if (showImagePickerDialog) {
+        AlertDialog(
+            onDismissRequest = { showImagePickerDialog = false },
+            title = { Text("Select Image Source", color = Color.White) },
+            text = { Text("Choose an option to update your profile picture", color = Color.White) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showImagePickerDialog = false
+                    val photoFile = createImageFile(context)
+                    imageUri.value = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        photoFile
+                    )
+                    cameraLauncher.launch(imageUri.value)
+                }) {
+                    Text("Camera", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showImagePickerDialog = false
+                    galleryLauncher.launch("image/*")
+                }) {
+                    Text("Gallery", color = Color.White)
+                }
+            },
+            containerColor = drab_dark_brown
+        )
     }
 
     if (showPhotoUpdateDialog) {
@@ -115,9 +167,22 @@ fun ProfileHeader(user: User, profileViewModel: ProfileViewModel) {
                     Text("OK", color = Color.White)
                 }
             },
-            title = { Text(if (photoUpdateSuccess) "Success" else "Error", color = Color.White) },
+            title = {
+                Text(
+                    when (photoUpdateSuccess) {
+                        true -> "Success"
+                        false -> "Error"
+                        null -> "Information"
+                    },
+                    color = Color.White
+                )
+            },
             text = { Text(photoUpdateMessage, color = Color.White) },
-            containerColor = if (photoUpdateSuccess) moss_green else Color.Red
+            containerColor = when (photoUpdateSuccess) {
+                true -> moss_green
+                false -> Color.Red
+                null -> drab_dark_brown
+            }
         )
     }
 
@@ -142,7 +207,7 @@ fun ProfileHeader(user: User, profileViewModel: ProfileViewModel) {
                     .clip(CircleShape)
                     .border(2.dp, Color.Gray, CircleShape)
                     .clickable {
-                        launcher.launch("image/*")
+                        showImagePickerDialog = true
                     },
                 contentScale = ContentScale.Crop
             )
@@ -161,6 +226,38 @@ fun ProfileHeader(user: User, profileViewModel: ProfileViewModel) {
 
 
 
+private fun handleImageUri(
+    uri: Uri,
+    context: Context,
+    profileViewModel: ProfileViewModel,
+    scope: CoroutineScope,
+    onSuccess: () -> Unit,
+    onError: () -> Unit
+) {
+    scope.launch {
+        profileViewModel.uploadProfilePicture(
+            uri,
+            context,
+            onSuccess = {
+                profileViewModel.fetchUserData()
+                onSuccess()
+            },
+            onError = {
+                onError()
+            }
+        )
+    }
+}
+
+
+private fun createImageFile(context: Context): File {
+    val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+    return File.createTempFile(
+        "JPEG_${System.currentTimeMillis()}_",
+        ".jpg",
+        storageDir
+    )
+}
 
 @Composable
 fun ProfileDetails(user: User, isEmailVerified: Boolean) {

@@ -77,6 +77,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.play.services.location)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

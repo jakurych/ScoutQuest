@@ -14,5 +14,6 @@ const val CreateNote = "/createnote"
 const val Browser = "/browser"
 const val CreateTrueFalse = "/createtruefalse"
 const val UserBrowser = "/userbrowser"
+const val GameMap = "/gamemap"
 
 
