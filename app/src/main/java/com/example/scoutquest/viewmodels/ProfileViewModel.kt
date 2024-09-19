@@ -1,5 +1,7 @@
 package com.example.scoutquest.viewmodels
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.models.User
@@ -43,7 +45,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun refreshUserData() {
+    private fun refreshUserData() {
         fetchUserData()
     }
 
@@ -82,5 +84,23 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+
+    fun uploadProfilePicture(uri: Uri, context: Context) {
+        viewModelScope.launch {
+            val userId = authRepository.getCurrentUser()?.uid
+            userId?.let {
+                val imageUrl = userRepository.uploadProfileImage(it, uri, context)
+                if (imageUrl != null) {
+                    fetchUserData()
+                } else {
+                    println("Failed to upload image")
+                }
+            }
+        }
+    }
+
+
 }
+
+
 

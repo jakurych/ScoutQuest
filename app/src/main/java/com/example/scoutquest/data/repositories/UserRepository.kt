@@ -1,13 +1,17 @@
 package com.example.scoutquest.data.repositories
 
+import android.content.Context
+import android.net.Uri
 import com.example.scoutquest.data.models.User
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import com.google.firebase.storage.FirebaseStorage
 
 class UserRepository @Inject constructor() {
 
     private val db = FirebaseFirestore.getInstance()
+    private val storageRef = FirebaseStorage.getInstance().reference
 
     suspend fun getEmailByUsername(username: String): String? {
         return try {
@@ -82,4 +86,32 @@ class UserRepository @Inject constructor() {
         }
     }
 
+    suspend fun uploadProfileImage(userId: String, uri: Uri, context: Context): String? {
+        return try {
+            val profileImagesRef = storageRef.child("profileImages/$userId.jpg")
+            val inputStream = context.contentResolver.openInputStream(uri)
+            inputStream?.let { stream ->
+                val uploadTask = profileImagesRef.putStream(stream)
+                uploadTask.await()
+                val downloadUrl = profileImagesRef.downloadUrl.await()
+                val imageUrl = downloadUrl.toString()
+                updateUserProfilePicture(userId, imageUrl)
+                imageUrl
+            }
+        } catch (e: Exception) {
+            println("Error uploading profile image: ${e.message}")
+            e.printStackTrace()
+            null
+        }
+    }
+
+
+    private suspend fun updateUserProfilePicture(userId: String, imageUrl: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            userRef.update("profilePictureUrl", imageUrl).await()
+        } catch (e: Exception) {
+            println("Error updating user profile picture: ${e.message}")
+        }
+    }
 }

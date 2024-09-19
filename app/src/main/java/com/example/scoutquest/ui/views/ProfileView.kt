@@ -16,7 +16,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
 import com.example.scoutquest.data.models.User
 import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.ui.navigation.MainScreenRoute
@@ -26,6 +25,12 @@ import com.example.scoutquest.viewmodels.UserViewModel
 import com.example.scoutquest.data.models.Badge
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.UserBrowser
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.rememberAsyncImagePainter
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel) {
@@ -57,7 +62,7 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
         Spacer(modifier = Modifier.height(16.dp))
 
         user?.let {
-            ProfileHeader(user = it)
+            ProfileHeader(user = it, profileViewModel = profileViewModel)
             Spacer(modifier = Modifier.height(16.dp))
             ProfileDetails(user = it, isEmailVerified = profileViewModel.isEmailVerified())
             Spacer(modifier = Modifier.height(16.dp))
@@ -67,7 +72,20 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
 }
 
 @Composable
-fun ProfileHeader(user: User) {
+fun ProfileHeader(user: User, profileViewModel: ProfileViewModel) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                profileViewModel.uploadProfilePicture(uri, context)
+            }
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -80,12 +98,17 @@ fun ProfileHeader(user: User) {
             modifier = Modifier.padding(16.dp)
         ) {
             Image(
-                painter = rememberImagePainter(data = user.profilePictureUrl),
+                painter = rememberAsyncImagePainter(
+                    model = user.profilePictureUrl ?: "https://via.placeholder.com/150"
+                ),
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .border(2.dp, Color.Gray, CircleShape),
+                    .border(2.dp, Color.Gray, CircleShape)
+                    .clickable {
+                        launcher.launch("image/*")
+                    },
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(16.dp))
