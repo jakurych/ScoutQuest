@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
 )
 
 package com.example.scoutquest.ui.views
@@ -61,7 +62,7 @@ fun AddTaskView(
     var taskPoints by remember { mutableStateOf(viewModel.currentTaskPoints) }
     var latitude by remember { mutableDoubleStateOf(viewModel.currentLatitude) }
     var longitude by remember { mutableDoubleStateOf(viewModel.currentLongitude) }
-    var markerColor by remember { mutableStateOf(viewModel.currentMarkerColor) }
+    var markerColor by remember { mutableStateOf("blue") }
 
     val fullscreenCameraPositionState = rememberCameraPositionState {
         position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
@@ -75,12 +76,20 @@ fun AddTaskView(
         noteViewModel.setCreateNewGameViewModel(viewModel)
         trueFalseViewModel.setCreateNewGameViewModel(viewModel)
 
+        //vals from VM
         taskTitle = viewModel.currentTaskTitle
         taskDescription = viewModel.currentTaskDescription
         taskPoints = viewModel.currentTaskPoints
         latitude = viewModel.currentLatitude
         longitude = viewModel.currentLongitude
-        markerColor = viewModel.currentMarkerColor
+
+        //starting marker color
+        if (viewModel.currentMarkerColor.isNotBlank()) {
+            markerColor = viewModel.currentMarkerColor
+        } else {
+            markerColor = "blue"
+            viewModel.currentMarkerColor = "blue"
+        }
 
         if (taskToEdit != null) {
             viewModel.setTaskDetailsEntered(true)
@@ -126,6 +135,7 @@ fun AddTaskView(
             currentMarkerColor = markerColor
         }
     }
+
 
     Column(
         modifier = Modifier
