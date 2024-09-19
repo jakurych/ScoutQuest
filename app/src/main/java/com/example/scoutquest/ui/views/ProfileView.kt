@@ -29,6 +29,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.launch
 
@@ -76,14 +77,48 @@ fun ProfileHeader(user: User, profileViewModel: ProfileViewModel) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    var showPhotoUpdateDialog by remember { mutableStateOf(false) }
+    var photoUpdateMessage by remember { mutableStateOf("") }
+    var photoUpdateSuccess by remember { mutableStateOf(false) }
+
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
+
+            photoUpdateMessage = "Changing profile photo process started! Your photo will be updated soon."
+            photoUpdateSuccess = true
+            showPhotoUpdateDialog = true
+
             scope.launch {
-                profileViewModel.uploadProfilePicture(uri, context)
+                profileViewModel.uploadProfilePicture(
+                    uri,
+                    context,
+                    onSuccess = {
+                        profileViewModel.fetchUserData()
+                    },
+                    onError = { error ->
+                        photoUpdateMessage = error
+                        photoUpdateSuccess = false
+                        showPhotoUpdateDialog = true
+                    }
+                )
             }
         }
+    }
+
+    if (showPhotoUpdateDialog) {
+        AlertDialog(
+            onDismissRequest = { showPhotoUpdateDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showPhotoUpdateDialog = false }) {
+                    Text("OK", color = Color.White)
+                }
+            },
+            title = { Text(if (photoUpdateSuccess) "Success" else "Error", color = Color.White) },
+            text = { Text(photoUpdateMessage, color = Color.White) },
+            containerColor = if (photoUpdateSuccess) moss_green else Color.Red
+        )
     }
 
     Card(
@@ -123,6 +158,9 @@ fun ProfileHeader(user: User, profileViewModel: ProfileViewModel) {
         }
     }
 }
+
+
+
 
 @Composable
 fun ProfileDetails(user: User, isEmailVerified: Boolean) {

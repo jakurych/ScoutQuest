@@ -85,19 +85,26 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun uploadProfilePicture(uri: Uri, context: Context) {
+    fun uploadProfilePicture(
+        uri: Uri,
+        context: Context,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         viewModelScope.launch {
             val userId = authRepository.getCurrentUser()?.uid
             userId?.let {
                 val imageUrl = userRepository.uploadProfileImage(it, uri, context)
                 if (imageUrl != null) {
                     fetchUserData()
+                    onSuccess()
                 } else {
-                    println("Failed to upload image")
+                    onError("Failed to upload image")
                 }
             }
         }
     }
+
 
 
 }
