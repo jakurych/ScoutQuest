@@ -73,10 +73,20 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.androidx.fragment.ktx)
+
+
+
+
+    //Crop photos
+    implementation(libs.ucrop)
+
 
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.navigation.fragment.ktx)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
