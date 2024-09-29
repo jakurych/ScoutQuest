@@ -13,6 +13,7 @@ class GameSessionViewModel : ViewModel() {
     val gameSession: LiveData<GameSession> = _gameSession
 
     private var tasks: List<Task> = emptyList()
+    private var currentTaskIndex = 0
 
     fun setGame(game: Game) {
         tasks = game.tasks
@@ -26,11 +27,22 @@ class GameSessionViewModel : ViewModel() {
         )
     }
 
-    fun onTaskReached(task: Task) {
-        // Osiągnięcie lokalizacji zadania
+    fun getCurrentTask(): Task? {
+        return if (currentTaskIndex < tasks.size) tasks[currentTaskIndex] else null
     }
 
-    fun getTasks(): List<Task> {
-        return tasks
+    fun advanceToNextTask() {
+        if (currentTaskIndex < tasks.size - 1) {
+            currentTaskIndex++
+        } else {
+            //end game
+        }
     }
+
+    fun onTaskReached(task: Task) {
+
+    }
+
+    fun getTasks(): List<Task> = tasks
+
 }

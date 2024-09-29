@@ -6,4 +6,6 @@ object MarkersHelper {
     fun getMarkerUrl(color: String, character: String): String {
         return "$BASE_URL$color$character.png"
     }
+
+
 }
