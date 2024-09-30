@@ -104,8 +104,8 @@ fun AppNavigation() {
                 BrowseGamesView(
                     browseGamesViewModel = browseGamesViewModel,
                     onPlayGame = { game ->
-                        gameSessionViewModel.setGame(game) // Przekaż grę do ViewModel
-                        navController.navigate(GameMap) // Nawiguj do GameMap
+                        gameSessionViewModel.setGame(game) // Pass the game to the ViewModel
+                        navController.navigate(GameMap) // Navigate to GameMapView
                     }
                 )
             }
@@ -120,13 +120,23 @@ fun AppNavigation() {
                             navController.navigate(Creator)
                         }
                     )
+                } else {
+                    // Handle the case where userId is null
+                    navController.navigate(Login)
                 }
             }
             composable(route = GameMap) {
                 GameMapView(
                     viewModel = gameSessionViewModel,
                     onTaskReached = { task ->
+                        // Handle task completion if needed
                         gameSessionViewModel.onTaskReached(task)
+                    },
+                    onGameEnd = {
+                        // Handle end of game, e.g., navigate back to main screen
+                        navController.navigate(MainScreenRoute) {
+                            popUpTo(MainScreenRoute) { inclusive = true }
+                        }
                     }
                 )
             }

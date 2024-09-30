@@ -1,5 +1,8 @@
 package com.example.scoutquest.viewmodels.gamesession
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,11 +16,19 @@ class GameSessionViewModel : ViewModel() {
     val gameSession: LiveData<GameSession> = _gameSession
 
     private var tasks: List<Task> = emptyList()
-    private var currentTaskIndex = 0
+    private var currentTaskIndex by mutableStateOf(0)
+
+    var gameEnded by mutableStateOf(false)
+        private set
 
     fun setGame(game: Game) {
         tasks = game.tasks
         startGameSession(game)
+    }
+
+    fun getCurrentTask(): Task? {
+        if (gameEnded) return null
+        return tasks.getOrNull(currentTaskIndex)
     }
 
     private fun startGameSession(game: Game) {
@@ -27,15 +38,11 @@ class GameSessionViewModel : ViewModel() {
         )
     }
 
-    fun getCurrentTask(): Task? {
-        return if (currentTaskIndex < tasks.size) tasks[currentTaskIndex] else null
-    }
-
     fun advanceToNextTask() {
         if (currentTaskIndex < tasks.size - 1) {
             currentTaskIndex++
         } else {
-            //end game
+            gameEnded = true
         }
     }
 
@@ -44,5 +51,4 @@ class GameSessionViewModel : ViewModel() {
     }
 
     fun getTasks(): List<Task> = tasks
-
 }

@@ -9,8 +9,8 @@ import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class Task(
-    var taskId: Int = 0,
-    var sequenceNumber: Int = 0,
+    var taskId: Int = 0, //sequenceNumber
+    var sequenceNumber: Int = taskId,
     var title: String? = null,
     var description: String = "",
     var points: Int = 0,
