@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.scoutquest.ui.views.gamesession.tasktypes
 
 import androidx.compose.foundation.layout.*
@@ -11,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import com.example.scoutquest.data.models.tasktypes.Question
 import com.example.scoutquest.data.models.tasktypes.Quiz
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizView(quiz: Quiz, onComplete: () -> Unit) {
     var currentQuestionIndex by remember { mutableStateOf(0) }

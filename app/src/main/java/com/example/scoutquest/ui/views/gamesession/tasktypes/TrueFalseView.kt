@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.scoutquest.ui.views.gamesession.tasktypes
 
 import androidx.compose.foundation.layout.*
@@ -10,13 +8,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrueFalseView(trueFalse: TrueFalse, onComplete: () -> Unit) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var userAnswers by remember { mutableStateOf<List<Boolean>>(emptyList()) }
     var showResult by remember { mutableStateOf(false) }
 
-    // Define the function above lambdas that use it
     fun moveToNextOrFinish() {
         if (currentQuestionIndex < trueFalse.questionsTf.size - 1) {
             currentQuestionIndex++

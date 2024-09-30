@@ -121,19 +121,13 @@ fun AppNavigation() {
                         }
                     )
                 } else {
-                    // Handle the case where userId is null
                     navController.navigate(Login)
                 }
             }
             composable(route = GameMap) {
                 GameMapView(
                     viewModel = gameSessionViewModel,
-                    onTaskReached = { task ->
-                        // Handle task completion if needed
-                        gameSessionViewModel.onTaskReached(task)
-                    },
                     onGameEnd = {
-                        // Handle end of game, e.g., navigate back to main screen
                         navController.navigate(MainScreenRoute) {
                             popUpTo(MainScreenRoute) { inclusive = true }
                         }

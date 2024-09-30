@@ -26,7 +26,6 @@ import com.google.maps.android.compose.*
 @Composable
 fun GameMapView(
     viewModel: GameSessionViewModel,
-    onTaskReached: (Task) -> Unit,
     onGameEnd: () -> Unit
 ) {
     val context = LocalContext.current
@@ -36,11 +35,9 @@ fun GameMapView(
 
     val userLocationState = remember { mutableStateOf<Location?>(null) }
     val showTaskReachedView = remember { mutableStateOf(false) }
-    val currentTask by remember { derivedStateOf { viewModel.getCurrentTask() } }
-
-    //vals tasków
-    val activeTask by remember { derivedStateOf { viewModel.activeTask } }
     val showTaskView = remember { mutableStateOf(false) }
+    val currentTask by remember { derivedStateOf { viewModel.getCurrentTask() } }
+    val activeTask by remember { derivedStateOf { viewModel.activeTask } }
 
     val mapInitialized = remember { mutableStateOf(false) }
 
@@ -50,9 +47,8 @@ fun GameMapView(
 
     val gameEnded by remember { derivedStateOf { viewModel.gameEnded } }
 
-    //Load marker when currentTask changes
     LaunchedEffect(currentTask) {
-        bitmapDescriptor = null //Reset marker icon
+        bitmapDescriptor = null //reset marker
 
         if (currentTask == null) {
             return@LaunchedEffect
@@ -62,7 +58,7 @@ fun GameMapView(
             val index = task.sequenceNumber - 1
             val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
 
-            //Load bitmapDescriptor asynchronously
+            //bitmapDescriptor asynchronously
             val baseBitmap = BitmapDescriptorUtils.getBitmapFromUrl(context, markerUrl)
             if (baseBitmap != null) {
                 val customBitmap = BitmapDescriptorUtils.createCustomMarkerBitmap(context, baseBitmap, index + 1)
@@ -71,7 +67,7 @@ fun GameMapView(
                 Log.e("GameMapView", "Failed to load bitmap from URL: $markerUrl")
             }
         }
-        //Reset proximity flag for new task
+        // Reset proximity flag for new task
         wasUserInProximity.value = false
     }
 
@@ -83,7 +79,7 @@ fun GameMapView(
                     userLocationState.value = it
                     val userLatLng = LatLng(it.latitude, it.longitude)
 
-                    if (!gameEnded && currentTask != null && !showTaskReachedView.value) {
+                    if (!gameEnded && currentTask != null && !showTaskReachedView.value && !showTaskView.value) {
                         val taskLatLng = LatLng(currentTask!!.latitude, currentTask!!.longitude)
                         val distance = FloatArray(1)
                         Location.distanceBetween(
@@ -110,7 +106,7 @@ fun GameMapView(
         }
     }
 
-    //Update user location
+    // Update user location
     DisposableEffect(Unit) {
         if (ContextCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION
@@ -165,44 +161,45 @@ fun GameMapView(
                 task = currentTask!!,
                 onDismiss = {
                     showTaskReachedView.value = false
-                    wasUserInProximity.value = false
                     viewModel.onTaskReached(currentTask!!)
                     showTaskView.value = true
                 }
             )
         } else if (showTaskView.value && activeTask != null) {
-            //which task view?
-            when (activeTask?.taskType) {
-                "NoteList" -> {
-                    val noteDetails = activeTask?.noteDetails
-                    noteDetails?.let {
-                        NoteView(note = it, onComplete = {
-                            showTaskView.value = false
-                            viewModel.onTaskCompleted()
-                        })
+            val task = activeTask
+            if (task != null) {
+                when {
+                    task.noteDetails != null -> {
+                        val noteDetails = task.noteDetails
+                        if (noteDetails != null) {
+                            NoteView(note = noteDetails, onComplete = {
+                                showTaskView.value = false
+                                viewModel.onTaskCompleted()
+                            })
+                        }
                     }
-                }
-                "Quiz" -> {
-                    val quizDetails = activeTask?.quizDetails
-                    quizDetails?.let {
-                        QuizView(quiz = it, onComplete = {
-                            showTaskView.value = false
-                            viewModel.onTaskCompleted()
-                        })
+                    task.quizDetails != null -> {
+                        val quizDetails = task.quizDetails
+                        if (quizDetails != null) {
+                            QuizView(quiz = quizDetails, onComplete = {
+                                showTaskView.value = false
+                                viewModel.onTaskCompleted()
+                            })
+                        }
                     }
-                }
-                "TrueFalse" -> {
-                    val trueFalseDetails = activeTask?.trueFalseDetails
-                    trueFalseDetails?.let {
-                        TrueFalseView(trueFalse = it, onComplete = {
-                            showTaskView.value = false
-                            viewModel.onTaskCompleted()
-                        })
+                    task.trueFalseDetails != null -> {
+                        val trueFalseDetails = task.trueFalseDetails
+                        if (trueFalseDetails != null) {
+                            TrueFalseView(trueFalse = trueFalseDetails, onComplete = {
+                                showTaskView.value = false
+                                viewModel.onTaskCompleted()
+                            })
+                        }
                     }
-                }
-                else -> {
-                    showTaskView.value = false
-                    viewModel.onTaskCompleted()
+                    else -> {
+                        showTaskView.value = false
+                        viewModel.onTaskCompleted()
+                    }
                 }
             }
         }
