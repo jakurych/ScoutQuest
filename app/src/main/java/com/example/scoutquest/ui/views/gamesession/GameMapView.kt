@@ -11,7 +11,10 @@ import androidx.core.content.ContextCompat
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.views.gamesession.tasktypes.EndGameView
+import com.example.scoutquest.ui.views.gamesession.tasktypes.NoteView
+import com.example.scoutquest.ui.views.gamesession.tasktypes.QuizView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.TaskReachedView
+import com.example.scoutquest.ui.views.gamesession.tasktypes.TrueFalseView
 import com.example.scoutquest.utils.BitmapDescriptorUtils
 import com.example.scoutquest.utils.BitmapDescriptorUtils.toBitmapDescriptor
 import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
@@ -34,6 +37,11 @@ fun GameMapView(
     val userLocationState = remember { mutableStateOf<Location?>(null) }
     val showTaskReachedView = remember { mutableStateOf(false) }
     val currentTask by remember { derivedStateOf { viewModel.getCurrentTask() } }
+
+    //vals tasków
+    val activeTask by remember { derivedStateOf { viewModel.activeTask } }
+    val showTaskView = remember { mutableStateOf(false) }
+
     val mapInitialized = remember { mutableStateOf(false) }
 
     var bitmapDescriptor by remember { mutableStateOf<BitmapDescriptor?>(null) }
@@ -158,11 +166,45 @@ fun GameMapView(
                 onDismiss = {
                     showTaskReachedView.value = false
                     wasUserInProximity.value = false
-                    onTaskReached(currentTask!!)
                     viewModel.onTaskReached(currentTask!!)
-                    viewModel.advanceToNextTask()
+                    showTaskView.value = true
                 }
             )
+        } else if (showTaskView.value && activeTask != null) {
+            //which task view?
+            when (activeTask?.taskType) {
+                "NoteList" -> {
+                    val noteDetails = activeTask?.noteDetails
+                    noteDetails?.let {
+                        NoteView(note = it, onComplete = {
+                            showTaskView.value = false
+                            viewModel.onTaskCompleted()
+                        })
+                    }
+                }
+                "Quiz" -> {
+                    val quizDetails = activeTask?.quizDetails
+                    quizDetails?.let {
+                        QuizView(quiz = it, onComplete = {
+                            showTaskView.value = false
+                            viewModel.onTaskCompleted()
+                        })
+                    }
+                }
+                "TrueFalse" -> {
+                    val trueFalseDetails = activeTask?.trueFalseDetails
+                    trueFalseDetails?.let {
+                        TrueFalseView(trueFalse = it, onComplete = {
+                            showTaskView.value = false
+                            viewModel.onTaskCompleted()
+                        })
+                    }
+                }
+                else -> {
+                    showTaskView.value = false
+                    viewModel.onTaskCompleted()
+                }
+            }
         }
     }
 }

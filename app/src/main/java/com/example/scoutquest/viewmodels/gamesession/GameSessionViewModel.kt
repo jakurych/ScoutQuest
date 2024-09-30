@@ -17,6 +17,8 @@ class GameSessionViewModel : ViewModel() {
 
     private var tasks: List<Task> = emptyList()
     private var currentTaskIndex by mutableStateOf(0)
+    var activeTask by mutableStateOf<Task?>(null)
+
 
     var gameEnded by mutableStateOf(false)
         private set
@@ -46,8 +48,13 @@ class GameSessionViewModel : ViewModel() {
         }
     }
 
-    fun onTaskReached(task: Task) {
+    fun onTaskCompleted() {
+        advanceToNextTask()
+        activeTask = null
+    }
 
+    fun onTaskReached(task: Task) {
+        activeTask = task
     }
 
     fun getTasks(): List<Task> = tasks
