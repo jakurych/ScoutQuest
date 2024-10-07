@@ -23,63 +23,64 @@ fun QuizView(quiz: Quiz, onComplete: () -> Unit) {
             TopAppBar(title = { Text("Quiz Task") })
         },
         content = { paddingValues ->
-            currentQuestion?.let { question ->
+            if (showResult) {
+                // Render the result screen
                 Column(
                     modifier = Modifier
                         .padding(paddingValues)
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = question.questionText,
+                        text = "Quiz Completed!",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    question.options.forEachIndexed { index, option ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            RadioButton(
-                                selected = selectedAnswers.contains(index),
-                                onClick = {
-                                    selectedAnswers = listOf(index)
-                                }
-                            )
-                            Text(text = option)
-                        }
-                    }
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = {
-                            if (currentQuestionIndex < quiz.questions.size - 1) {
-                                currentQuestionIndex++
-                                selectedAnswers = emptyList()
-                            } else {
-                                showResult = true
-                            }
-                        },
+                        onClick = onComplete,
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text(if (currentQuestionIndex < quiz.questions.size - 1) "Next" else "Finish")
+                        Text("Continue")
                     }
                 }
-            } ?: run {
-                if (showResult) {
+            } else {
+                currentQuestion?.let { question ->
                     Column(
                         modifier = Modifier
                             .padding(paddingValues)
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "Quiz Completed!",
+                            text = question.questionText,
                             style = MaterialTheme.typography.titleMedium
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        question.options.forEachIndexed { index, option ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                RadioButton(
+                                    selected = selectedAnswers.contains(index),
+                                    onClick = {
+                                        selectedAnswers = listOf(index)
+                                    }
+                                )
+                                Text(text = option)
+                            }
+                        }
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(
-                            onClick = onComplete,
+                            onClick = {
+                                if (currentQuestionIndex < quiz.questions.size - 1) {
+                                    currentQuestionIndex++
+                                    selectedAnswers = emptyList()
+                                } else {
+                                    showResult = true
+                                }
+                            },
                             modifier = Modifier.align(Alignment.End)
                         ) {
-                            Text("Continue")
+                            Text(if (currentQuestionIndex < quiz.questions.size - 1) "Next" else "Finish")
                         }
                     }
                 }

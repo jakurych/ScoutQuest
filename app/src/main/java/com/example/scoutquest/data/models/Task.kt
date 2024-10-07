@@ -18,6 +18,7 @@ data class Task(
     var longitude: Double = 0.0,
     var markerColor: String = "",
     var taskType: String? = null,
+
     //task types
     var quizDetails: @RawValue Quiz? = null,
     var noteDetails: @RawValue Note? = null,

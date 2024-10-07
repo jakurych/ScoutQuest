@@ -30,51 +30,50 @@ fun TrueFalseView(trueFalse: TrueFalse, onComplete: () -> Unit) {
             TopAppBar(title = { Text("True/False Task") })
         },
         content = { paddingValues ->
-            currentQuestion?.let { question ->
+            if (showResult) {
                 Column(
                     modifier = Modifier
                         .padding(paddingValues)
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = question,
+                        text = "Task Completed!",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row {
-                        Button(onClick = {
-                            userAnswers = userAnswers + true
-                            moveToNextOrFinish()
-                        }) {
-                            Text("True")
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Button(onClick = {
-                            userAnswers = userAnswers + false
-                            moveToNextOrFinish()
-                        }) {
-                            Text("False")
-                        }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = onComplete,
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("Continue")
                     }
                 }
-            } ?: run {
-                if (showResult) {
-                    //result
+            } else {
+                currentQuestion?.let { question ->
                     Column(
                         modifier = Modifier
                             .padding(paddingValues)
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "Task Completed!",
+                            text = question,
                             style = MaterialTheme.typography.titleMedium
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(
-                            onClick = onComplete,
-                            modifier = Modifier.align(Alignment.End)
-                        ) {
-                            Text("Continue")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row {
+                            Button(onClick = {
+                                userAnswers = userAnswers + true
+                                moveToNextOrFinish()
+                            }) {
+                                Text("True")
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Button(onClick = {
+                                userAnswers = userAnswers + false
+                                moveToNextOrFinish()
+                            }) {
+                                Text("False")
+                            }
                         }
                     }
                 }
