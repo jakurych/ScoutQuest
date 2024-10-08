@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EndGameView(onDismiss: () -> Unit) {
+fun EndGameView(score: Int, onDismiss: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
@@ -32,6 +32,10 @@ fun EndGameView(onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "You scored $score points.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Button(onClick = onDismiss) {
                     Text("OK")
                 }

@@ -9,10 +9,11 @@ import androidx.compose.ui.unit.dp
 import com.example.scoutquest.data.models.tasktypes.Question
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.utils.AnswersChecker
+import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuizView(quiz: Quiz, onComplete: (Int) -> Unit) {
+fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: () -> Unit) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var selectedAnswers by remember { mutableStateOf<List<Int>>(emptyList()) }
     var showResult by remember { mutableStateOf(false) }
@@ -28,6 +29,7 @@ fun QuizView(quiz: Quiz, onComplete: (Int) -> Unit) {
         content = { paddingValues ->
             if (showResult) {
                 val points = answersChecker.checkQuiz(quiz, listOf(selectedAnswers))
+                viewModel.updateTaskScore(points) // Aktualizacja punktów w ViewModel
                 Column(
                     modifier = Modifier
                         .padding(paddingValues)
@@ -51,7 +53,7 @@ fun QuizView(quiz: Quiz, onComplete: (Int) -> Unit) {
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { onComplete(points) },
+                        onClick = onComplete,
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Continue")
@@ -106,3 +108,5 @@ fun QuizView(quiz: Quiz, onComplete: (Int) -> Unit) {
         }
     )
 }
+
+

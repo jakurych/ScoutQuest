@@ -8,12 +8,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.utils.AnswersChecker
+import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteView(note: Note, onComplete: (Int) -> Unit) {
+fun NoteView(note: Note, viewModel: GameSessionViewModel, onComplete: () -> Unit) {
     val answersChecker = AnswersChecker()
     val points = answersChecker.checkNote(note)
+    viewModel.updateTaskScore(points) // Aktualizacja punktów w ViewModel
 
     Scaffold(
         topBar = {
@@ -44,7 +46,7 @@ fun NoteView(note: Note, onComplete: (Int) -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
-                    onClick = { onComplete(points) },
+                    onClick = onComplete,
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text("Continue")
@@ -53,3 +55,4 @@ fun NoteView(note: Note, onComplete: (Int) -> Unit) {
         }
     )
 }
+

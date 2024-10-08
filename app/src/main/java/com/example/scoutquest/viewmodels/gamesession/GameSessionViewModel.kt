@@ -26,7 +26,7 @@ class GameSessionViewModel @Inject constructor(
     private val _gameSession = MutableLiveData<GameSession?>()
     val gameSession: LiveData<GameSession?> = _gameSession
 
-    private var tasks: List<Task> = emptyList()
+    private var tasks: List<Task> = listOf()
     private var currentTaskIndex by mutableStateOf(0)
     var activeTask by mutableStateOf<Task?>(null)
 
@@ -34,6 +34,8 @@ class GameSessionViewModel @Inject constructor(
         private set
 
     private var sessionId: String? = null
+
+    val scores: MutableMap<Int, Int> = mutableMapOf()
 
     fun setGame(game: Game) {
         tasks = game.tasks
@@ -69,6 +71,28 @@ class GameSessionViewModel @Inject constructor(
         }
     }
 
+    fun getCurrentTaskId(): Int {
+        return tasks.getOrNull(currentTaskIndex)?.taskId ?: -1
+    }
+
+    fun totalScores(): Int {
+        return scores.values.sum()
+    }
+
+    fun updateTaskScore(points: Int) {
+        val taskId = getCurrentTaskId()
+        scores[taskId] = points
+        updateScoresInFirestore()
+
+    }
+
+    private fun updateScoresInFirestore() {
+        viewModelScope.launch {
+            sessionId?.let {
+                    gameSessionRepository.updateScores(it, scores)
+                }
+            }
+        }
 
     fun resetGameSession() {
         tasks = emptyList()
@@ -77,6 +101,7 @@ class GameSessionViewModel @Inject constructor(
         gameEnded = false
         _gameSession.value = null
         sessionId = null
+        scores.clear()
     }
 
     fun getCurrentTask(): Task? {
@@ -121,7 +146,7 @@ class GameSessionViewModel @Inject constructor(
         viewModelScope.launch {
             _gameSession.value?.let { session ->
                 val finishedSession = session.copy(
-                    isFinished = true,
+                    finished = true,
                     currentTaskIndex = tasks.size
                 )
                 gameSessionRepository.updateGameSession(session.sessionId, finishedSession)

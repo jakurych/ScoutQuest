@@ -47,7 +47,7 @@ fun GameMapView(
     val gameEnded by remember { derivedStateOf { viewModel.gameEnded } }
 
     LaunchedEffect(currentTask) {
-        bitmapDescriptor = null //reset marker
+        bitmapDescriptor = null // Reset marker
 
         if (currentTask == null) {
             return@LaunchedEffect
@@ -57,7 +57,7 @@ fun GameMapView(
             val index = task.sequenceNumber - 1
             val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
 
-            //bitmapDescriptor asynchronously
+            // Load bitmapDescriptor asynchronously
             val baseBitmap = BitmapDescriptorUtils.getBitmapFromUrl(context, markerUrl)
             if (baseBitmap != null) {
                 val customBitmap = BitmapDescriptorUtils.createCustomMarkerBitmap(context, baseBitmap, index + 1)
@@ -154,7 +154,7 @@ fun GameMapView(
         }
 
         if (gameEnded) {
-            EndGameView(onDismiss = onGameEnd)
+            EndGameView(onDismiss = onGameEnd, score = viewModel.totalScores())
         } else if (showTaskReachedView.value && currentTask != null) {
             TaskReachedView(
                 task = currentTask!!,
@@ -171,30 +171,36 @@ fun GameMapView(
                     task.noteDetails != null -> {
                         val noteDetails = task.noteDetails
                         if (noteDetails != null) {
-                            NoteView(note = noteDetails, onComplete = {
+                            NoteView(note = noteDetails, viewModel = viewModel, onComplete = {
                                 showTaskView.value = false
                                 viewModel.onTaskCompleted()
                             })
                         }
                     }
+
                     task.quizDetails != null -> {
                         val quizDetails = task.quizDetails
                         if (quizDetails != null) {
-                            QuizView(quiz = quizDetails, onComplete = {
+                            QuizView(quiz = quizDetails, viewModel = viewModel, onComplete = {
                                 showTaskView.value = false
                                 viewModel.onTaskCompleted()
                             })
                         }
                     }
+
                     task.trueFalseDetails != null -> {
                         val trueFalseDetails = task.trueFalseDetails
                         if (trueFalseDetails != null) {
-                            TrueFalseView(trueFalse = trueFalseDetails, onComplete = {
-                                showTaskView.value = false
-                                viewModel.onTaskCompleted()
-                            })
+                            TrueFalseView(
+                                trueFalse = trueFalseDetails,
+                                viewModel = viewModel,
+                                onComplete = {
+                                    showTaskView.value = false
+                                    viewModel.onTaskCompleted()
+                                })
                         }
                     }
+
                     else -> {
                         showTaskView.value = false
                         viewModel.onTaskCompleted()
@@ -204,11 +210,13 @@ fun GameMapView(
         }
     }
 
-    //restuj widok po zakończeniu gry
+
+    // Reset view after game ends
     if (gameEnded) {
         EndGameView(onDismiss = {
             viewModel.resetGameSession()
             onGameEnd()
-        })
+        }, score = viewModel.totalScores())
     }
 }
+

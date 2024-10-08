@@ -8,10 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.utils.AnswersChecker
+import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrueFalseView(trueFalse: TrueFalse, onComplete: (Int) -> Unit) {
+fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onComplete: () -> Unit) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var userAnswers by remember { mutableStateOf<List<Boolean>>(emptyList()) }
     var showResult by remember { mutableStateOf(false) }
@@ -35,6 +36,7 @@ fun TrueFalseView(trueFalse: TrueFalse, onComplete: (Int) -> Unit) {
         content = { paddingValues ->
             if (showResult) {
                 val points = answersChecker.checkTrueFalse(trueFalse, userAnswers)
+                viewModel.updateTaskScore(points) // Aktualizacja punktów w ViewModel
                 Column(
                     modifier = Modifier
                         .padding(paddingValues)
@@ -58,7 +60,7 @@ fun TrueFalseView(trueFalse: TrueFalse, onComplete: (Int) -> Unit) {
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { onComplete(points) },
+                        onClick = onComplete,
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Continue")
@@ -79,7 +81,7 @@ fun TrueFalseView(trueFalse: TrueFalse, onComplete: (Int) -> Unit) {
                         Row {
                             Button(onClick = {
                                 userAnswers = userAnswers + true
-                                if (trueFalse.answersTf[currentQuestionIndex] != true) {
+                                if (!trueFalse.answersTf[currentQuestionIndex]) {
                                     incorrectAnswers.add(currentQuestionIndex)
                                 }
                                 moveToNextOrFinish()
@@ -89,7 +91,7 @@ fun TrueFalseView(trueFalse: TrueFalse, onComplete: (Int) -> Unit) {
                             Spacer(modifier = Modifier.width(16.dp))
                             Button(onClick = {
                                 userAnswers = userAnswers + false
-                                if (trueFalse.answersTf[currentQuestionIndex] != false) {
+                                if (trueFalse.answersTf[currentQuestionIndex]) {
                                     incorrectAnswers.add(currentQuestionIndex)
                                 }
                                 moveToNextOrFinish()
@@ -103,3 +105,5 @@ fun TrueFalseView(trueFalse: TrueFalse, onComplete: (Int) -> Unit) {
         }
     )
 }
+
+
