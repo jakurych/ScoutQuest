@@ -7,7 +7,7 @@ import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.repositories.GameRepository
 import com.example.scoutquest.data.repositories.UserRepository
-import com.example.scoutquest.gameoperations.GameCalculations
+import com.example.scoutquest.utils.GameCalculations
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

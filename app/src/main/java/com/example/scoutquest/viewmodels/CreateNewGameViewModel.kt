@@ -10,7 +10,7 @@ import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.repositories.GameRepository
-import com.example.scoutquest.gameoperations.GameCalculations
+import com.example.scoutquest.utils.GameCalculations
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth

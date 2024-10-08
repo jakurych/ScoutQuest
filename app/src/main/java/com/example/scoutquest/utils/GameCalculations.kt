@@ -1,4 +1,4 @@
-package com.example.scoutquest.gameoperations
+package com.example.scoutquest.utils
 
 import android.content.Context
 import android.location.Geocoder

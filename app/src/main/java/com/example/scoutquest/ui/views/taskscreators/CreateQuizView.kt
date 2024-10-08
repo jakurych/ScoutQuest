@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views.tasktypes
+package com.example.scoutquest.ui.views.taskscreators
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateOffsetAsState

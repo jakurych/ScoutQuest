@@ -7,10 +7,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.scoutquest.data.models.tasktypes.Note
+import com.example.scoutquest.utils.AnswersChecker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteView(note: Note, onComplete: () -> Unit) {
+fun NoteView(note: Note, onComplete: (Int) -> Unit) {
+    val answersChecker = AnswersChecker()
+    val points = answersChecker.checkNote(note)
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Note Task") })
@@ -34,8 +38,13 @@ fun NoteView(note: Note, onComplete: () -> Unit) {
                     Spacer(modifier = Modifier.height(4.dp))
                 }
                 Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "You scored $points points.",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(24.dp))
                 Button(
-                    onClick = onComplete,
+                    onClick = { onComplete(points) },
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text("Continue")

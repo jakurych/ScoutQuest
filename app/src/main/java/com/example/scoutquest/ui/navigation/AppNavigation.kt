@@ -11,7 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.scoutquest.ui.views.*
-import com.example.scoutquest.ui.views.tasktypes.*
+import com.example.scoutquest.ui.views.taskscreators.*
 import com.example.scoutquest.ui.views.gamesession.GameMapView
 import com.example.scoutquest.viewmodels.*
 import com.example.scoutquest.viewmodels.tasktypes.*
