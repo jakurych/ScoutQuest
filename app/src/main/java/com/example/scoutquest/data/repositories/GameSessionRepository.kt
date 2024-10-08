@@ -9,10 +9,10 @@ class GameSessionRepository @Inject constructor() {
     private val firestore = FirebaseFirestore.getInstance()
     private val gameSessionsCollection = firestore.collection("game_sessions")
 
-    suspend fun createGameSession(gameSession: GameSession): String {
-        val documentReference = gameSessionsCollection.add(gameSession).await()
-        return documentReference.id
+    suspend fun createGameSession(gameSession: GameSession) {
+        gameSessionsCollection.document(gameSession.sessionId).set(gameSession).await()
     }
+
 
     suspend fun getGameSessionById(sessionId: String): GameSession? {
         return gameSessionsCollection.document(sessionId).get().await().toObject(GameSession::class.java)
@@ -26,3 +26,4 @@ class GameSessionRepository @Inject constructor() {
         gameSessionsCollection.document(sessionId).delete().await()
     }
 }
+

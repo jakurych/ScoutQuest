@@ -204,4 +204,12 @@ fun GameMapView(
             }
         }
     }
+
+    //restuj widok po zakończeniu gry
+    if (gameEnded) {
+        EndGameView(onDismiss = {
+            viewModel.resetGameSession()
+            onGameEnd()
+        })
+    }
 }

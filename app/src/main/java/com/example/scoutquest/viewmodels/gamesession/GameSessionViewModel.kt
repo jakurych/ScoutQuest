@@ -6,26 +6,60 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.GameSession
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.repositories.GameSessionRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import java.util.UUID
+import javax.inject.Inject
 
-class GameSessionViewModel : ViewModel() {
-    private val _gameSession = MutableLiveData<GameSession>()
-    val gameSession: LiveData<GameSession> = _gameSession
+@HiltViewModel
+class GameSessionViewModel @Inject constructor(
+    private val gameSessionRepository: GameSessionRepository
+) : ViewModel() {
+
+    private val _gameSession = MutableLiveData<GameSession?>()
+    val gameSession: LiveData<GameSession?> = _gameSession
 
     private var tasks: List<Task> = emptyList()
     private var currentTaskIndex by mutableStateOf(0)
     var activeTask by mutableStateOf<Task?>(null)
 
-
     var gameEnded by mutableStateOf(false)
         private set
 
+    private var sessionId: String? = null
+
     fun setGame(game: Game) {
         tasks = game.tasks
-        startGameSession(game)
+        if (sessionId == null) {
+            startGameSession(game)
+        }
+    }
+
+    private fun startGameSession(game: Game) {
+        viewModelScope.launch {
+            val newSession = GameSession(
+                sessionId = UUID.randomUUID().toString(),
+                gameId = game.gameId
+            )
+            sessionId = newSession.sessionId
+            gameSessionRepository.createGameSession(newSession)
+            _gameSession.value = newSession
+        }
+    }
+
+
+    fun resetGameSession() {
+        tasks = emptyList()
+        currentTaskIndex = 0
+        activeTask = null
+        gameEnded = false
+        _gameSession.value = null
+        sessionId = null
     }
 
     fun getCurrentTask(): Task? {
@@ -33,20 +67,17 @@ class GameSessionViewModel : ViewModel() {
         return tasks.getOrNull(currentTaskIndex)
     }
 
-    private fun startGameSession(game: Game) {
-        _gameSession.value = GameSession(
-            sessionId = UUID.randomUUID().toString(),
-            gameId = game.gameId
-        )
-    }
-
-    fun advanceToNextTask() {
+    private fun advanceToNextTask() {
         if (currentTaskIndex < tasks.size - 1) {
             currentTaskIndex++
+            updateGameSession()
         } else {
+            currentTaskIndex = tasks.size //ustawiamy na liczbę zadań bo wykonano ostatnie zadanie
             gameEnded = true
+            markGameSessionAsFinished()
         }
     }
+
 
     fun onTaskCompleted() {
         advanceToNextTask()
@@ -58,4 +89,29 @@ class GameSessionViewModel : ViewModel() {
     }
 
     fun getTasks(): List<Task> = tasks
+
+    private fun updateGameSession() {
+        viewModelScope.launch {
+            _gameSession.value?.let { session ->
+                val updatedSession = session.copy(currentTaskIndex = currentTaskIndex)
+                gameSessionRepository.updateGameSession(session.sessionId, updatedSession)
+                _gameSession.value = updatedSession
+            }
+        }
+    }
+
+    private fun markGameSessionAsFinished() {
+        viewModelScope.launch {
+            _gameSession.value?.let { session ->
+                val finishedSession = session.copy(
+                    isFinished = true,
+                    currentTaskIndex = tasks.size
+                )
+                gameSessionRepository.updateGameSession(session.sessionId, finishedSession)
+                _gameSession.value = finishedSession
+            }
+        }
+    }
+
 }
+

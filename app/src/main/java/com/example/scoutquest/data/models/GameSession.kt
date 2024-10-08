@@ -11,5 +11,6 @@ data class GameSession(
     val participants: @RawValue List<User> = listOf(), // lista graczy
     val teamsScores: @RawValue List<Team> = listOf(), // wyniki zespołów
     var currentTaskIndex: Int = 0,
-    val scores: MutableMap<Int, Int> = mutableMapOf() // mapa: taskId w grze -> zdobyte punkty
+    val scores: MutableMap<Int, Int> = mutableMapOf(), // mapa: taskId w grze -> zdobyte punkty
+    val isFinished: Boolean = false
 ): Parcelable
