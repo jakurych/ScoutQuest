@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.views.gamesession.tasktypes.EndGameView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.NoteView

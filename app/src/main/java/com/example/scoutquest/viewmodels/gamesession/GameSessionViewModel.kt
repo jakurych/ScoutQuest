@@ -11,6 +11,7 @@ import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.GameSession
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.repositories.GameSessionRepository
+import com.example.scoutquest.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameSessionViewModel @Inject constructor(
-    private val gameSessionRepository: GameSessionRepository
+    private val gameSessionRepository: GameSessionRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _gameSession = MutableLiveData<GameSession?>()
@@ -42,13 +44,28 @@ class GameSessionViewModel @Inject constructor(
 
     private fun startGameSession(game: Game) {
         viewModelScope.launch {
-            val newSession = GameSession(
-                sessionId = UUID.randomUUID().toString(),
-                gameId = game.gameId
-            )
-            sessionId = newSession.sessionId
-            gameSessionRepository.createGameSession(newSession)
-            _gameSession.value = newSession
+            val userId = userRepository.getUserId()
+            if (userId != null) {
+                val newSession = GameSession(
+                    sessionId = UUID.randomUUID().toString(),
+                    gameId = game.gameId,
+                    participants = listOf(userId) //user z index 0 jest kreatorem sesji gry
+                )
+                sessionId = newSession.sessionId
+                gameSessionRepository.createGameSession(newSession)
+                _gameSession.value = newSession
+            } else {
+                println("Error: User ID is null")
+            }
+        }
+    }
+
+    fun startGame(userId: String, sessionId: String) {
+        viewModelScope.launch {
+            val user = userRepository.getUserById(userId)
+            user?.let {
+                gameSessionRepository.addParticipantToGameSession(sessionId, it)
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package com.example.scoutquest.data.repositories
 import android.content.Context
 import android.net.Uri
 import com.example.scoutquest.data.models.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -12,6 +13,8 @@ class UserRepository @Inject constructor() {
 
     private val db = FirebaseFirestore.getInstance()
     private val storageRef = FirebaseStorage.getInstance().reference
+    private val auth = FirebaseAuth.getInstance()
+
 
     suspend fun getEmailByUsername(username: String): String? {
         return try {
@@ -29,6 +32,10 @@ class UserRepository @Inject constructor() {
             println("Error fetching email by username: ${e.message}")
             null
         }
+    }
+
+    fun getUserId(): String? {
+        return auth.currentUser?.uid
     }
 
     suspend fun getUserById(userId: String): User? {
