@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EndGameView(score: Int, onDismiss: () -> Unit) {
+fun EndGameView(score: Long, onDismiss: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)

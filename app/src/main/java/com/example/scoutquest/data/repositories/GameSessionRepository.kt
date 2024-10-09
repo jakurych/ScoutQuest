@@ -22,7 +22,9 @@ class GameSessionRepository @Inject constructor() {
                 .get()
                 .await()
 
-            documentSnapshot.toObject(GameSession::class.java)
+            val session = documentSnapshot.toObject(GameSession::class.java)
+            println("Retrieved session: $session")
+            session
         } catch (e: Exception) {
             println("Error fetching game session by ID: ${e.message}")
             null
@@ -35,17 +37,18 @@ class GameSessionRepository @Inject constructor() {
                 .set(updatedSession, SetOptions.merge())
                 .await()
             println("Game session updated successfully")
+
+            val checkSession = getGameSessionById(sessionId)
+            println("Session after update: $checkSession")
         } catch (e: Exception) {
             println("Error updating game session: ${e.message}")
         }
     }
 
-
-    suspend fun updateScores(sessionId: String, scores: Map<Int, Int>) {
-        val scoresAsStrings = scores.mapKeys { it.key.toString() }
+    suspend fun updateScores(sessionId: String, scores: Map<String, Long>) {
         val sessionRef = gameSessionsCollection.document(sessionId)
 
-        println("Updating scores for session $sessionId: $scoresAsStrings")
+        println("Updating scores for session $sessionId: $scores")
 
         try {
             firestore.runTransaction { transaction ->
@@ -54,9 +57,7 @@ class GameSessionRepository @Inject constructor() {
                 println("Existing scores: $existingScores")
 
                 val updatedScores = existingScores.toMutableMap().apply {
-                    scoresAsStrings.forEach { (key, value) ->
-                        this[key] = value.toLong()
-                    }
+                    putAll(scores)
                 }
                 println("Updated scores: $updatedScores")
 
@@ -67,30 +68,27 @@ class GameSessionRepository @Inject constructor() {
             println("Error updating scores: ${e.message}")
         }
 
-        // Sprawdź stan po aktualizacji
+        //update, debug
         val updatedSession = getGameSessionById(sessionId)
         println("Session after update: $updatedSession")
     }
 
-
-
-
     suspend fun addParticipantToGameSession(sessionId: String, user: User) {
-            try {
-                val sessionRef = firestore.collection("game_sessions").document(sessionId)
-                firestore.runTransaction { transaction ->
-                    val snapshot = transaction.get(sessionRef)
-                    val currentParticipants =
-                        snapshot.get("participants") as? List<User> ?: listOf()
-                    val updatedParticipants = currentParticipants + user
-                    transaction.update(sessionRef, "participants", updatedParticipants)
-                }.await()
-            } catch (e: Exception) {
-                println("Error adding participant to game session: ${e.message}")
-            }
-        }
-
-        suspend fun deleteGameSession(sessionId: String) {
-            gameSessionsCollection.document(sessionId).delete().await()
+        try {
+            val sessionRef = firestore.collection("game_sessions").document(sessionId)
+            firestore.runTransaction { transaction ->
+                val snapshot = transaction.get(sessionRef)
+                val currentParticipants =
+                    snapshot.get("participants") as? List<User> ?: listOf()
+                val updatedParticipants = currentParticipants + user
+                transaction.update(sessionRef, "participants", updatedParticipants)
+            }.await()
+        } catch (e: Exception) {
+            println("Error adding participant to game session: ${e.message}")
         }
     }
+
+    suspend fun deleteGameSession(sessionId: String) {
+        gameSessionsCollection.document(sessionId).delete().await()
+    }
+}

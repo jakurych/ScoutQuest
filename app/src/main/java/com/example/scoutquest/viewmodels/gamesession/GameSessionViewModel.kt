@@ -35,12 +35,14 @@ class GameSessionViewModel @Inject constructor(
 
     private var sessionId: String? = null
 
-    val scores: MutableMap<Int, Int> = mutableMapOf()
+    val scores: MutableMap<String, Long> = mutableMapOf()
 
     fun setGame(game: Game) {
         tasks = game.tasks
         if (sessionId == null) {
             startGameSession(game)
+        } else {
+            loadScoresFromFirebase()
         }
     }
 
@@ -51,11 +53,12 @@ class GameSessionViewModel @Inject constructor(
                 val newSession = GameSession(
                     sessionId = UUID.randomUUID().toString(),
                     gameId = game.gameId,
-                    participants = listOf(userId) //user z index 0 jest kreatorem sesji gry
+                    participants = listOf(userId)
                 )
                 sessionId = newSession.sessionId
                 gameSessionRepository.createGameSession(newSession)
                 _gameSession.value = newSession
+                loadScoresFromFirebase()
             } else {
                 println("Error: User ID is null")
             }
@@ -75,24 +78,36 @@ class GameSessionViewModel @Inject constructor(
         return tasks.getOrNull(currentTaskIndex)?.taskId ?: -1
     }
 
-    fun totalScores(): Int {
+    fun totalScores(): Long {
         return scores.values.sum()
     }
 
     fun updateTaskScore(points: Int) {
-        val taskId = getCurrentTaskId()
-        scores[taskId] = points
+        val taskId = getCurrentTaskId().toString()
+        scores[taskId] = points.toLong()
         updateScoresInFirestore()
-
     }
 
     private fun updateScoresInFirestore() {
         viewModelScope.launch {
             sessionId?.let {
-                    gameSessionRepository.updateScores(it, scores)
+                gameSessionRepository.updateScores(it, scores)
+            }
+        }
+    }
+
+    fun loadScoresFromFirebase() {
+        viewModelScope.launch {
+            sessionId?.let { id ->
+                val session = gameSessionRepository.getGameSessionById(id)
+                session?.scores?.let { firebaseScores ->
+                    scores.clear()
+                    scores.putAll(firebaseScores)
+                    println("Scores loaded from Firebase: $scores")
                 }
             }
         }
+    }
 
     fun resetGameSession() {
         tasks = emptyList()
@@ -114,16 +129,16 @@ class GameSessionViewModel @Inject constructor(
             currentTaskIndex++
             updateGameSession()
         } else {
-            currentTaskIndex = tasks.size //ustawiamy na liczbę zadań bo wykonano ostatnie zadanie
+            currentTaskIndex = tasks.size
             gameEnded = true
             markGameSessionAsFinished()
         }
     }
 
-
     fun onTaskCompleted() {
         advanceToNextTask()
         activeTask = null
+        loadScoresFromFirebase()
     }
 
     fun onTaskReached(task: Task) {
@@ -135,7 +150,10 @@ class GameSessionViewModel @Inject constructor(
     private fun updateGameSession() {
         viewModelScope.launch {
             _gameSession.value?.let { session ->
-                val updatedSession = session.copy(currentTaskIndex = currentTaskIndex)
+                val updatedSession = session.copy(
+                    currentTaskIndex = currentTaskIndex,
+                    scores = scores.toMap()
+                )
                 gameSessionRepository.updateGameSession(session.sessionId, updatedSession)
                 _gameSession.value = updatedSession
             }
@@ -154,6 +172,4 @@ class GameSessionViewModel @Inject constructor(
             }
         }
     }
-
 }
-
