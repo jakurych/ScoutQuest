@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
 package com.example.scoutquest.ui.views
@@ -23,6 +23,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.models.tasktypes.OpenQuestion
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.navigation.CreateNote
 import com.example.scoutquest.ui.navigation.CreateQuiz
@@ -33,6 +34,7 @@ import com.example.scoutquest.ui.theme.drab_dark_brown
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
+import com.example.scoutquest.viewmodels.tasktypes.OpenQuestionViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -49,7 +51,8 @@ fun AddTaskView(
     mapMarkers: List<Task>,
     quizViewModel: QuizViewModel,
     noteViewModel: NoteViewModel,
-    trueFalseViewModel: TrueFalseViewModel
+    trueFalseViewModel: TrueFalseViewModel,
+    openQuestionViewModel: OpenQuestionViewModel
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -75,6 +78,7 @@ fun AddTaskView(
         quizViewModel.setCreateNewGameViewModel(viewModel)
         noteViewModel.setCreateNewGameViewModel(viewModel)
         trueFalseViewModel.setCreateNewGameViewModel(viewModel)
+        openQuestionViewModel.setCreateNewGameViewModel(viewModel)
 
         //vals from VM
         taskTitle = viewModel.currentTaskTitle
@@ -102,7 +106,7 @@ fun AddTaskView(
         listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 
-    val taskTypes = listOf("Quiz", "Note","True/False" ,"None")
+    val taskTypes = listOf("Open question","Quiz", "Note","True/False" ,"None")
 
     val selectedTaskType by viewModel.selectedTaskType.collectAsState()
     var taskTypeExpanded by remember { mutableStateOf(false) }
@@ -261,6 +265,10 @@ fun AddTaskView(
                     onClick = {
                         updateViewModel()
                         when (selectedTaskType) {
+                            "Open question" -> {
+                                openQuestionViewModel.setOpenQuestionFromTask(taskToEdit?.openQuestionDetails)
+                                navController.navigate("CreateOpenQuestion")
+                            }
                             "Quiz" -> {
                                 quizViewModel.setQuestionsFromQuiz(taskToEdit?.quizDetails)
                                 navController.navigate(CreateQuiz)
