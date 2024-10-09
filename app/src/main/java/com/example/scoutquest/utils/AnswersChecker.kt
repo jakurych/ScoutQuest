@@ -4,6 +4,11 @@ import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.models.tasktypes.Note
 
+import com.google.cloud.language.v1.LanguageServiceClient
+import com.google.cloud.language.v1.Document
+import java.util.Locale
+
+
 class AnswersChecker {
 
     //Points depends on task type
@@ -11,8 +16,11 @@ class AnswersChecker {
     var trueFalsePoints = 10
     var quizCorrectAnswerPoints = 10
     var quizBonusPoints = 5
+    var openQuestionPoints = 15
+
     var endGameBonus = 7
     var taskReachedBonus = 1
+
 
 
     //Quiz check
@@ -61,6 +69,30 @@ class AnswersChecker {
         return notePoints
     }
 
+    suspend fun checkOpenQuestion(answer: String, expectedTopics: List<String>): Int {
+        val language = LanguageServiceClient.create()
+        val document = Document.newBuilder()
+            .setContent(answer)
+            .setType(Document.Type.PLAIN_TEXT)
+            .build()
+        val response = language.analyzeEntities(document)
+        val detectedTopics = response.entitiesList.map { it.name.lowercase() }
+
+        // Zamykamy klienta po użyciu
+        language.close()
+
+        // Sprawdzamy, czy którykolwiek z oczekiwanych tematów został wykryty
+        val isCorrect = expectedTopics.any { expected ->
+            detectedTopics.any { detected -> detected.contains(expected.lowercase()) }
+        }
+
+        // Zwracamy punkty, jeśli odpowiedź jest poprawna
+        return if (isCorrect) openQuestionPoints else 0
+    }
+
+
+
+
     fun endGameBonus(): Int {
         return endGameBonus
     }
@@ -68,4 +100,6 @@ class AnswersChecker {
     fun taskReachedBonus(): Int {
         return taskReachedBonus
     }
+
+
 }
