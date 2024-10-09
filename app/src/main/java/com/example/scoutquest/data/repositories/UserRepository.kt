@@ -70,6 +70,35 @@ class UserRepository @Inject constructor() {
         }
     }
 
+    suspend fun updateUserPoints(userId: String, pointsToAdd: Int) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val currentPoints = snapshot.getLong("points")?.toInt() ?: 0
+                val newPoints = currentPoints + pointsToAdd
+                transaction.update(userRef, "points", newPoints)
+            }.await()
+        } catch (e: Exception) {
+            println("Error updating user points: ${e.message}")
+        }
+    }
+
+    suspend fun addGameToUserHistory(userId: String, sessionId: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val gamesHistory = snapshot.get("gamesHistory") as? List<String> ?: emptyList()
+                val updatedHistory = gamesHistory + sessionId
+                transaction.update(userRef, "gamesHistory", updatedHistory)
+            }.await()
+        } catch (e: Exception) {
+            println("Error adding game to user history: ${e.message}")
+        }
+    }
+
+
     suspend fun updateUserEmail(userId: String, newEmail: String) {
         try {
             val userRef = db.collection("users").document(userId)

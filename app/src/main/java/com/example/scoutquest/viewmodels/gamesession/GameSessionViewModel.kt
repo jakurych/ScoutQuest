@@ -1,6 +1,7 @@
 package com.example.scoutquest.viewmodels.gamesession
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
@@ -27,7 +28,7 @@ class GameSessionViewModel @Inject constructor(
     val gameSession: LiveData<GameSession?> = _gameSession
 
     private var tasks: List<Task> = listOf()
-    private var currentTaskIndex by mutableStateOf(0)
+    private var currentTaskIndex by mutableIntStateOf(0)
     var activeTask by mutableStateOf<Task?>(null)
 
     var gameEnded by mutableStateOf(false)
@@ -35,7 +36,7 @@ class GameSessionViewModel @Inject constructor(
 
     private var sessionId: String? = null
 
-    val scores: MutableMap<String, Long> = mutableMapOf()
+    private val scores: MutableMap<String, Long> = mutableMapOf()
 
     fun setGame(game: Game) {
         tasks = game.tasks
@@ -74,7 +75,7 @@ class GameSessionViewModel @Inject constructor(
         }
     }
 
-    fun getCurrentTaskId(): Int {
+    private fun getCurrentTaskId(): Int {
         return tasks.getOrNull(currentTaskIndex)?.taskId ?: -1
     }
 
@@ -96,7 +97,7 @@ class GameSessionViewModel @Inject constructor(
         }
     }
 
-    fun loadScoresFromFirebase() {
+    private fun loadScoresFromFirebase() {
         viewModelScope.launch {
             sessionId?.let { id ->
                 val session = gameSessionRepository.getGameSessionById(id)
@@ -160,6 +161,21 @@ class GameSessionViewModel @Inject constructor(
         }
     }
 
+    private fun updateUserProfileAfterGame() {
+        viewModelScope.launch {
+            val userId = userRepository.getUserId()
+            if (userId != null) {
+                val totalPoints = totalScores().toInt()
+                userRepository.updateUserPoints(userId, totalPoints)
+                sessionId?.let { id ->
+                    userRepository.addGameToUserHistory(userId, id)
+                }
+            } else {
+                println("Error: User ID is null when trying to update profile after game")
+            }
+        }
+    }
+
     private fun markGameSessionAsFinished() {
         viewModelScope.launch {
             _gameSession.value?.let { session ->
@@ -169,6 +185,8 @@ class GameSessionViewModel @Inject constructor(
                 )
                 gameSessionRepository.updateGameSession(session.sessionId, finishedSession)
                 _gameSession.value = finishedSession
+
+                updateUserProfileAfterGame()
             }
         }
     }
