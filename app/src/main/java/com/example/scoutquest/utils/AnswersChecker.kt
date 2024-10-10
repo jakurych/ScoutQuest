@@ -3,16 +3,24 @@ package com.example.scoutquest.utils
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.models.tasktypes.Note
+//import com.google.firebase.functions.FirebaseFunctions
+
 
 class AnswersChecker {
 
     //Points depends on task type
-    var notePoints = 5
-    var trueFalsePoints = 10
-    var quizCorrectAnswerPoints = 10
-    var quizBonusPoints = 5
-    var endGameBonus = 7
-    var taskReachedBonus = 1
+    private var notePoints = 5
+    private var trueFalsePoints = 10
+    private var quizCorrectAnswerPoints = 10
+    private var quizBonusPoints = 5
+    private var endGameBonus = 7
+    private var taskReachedBonus = 1
+    private var openQuestionPoints = 15
+
+    //Check open question
+    suspend fun checkOpenQuestion(answer: String, expectedTopics: List<String>): Int {
+        return openQuestionPoints
+    }
 
 
     //Quiz check

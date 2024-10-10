@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
 package com.example.scoutquest.ui.views
@@ -23,6 +23,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
+import com.example.scoutquest.data.models.tasktypes.OpenQuestion
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.navigation.CreateNote
 import com.example.scoutquest.ui.navigation.CreateQuiz
@@ -33,6 +34,7 @@ import com.example.scoutquest.ui.theme.drab_dark_brown
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
 import com.example.scoutquest.viewmodels.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
+import com.example.scoutquest.viewmodels.tasktypes.OpenQuestionViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -49,7 +51,8 @@ fun AddTaskView(
     mapMarkers: List<Task>,
     quizViewModel: QuizViewModel,
     noteViewModel: NoteViewModel,
-    trueFalseViewModel: TrueFalseViewModel
+    trueFalseViewModel: TrueFalseViewModel,
+    openQuestionViewModel: OpenQuestionViewModel
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -75,6 +78,7 @@ fun AddTaskView(
         quizViewModel.setCreateNewGameViewModel(viewModel)
         noteViewModel.setCreateNewGameViewModel(viewModel)
         trueFalseViewModel.setCreateNewGameViewModel(viewModel)
+        openQuestionViewModel.setCreateNewGameViewModel(viewModel)
 
         //vals from VM
         taskTitle = viewModel.currentTaskTitle
@@ -102,7 +106,7 @@ fun AddTaskView(
         listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 
-    val taskTypes = listOf("Quiz", "Note","True/False" ,"None")
+    val taskTypes = listOf("Open question","Quiz", "Note","True/False" ,"None")
 
     val selectedTaskType by viewModel.selectedTaskType.collectAsState()
     var taskTypeExpanded by remember { mutableStateOf(false) }
@@ -261,6 +265,10 @@ fun AddTaskView(
                     onClick = {
                         updateViewModel()
                         when (selectedTaskType) {
+                            "Open question" -> {
+                                openQuestionViewModel.setOpenQuestionFromTask(taskToEdit?.openQuestionDetails)
+                                navController.navigate("CreateOpenQuestion")
+                            }
                             "Quiz" -> {
                                 quizViewModel.setQuestionsFromQuiz(taskToEdit?.quizDetails)
                                 navController.navigate(CreateQuiz)
@@ -280,103 +288,103 @@ fun AddTaskView(
                 ) {
                     Text("Add task details", color = Color.White)
                 }
-        }
-
-        GoogleMap(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(if (isMapFullScreen) LocalConfiguration.current.screenHeightDp.dp else 200.dp),
-            cameraPositionState = cameraPositionState,
-            onMapClick = { latLng ->
-                latitude = latLng.latitude
-                longitude = latLng.longitude
-                temporaryMarker = latLng
-                updateViewModel()
             }
-        ) {
-            mapMarkers.forEachIndexed { index, task ->
-                val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
-                val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
-                val position = LatLng(task.latitude, task.longitude)
+
+            GoogleMap(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (isMapFullScreen) LocalConfiguration.current.screenHeightDp.dp else 200.dp),
+                cameraPositionState = cameraPositionState,
+                onMapClick = { latLng ->
+                    latitude = latLng.latitude
+                    longitude = latLng.longitude
+                    temporaryMarker = latLng
+                    updateViewModel()
+                }
+            ) {
+                mapMarkers.forEachIndexed { index, task ->
+                    val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
+                    val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
+                    val position = LatLng(task.latitude, task.longitude)
+                    Marker(
+                        state = MarkerState(position = position),
+                        title = task.title,
+                        icon = bitmapDescriptor
+                    )
+                }
+
                 Marker(
-                    state = MarkerState(position = position),
-                    title = task.title,
-                    icon = bitmapDescriptor
+                    state = MarkerState(position = temporaryMarker),
+                    title = "Selected Location",
+                    icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
                 )
             }
 
-            Marker(
-                state = MarkerState(position = temporaryMarker),
-                title = "Selected Location",
-                icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
-            )
-        }
-
-        Button(
-            onClick = { isMapFullScreen = true },
-            modifier = Modifier.padding(elementSpacing),
-            colors = ButtonDefaults.buttonColors(containerColor = button_green)
-        ) {
-            Text("Full Screen Map", color = Color.White)
-        }
-
-        if (!isMapFullScreen) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Button(
+                onClick = { isMapFullScreen = true },
+                modifier = Modifier.padding(elementSpacing),
+                colors = ButtonDefaults.buttonColors(containerColor = button_green)
             ) {
-                Button(
-                    onClick = { navController.navigate(Creator) },
-                    modifier = Modifier.padding(elementSpacing),
-                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
-                ) {
-                    Text("Cancel", color = Color.White)
-                }
-
-                Button(
-                    onClick = {
-                        if (selectedTaskType == "Quiz" && !hasQuizQuestions) {
-                            navController.navigate(CreateQuiz)
-                        } else if (selectedTaskType == "Note" && !hasNotesNote) {
-                            navController.navigate(CreateNote)
-                        } else if (selectedTaskType == "True/False" && !hasTrueFalseQuestions) {
-                            navController.navigate(CreateTrueFalse)
-                        } else {
-                            val task = Task(
-                                taskId = taskToEdit?.taskId ?: 0,
-                                title = viewModel.currentTaskTitle,
-                                description = viewModel.currentTaskDescription,
-                                points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
-                                latitude = viewModel.currentLatitude,
-                                longitude = viewModel.currentLongitude,
-                                markerColor = viewModel.currentMarkerColor,
-                                taskType = selectedTaskType,
-                                quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
-                                noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
-                                trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null
-                            )
-                            viewModel.addOrUpdateTask(task)
-
-                            //task types vms reset
-                            quizViewModel.resetQuiz()
-                            noteViewModel.resetNote()
-                            trueFalseViewModel.resetTrueFalse()
-
-                            viewModel.setTaskDetailsEntered(false)
-                            viewModel.setTaskToEdit(null)
-                            navController.navigate(Creator)
-                        }
-                    },
-                    enabled = isTaskDetailsEntered || taskToEdit != null,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isTaskDetailsEntered || taskToEdit != null) button_green else Color.Gray,
-                        contentColor = Color.White
-                    ),
-                    modifier = Modifier.padding(elementSpacing)
-                ) {
-                    Text("Save Task", color = Color.White)
-                }
+                Text("Full Screen Map", color = Color.White)
             }
+
+            if (!isMapFullScreen) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = { navController.navigate(Creator) },
+                        modifier = Modifier.padding(elementSpacing),
+                        colors = ButtonDefaults.buttonColors(containerColor = button_green)
+                    ) {
+                        Text("Cancel", color = Color.White)
+                    }
+
+                    Button(
+                        onClick = {
+                            if (selectedTaskType == "Quiz" && !hasQuizQuestions) {
+                                navController.navigate(CreateQuiz)
+                            } else if (selectedTaskType == "Note" && !hasNotesNote) {
+                                navController.navigate(CreateNote)
+                            } else if (selectedTaskType == "True/False" && !hasTrueFalseQuestions) {
+                                navController.navigate(CreateTrueFalse)
+                            } else {
+                                val task = Task(
+                                    taskId = taskToEdit?.taskId ?: 0,
+                                    title = viewModel.currentTaskTitle,
+                                    description = viewModel.currentTaskDescription,
+                                    points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
+                                    latitude = viewModel.currentLatitude,
+                                    longitude = viewModel.currentLongitude,
+                                    markerColor = viewModel.currentMarkerColor,
+                                    taskType = selectedTaskType,
+                                    quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
+                                    noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
+                                    trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null
+                                )
+                                viewModel.addOrUpdateTask(task)
+
+                                //task types vms reset
+                                quizViewModel.resetQuiz()
+                                noteViewModel.resetNote()
+                                trueFalseViewModel.resetTrueFalse()
+
+                                viewModel.setTaskDetailsEntered(false)
+                                viewModel.setTaskToEdit(null)
+                                navController.navigate(Creator)
+                            }
+                        },
+                        enabled = isTaskDetailsEntered || taskToEdit != null,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isTaskDetailsEntered || taskToEdit != null) button_green else Color.Gray,
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier.padding(elementSpacing)
+                    ) {
+                        Text("Save Task", color = Color.White)
+                    }
+                }
             }
         }
     }
@@ -431,6 +439,4 @@ fun AddTaskView(
             }
         }
     }
-    }
-
-
+}
