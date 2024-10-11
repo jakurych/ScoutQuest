@@ -92,7 +92,8 @@ fun AppNavigation() {
                 )
             }
             composable(route = CreateOpenQuestion){
-                CreateOpenQuestionView(openQuestionViewModel, navController)
+                CreateOpenQuestionView(openQuestionViewModel,
+                    navController)
             }
             composable(route = CreateNote) {
                 CreateNoteView(

@@ -53,7 +53,8 @@ android {
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/{AL2.0,LGPL2.1,INDEX.LIST,DEPENDENCIES}"
+
         }
     }
 }
@@ -73,11 +74,13 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.play.services.location)
+    //implementation(libs.firebase.functions.ktx)
 
     // Hilt
     implementation(libs.hilt.android)
-    implementation(libs.firebase.storage.ktx)
-    implementation(libs.play.services.location)
+    implementation(libs.firebase.functions.ktx)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -90,7 +93,15 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    //AI check
+    //implementation(libs.google.cloud.language)
+
+    //implementation(com.squareup.okhttp3:okhttp:4.9.3)
+    //implementation(org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2)
+
 }
+
 
 kapt {
     correctErrorTypes = true

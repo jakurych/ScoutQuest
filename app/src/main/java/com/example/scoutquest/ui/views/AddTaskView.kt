@@ -23,9 +23,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
-import com.example.scoutquest.data.models.tasktypes.OpenQuestion
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.navigation.CreateNote
+import com.example.scoutquest.ui.navigation.CreateOpenQuestion
 import com.example.scoutquest.ui.navigation.CreateQuiz
 import com.example.scoutquest.ui.navigation.CreateTrueFalse
 import com.example.scoutquest.ui.navigation.Creator
@@ -127,6 +127,7 @@ fun AddTaskView(
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
     val hasNotesNote by noteViewModel.hasNotes.collectAsState()
     val hasTrueFalseQuestions by trueFalseViewModel.hasQuestions.collectAsState()
+    val hasOpenQuestion by openQuestionViewModel.hasOpenQuestion.collectAsState()
 
 
     fun updateViewModel() {
@@ -267,7 +268,7 @@ fun AddTaskView(
                         when (selectedTaskType) {
                             "Open question" -> {
                                 openQuestionViewModel.setOpenQuestionFromTask(taskToEdit?.openQuestionDetails)
-                                navController.navigate("CreateOpenQuestion")
+                                navController.navigate(CreateOpenQuestion)
                             }
                             "Quiz" -> {
                                 quizViewModel.setQuestionsFromQuiz(taskToEdit?.quizDetails)
@@ -349,6 +350,9 @@ fun AddTaskView(
                                 navController.navigate(CreateNote)
                             } else if (selectedTaskType == "True/False" && !hasTrueFalseQuestions) {
                                 navController.navigate(CreateTrueFalse)
+                            } else if(selectedTaskType == "Open question" && !hasOpenQuestion) {
+                                navController.navigate(CreateOpenQuestion)
+
                             } else {
                                 val task = Task(
                                     taskId = taskToEdit?.taskId ?: 0,
@@ -361,7 +365,8 @@ fun AddTaskView(
                                     taskType = selectedTaskType,
                                     quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
                                     noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
-                                    trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null
+                                    trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null,
+                                    openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null
                                 )
                                 viewModel.addOrUpdateTask(task)
 

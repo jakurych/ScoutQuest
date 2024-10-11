@@ -4,6 +4,9 @@ import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.models.tasktypes.Note
 //import com.google.firebase.functions.FirebaseFunctions
+//import com.google.cloud.v1.Document
+import com.google.firebase.functions.FirebaseFunctions
+import kotlinx.coroutines.tasks.await
 
 
 class AnswersChecker {
@@ -17,11 +20,30 @@ class AnswersChecker {
     private var taskReachedBonus = 1
     private var openQuestionPoints = 15
 
-    //Check open question
-    suspend fun checkOpenQuestion(answer: String, expectedTopics: List<String>): Int {
-        return openQuestionPoints
-    }
 
+    //Open question check
+    suspend fun checkOpenQuestion(playerAnswer: String, correctAnswer: String): Int {
+        val functions = FirebaseFunctions.getInstance()
+
+        val data = hashMapOf(
+            "playerAnswer" to playerAnswer,
+            "correctAnswer" to correctAnswer
+        )
+
+        try {
+            val result = functions
+                .getHttpsCallable("checkOpenQuestionFunction")
+                .call(data)
+                .await()
+
+            val score = (result.data as? Map<*, *>)?.get("score") as? Int ?: 0
+            return score
+        } catch (e: Exception) {
+            // Obsługa błędów
+            e.printStackTrace()
+            return 0
+        }
+    }
 
     //Quiz check
     fun checkQuiz(quiz: Quiz, userAnswers: List<List<Int>>): Int {

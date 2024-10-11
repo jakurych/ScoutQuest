@@ -9,6 +9,7 @@ import com.example.scoutquest.data.models.User
 import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
+import com.example.scoutquest.data.models.tasktypes.OpenQuestion
 import com.example.scoutquest.data.repositories.GameRepository
 import com.example.scoutquest.utils.GameCalculations
 import com.google.android.gms.maps.model.LatLng
@@ -35,6 +36,7 @@ class CreateNewGameViewModel @Inject constructor(
     var currentQuizDetails: Quiz? = null
     var currentNoteDetails: Note? = null
     var currentTrueFalseDetails: TrueFalse? = null
+    var currentOpenQuestionDetails: OpenQuestion? = null
 
 
     private val _gameSaveStatus = MutableStateFlow<GameSaveStatus>(GameSaveStatus.Idle)
@@ -224,9 +226,12 @@ class CreateNewGameViewModel @Inject constructor(
         currentLatitude = _selectedLatitude.value
         currentLongitude = _selectedLongitude.value
         currentMarkerColor = "red"
+
+        // Task types details
         currentQuizDetails = null
         currentNoteDetails = null
         currentTrueFalseDetails = null
+        currentOpenQuestionDetails = null
         _gameSaveStatus.value = GameSaveStatus.Idle
     }
 
@@ -352,6 +357,12 @@ class CreateNewGameViewModel @Inject constructor(
                     Log.d("TaskDetails", "Question ${questionIndex + 1}: $question")
                     Log.d("TaskDetails", "Answer: ${trueFalse.answersTf[questionIndex]}")
                 }
+            }
+
+            task.openQuestionDetails?.let { openQuestion ->
+                Log.d("TaskDetails", "---- Open Question Details ----")
+                Log.d("TaskDetails", "Question: ${openQuestion.question}")
+                Log.d("TaskDetails", "Answer: ${openQuestion.answer}")
             }
         }
     }

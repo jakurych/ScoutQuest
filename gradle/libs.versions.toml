@@ -2,9 +2,9 @@
 agp = "8.5.2"
 coil = "2.6.0"
 firebaseAuthKtx = "23.0.0"
-firebaseBom = "33.1.2"
-firebaseFirestoreKtx = "25.0.0"
-hiltAndroid = "2.44"
+firebaseBom = "33.4.0"
+firebaseFirestoreKtx = "25.1.0"
+hiltAndroid = "2.49"
 hiltNavigationCompose = "1.2.0"
 kotlin = "1.9.0"
 coreKtx = "1.10.1"
@@ -19,11 +19,17 @@ mapsCompose = "2.2.0"
 material3 = "1.2.1"
 navigationCompose = "2.7.7"
 playServicesMaps = "19.0.0"
+protobufJava = "3.22.3"
+protobufJavaLite = "3.22.3"
 ui = "1.6.8"
 uiToolingPreview = "1.6.8"
 uiDesktop = "1.7.0"
-firebaseStorageKtx = "21.0.0"
+firebaseStorageKtx = "21.0.1"
 playServicesLocation = "21.3.0"
+firebaseFunctionsKtx = "21.0.0"
+#firebaseFunctionsKtx = "21.0.0"
+#googleCloudLanguage = "2.13.0"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +40,7 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
+#google-cloud-language = { module = "com.google.cloud:google-cloud-language", version.ref = "googleCloudLanguage" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
 hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hiltAndroid" }
@@ -54,11 +61,14 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobufJava" }
+protobuf-java-lite = { module = "com.google.protobuf:protobuf-java-lite", version.ref = "protobufJavaLite" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 androidx-ui-desktop = { group = "androidx.compose.ui", name = "ui-desktop", version.ref = "uiDesktop" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+firebase-functions-ktx = { group = "com.google.firebase", name = "firebase-functions-ktx", version.ref = "firebaseFunctionsKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
