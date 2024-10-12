@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.views.gamesession.tasktypes.EndGameView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.NoteView
+import com.example.scoutquest.ui.views.gamesession.tasktypes.OpenQuestionView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.QuizView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.TaskReachedView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.TrueFalseView
@@ -201,6 +202,20 @@ fun GameMapView(
                         }
                     }
 
+                    task.openQuestionDetails != null -> {
+                        val openQuestionDetails = task.openQuestionDetails
+                        if (openQuestionDetails != null) {
+                            OpenQuestionView(
+                                openQuestion = openQuestionDetails,
+                                viewModel = viewModel,
+                                onComplete = {
+                                    showTaskView.value = false
+                                    viewModel.onTaskCompleted()
+                                }
+                            )
+                        }
+                    }
+
                     else -> {
                         showTaskView.value = false
                         viewModel.onTaskCompleted()
@@ -210,7 +225,6 @@ fun GameMapView(
         }
     }
 
-
     // Reset view after game ends
     if (gameEnded) {
         EndGameView(onDismiss = {
@@ -219,4 +233,5 @@ fun GameMapView(
         }, score = viewModel.totalScores())
     }
 }
+
 
