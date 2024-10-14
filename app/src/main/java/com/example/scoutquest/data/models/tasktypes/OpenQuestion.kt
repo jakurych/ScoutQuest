@@ -5,3 +5,5 @@ data class OpenQuestion(
     val question: String = "",
     val answer: String = ""
 )
+
+

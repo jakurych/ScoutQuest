@@ -20,11 +20,13 @@ class AnswersChecker {
     private var taskReachedBonus = 1
     private var openQuestionPoints = 15
 
-
     //Open question check
     suspend fun checkOpenQuestion(playerAnswer: String, correctAnswer: String): Int {
         val functions = FirebaseFunctions.getInstance()
 
+        //emulator
+        //val functions = FirebaseFunctions.getInstance().useEmulator("10.0.2.2", 5001)
+        
         val data = hashMapOf(
             "playerAnswer" to playerAnswer,
             "correctAnswer" to correctAnswer

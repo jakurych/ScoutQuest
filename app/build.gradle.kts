@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.example.scoutquest"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.scoutquest"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -71,16 +71,24 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
     implementation(libs.coil.compose)
+
+    // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.storage.ktx)
     implementation(libs.play.services.location)
+    implementation(libs.firebase.functions.ktx)
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
+    implementation(libs.firebase.functions)
+    implementation(libs.firebase.analytics)
+
+
     //implementation(libs.firebase.functions.ktx)
 
     // Hilt
     implementation(libs.hilt.android)
-    implementation(libs.firebase.functions.ktx)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -93,6 +101,16 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+
+    //Play Services
+    implementation(libs.play.services.base)
+
+    //implementation(libs.play.services.provider)
+
+
+
+
 
     //AI check
     //implementation(libs.google.cloud.language)

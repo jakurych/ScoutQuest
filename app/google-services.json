@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "462271306818",
+    "firebase_url": "https://engineering-thesis-mobile-game-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "engineering-thesis-mobile-game",
     "storage_bucket": "engineering-thesis-mobile-game.appspot.com"
   },
