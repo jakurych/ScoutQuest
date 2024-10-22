@@ -12,9 +12,7 @@
       ],
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ],
-      "runtime": "nodejs18",
-      "platform": "gcfv2"     
+      ]
     }
   ]
 }

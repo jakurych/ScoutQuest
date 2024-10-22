@@ -1,57 +1,71 @@
-const functions = require("firebase-functions");
-const {LanguageServiceClient} = require("@google-cloud/language");
+const {onCall} = require("firebase-functions/v2/https");
+const {logger} = require("firebase-functions");
+const {initializeApp} = require("firebase-admin/app");
+const {VertexAI} = require("@google-cloud/vertexai");
 
-// Inicjalizacja klienta Google Cloud Natural Language API
-const client = new LanguageServiceClient();
+initializeApp();
 
-exports.checkOpenQuestionFunction = functions.https.onCall(async (data, context) => {
+const vertexAI = new VertexAI({project: "engineering-thesis-mobile-game", location: "us-central1"});
+const model = "gemini-pro";
+
+exports.checkOpenQuestionFunctionV2 = onCall(async (request) => {
+  const data = request.data;
+  logger.info("Function called with data:", data);
+
   const playerAnswer = data.playerAnswer;
   const correctAnswer = data.correctAnswer;
+  const question = data.question;
+
+  logger.info("Received playerAnswer:", playerAnswer);
+  logger.info("Received correctAnswer:", correctAnswer);
+  logger.info("Received question:", question);
+
+  if (!playerAnswer || !correctAnswer || !question) {
+    logger.error("One of the parameters is null");
+    return {score: 1};
+  }
 
   try {
-    // Analiza odpowiedzi gracza
-    const [playerResponse] = await client.analyzeEntities({
-      document: {
-        content: playerAnswer,
-        type: "PLAIN_TEXT",
+    const generativeModel = vertexAI.preview.getGenerativeModel({
+      model: model,
+      generation_config: {
+        max_output_tokens: 8, //max tokens 256 -> 200-300 słów liczby <4, 8 dla bezpieczenstwa
+        temperature: 0.1, //kreatywnosc -> im większa tym większa losowość 
+        top_p: 1, //% najbardziej prawdopodobnych tokenów będzie wzięty pod uwagę
+        top_k: 40, //wybierz spośród 40 najbardziej prawdopodobnych tokenów
       },
-      encodingType: "UTF8",
     });
 
-    // Analiza poprawnej odpowiedzi
-    const [correctResponse] = await client.analyzeEntities({
-      document: {
-        content: correctAnswer,
-        type: "PLAIN_TEXT",
-      },
-      encodingType: "UTF8",
-    });
+    const prompt = `
+    Oto pytanie: ${question}
+    Oto poprawna odpowiedź: ${correctAnswer}
+    Oto odpowiedź użytkownika: ${playerAnswer}
 
-    // Wyciągnięcie encji z odpowiedzi gracza
-    const playerEntities = playerResponse.entities.map((entity) => entity.name.toLowerCase());
+    Oceń odpowiedź użytkownika w skali 0-20 punktów. Podaj tylko liczbę punktów bez dodatkowych wyjaśnień.
+    `;
 
-    // Wyciągnięcie encji z poprawnej odpowiedzi
-    const correctEntities = correctResponse.entities.map((entity) => entity.name.toLowerCase());
+    const result = await generativeModel.generateContent(prompt);
+    const response = await result.response;
 
-    // Obliczenie liczby wspólnych encji
-    const commonEntities = playerEntities.filter((entity) => correctEntities.includes(entity));
+    if (response.candidates && response.candidates.length > 0) { //zawiera chociaż jedną odpowiedź
+      const generatedText = response.candidates[0].content.parts[0].text; //weż pierwszą 
 
-    // Obliczenie procentowego podobieństwa (np. na podstawie liczby wspólnych encji)
-    const similarity = (commonEntities.length / correctEntities.length) * 100;
+      const score = parseInt(generatedText.trim(), 10);
 
-    // Ustalenie progu zaliczenia (np. 70%)
-    const threshold = 70;
+      //spr
+      
+      if (isNaN(score) || score < 0 || score > 20) {
+        logger.warn("Invalid score generated:", generatedText);
+        return {score: 1};
+      }
 
-    let score;
-    if (similarity >= threshold) {
-      score = 15; // Punkty za poprawną odpowiedź
+      return {score: score};
     } else {
-      score = 0; // Brak punktów
+      logger.warn("No valid response from the model");
+      return {score: 1};
     }
-
-    return {score: score};
   } catch (error) {
-    console.error("Error analyzing text:", error);
-    throw new functions.https.HttpsError("internal", "Error analyzing text");
+    logger.error("Error during AI evaluation:", error);
+    return {score: 1};
   }
 });

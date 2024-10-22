@@ -69,7 +69,7 @@ fun OpenQuestionView(
                     Button(
                         onClick = {
                             coroutineScope.launch {
-                                score = answersChecker.checkOpenQuestion(userAnswer, openQuestion.answer)
+                                score = answersChecker.checkOpenQuestion(userAnswer, openQuestion.answer, openQuestion.question)
                                 showResult = true
                             }
                         },

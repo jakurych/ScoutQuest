@@ -14,11 +14,10 @@
   },
   "main": "index.js",
   "dependencies": {
-    "@google-cloud/language": "^6.5.0",
-    "firebase-admin": "^12.1.0",
-    "firebase-functions": "^6.0.1",
-    "spellchecker": "^3.7.1",
-    "string-similarity": "^4.0.4"
+    "@google-cloud/aiplatform": "^3.31.0",
+    "@google-cloud/vertexai": "^1.9.0",
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.1"
   },
   "devDependencies": {
     "eslint": "^8.15.0",

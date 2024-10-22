@@ -1,5 +1,6 @@
 package com.example.scoutquest.utils
 
+import android.util.Log
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.models.tasktypes.Note
@@ -7,6 +8,7 @@ import com.example.scoutquest.data.models.tasktypes.Note
 //import com.google.cloud.v1.Document
 import com.google.firebase.functions.FirebaseFunctions
 import kotlinx.coroutines.tasks.await
+import org.json.JSONObject
 
 
 class AnswersChecker {
@@ -18,34 +20,44 @@ class AnswersChecker {
     private var quizBonusPoints = 5
     private var endGameBonus = 7
     private var taskReachedBonus = 1
-    private var openQuestionPoints = 15
+    private var openQuestionPoints = 20
 
     //Open question check
-    suspend fun checkOpenQuestion(playerAnswer: String, correctAnswer: String): Int {
+    suspend fun checkOpenQuestion(
+        playerAnswer: String,
+        correctAnswer: String,
+        question: String
+    ): Int {
         val functions = FirebaseFunctions.getInstance()
 
-        //emulator
-        //val functions = FirebaseFunctions.getInstance().useEmulator("10.0.2.2", 5001)
-        
+        Log.d("AnswersChecker", "Checking open question: $question, $playerAnswer, $correctAnswer")
+
         val data = hashMapOf(
             "playerAnswer" to playerAnswer,
-            "correctAnswer" to correctAnswer
+            "correctAnswer" to correctAnswer,
+            "question" to question
         )
+
+        Log.d("DataLogger", "Data content: $data")
 
         try {
             val result = functions
-                .getHttpsCallable("checkOpenQuestionFunction")
+                .getHttpsCallable("checkOpenQuestionFunctionV2")
                 .call(data)
-                .await()
+                .continueWith { task ->
+                    val resultData = task.result?.data as? Map<*, *>
+                    (resultData?.get("score") as? Number)?.toInt() ?: 0
+                }.await()
 
-            val score = (result.data as? Map<*, *>)?.get("score") as? Int ?: 0
-            return score
+            Log.d("AnswersChecker", "Received score: $result")
+            return result
         } catch (e: Exception) {
-            // Obsługa błędów
-            e.printStackTrace()
+            Log.e("AnswersChecker", "Error calling cloud function", e)
             return 0
         }
     }
+
+
 
     //Quiz check
     fun checkQuiz(quiz: Quiz, userAnswers: List<List<Int>>): Int {
