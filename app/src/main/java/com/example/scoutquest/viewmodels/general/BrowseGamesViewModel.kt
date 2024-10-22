@@ -1,4 +1,4 @@
-package com.example.scoutquest.viewmodels
+package com.example.scoutquest.viewmodels.general
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

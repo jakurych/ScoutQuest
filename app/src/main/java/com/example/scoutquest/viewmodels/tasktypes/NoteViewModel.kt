@@ -2,7 +2,7 @@ package com.example.scoutquest.viewmodels.tasktypes
 
 import androidx.lifecycle.ViewModel
 import com.example.scoutquest.data.models.tasktypes.Note
-import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

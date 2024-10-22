@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import com.example.scoutquest.data.models.tasktypes.Question
 import com.example.scoutquest.data.models.tasktypes.Quiz
-import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

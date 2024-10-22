@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.general
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,7 +16,7 @@ import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.Browser
 import com.example.scoutquest.ui.navigation.LocalNavigation
-import com.example.scoutquest.viewmodels.JoinGameViewModel
+import com.example.scoutquest.viewmodels.general.JoinGameViewModel
 
 @Composable
 fun JoinGameView(joinGameViewModel: JoinGameViewModel) {

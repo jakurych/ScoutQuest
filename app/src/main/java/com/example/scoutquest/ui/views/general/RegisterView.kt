@@ -1,3 +1,6 @@
+package com.example.scoutquest.ui.views.general
+
+import com.example.scoutquest.viewmodels.general.RegisterViewModel
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
@@ -14,7 +17,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.Login
-import com.example.scoutquest.ui.navigation.Register
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.moss_green
 import com.example.scoutquest.ui.navigation.LocalNavigation

@@ -11,7 +11,7 @@ import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import com.example.scoutquest.ui.navigation.AppNavigation
 import com.example.scoutquest.ui.theme.ScoutQuestTheme
-import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

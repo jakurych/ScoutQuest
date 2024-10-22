@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.general
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,8 +14,8 @@ import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.ui.navigation.MainScreenRoute
 import com.example.scoutquest.ui.navigation.Register
-import com.example.scoutquest.viewmodels.LoginViewModel
-import com.example.scoutquest.viewmodels.UserViewModel
+import com.example.scoutquest.viewmodels.general.LoginViewModel
+import com.example.scoutquest.viewmodels.general.UserViewModel
 import com.example.scoutquest.ui.theme.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton

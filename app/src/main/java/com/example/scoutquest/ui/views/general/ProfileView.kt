@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.general
 
 import android.content.Context
 import android.net.Uri
@@ -23,8 +23,8 @@ import com.example.scoutquest.data.models.User
 import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.ui.navigation.MainScreenRoute
 import com.example.scoutquest.ui.theme.*
-import com.example.scoutquest.viewmodels.ProfileViewModel
-import com.example.scoutquest.viewmodels.UserViewModel
+import com.example.scoutquest.viewmodels.general.ProfileViewModel
+import com.example.scoutquest.viewmodels.general.UserViewModel
 import com.example.scoutquest.data.models.Badge
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.navigation.UserBrowser
@@ -33,7 +33,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

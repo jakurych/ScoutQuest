@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.general
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateOffsetAsState
@@ -62,8 +62,8 @@ import com.example.scoutquest.ui.theme.black_olive
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.moss_green
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
-import com.example.scoutquest.viewmodels.CreateNewGameViewModel
-import com.example.scoutquest.viewmodels.GameSaveStatus
+import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.general.GameSaveStatus
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker

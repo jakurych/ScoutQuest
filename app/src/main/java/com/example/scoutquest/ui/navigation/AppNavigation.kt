@@ -1,7 +1,7 @@
 package com.example.scoutquest.ui.navigation
 
-import RegisterView
-import RegisterViewModel
+import com.example.scoutquest.ui.views.general.RegisterView
+import com.example.scoutquest.viewmodels.general.RegisterViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -10,12 +10,26 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.scoutquest.ui.views.*
 import com.example.scoutquest.ui.views.taskscreators.*
 import com.example.scoutquest.ui.views.gamesession.GameMapView
-import com.example.scoutquest.viewmodels.*
+import com.example.scoutquest.ui.views.general.BrowseGamesView
+import com.example.scoutquest.ui.views.general.CreateNewGameView
+import com.example.scoutquest.ui.views.general.JoinGameView
+import com.example.scoutquest.ui.views.general.LoginView
+import com.example.scoutquest.ui.views.general.MainScreenView
+import com.example.scoutquest.ui.views.general.NewGameView
+import com.example.scoutquest.ui.views.general.ProfileView
+import com.example.scoutquest.ui.views.general.SettingsView
+import com.example.scoutquest.ui.views.general.UserGamesBrowserView
 import com.example.scoutquest.viewmodels.tasktypes.*
 import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
+import com.example.scoutquest.viewmodels.general.BrowseGamesViewModel
+import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.general.JoinGameViewModel
+import com.example.scoutquest.viewmodels.general.LoginViewModel
+import com.example.scoutquest.viewmodels.general.ProfileViewModel
+import com.example.scoutquest.viewmodels.general.SettingsViewModel
+import com.example.scoutquest.viewmodels.general.UserViewModel
 
 @Composable
 fun AppNavigation() {

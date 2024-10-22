@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.general
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,7 +47,7 @@ import com.example.scoutquest.ui.theme.detailTextColor
 import com.example.scoutquest.ui.theme.eerie_black
 import com.example.scoutquest.ui.theme.expandedDetailTextColor
 import com.example.scoutquest.ui.theme.moss_green
-import com.example.scoutquest.viewmodels.BrowseGamesViewModel
+import com.example.scoutquest.viewmodels.general.BrowseGamesViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
 

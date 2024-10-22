@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.general
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.ui.components.Header
 import com.example.scoutquest.ui.theme.*
-import com.example.scoutquest.viewmodels.BrowseGamesViewModel
+import com.example.scoutquest.viewmodels.general.BrowseGamesViewModel
 import kotlinx.coroutines.launch
 import java.util.Locale
 

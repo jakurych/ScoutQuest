@@ -3,7 +3,7 @@
     ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.taskscreators
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -32,7 +32,7 @@ import com.example.scoutquest.ui.navigation.Creator
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.drab_dark_brown
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
-import com.example.scoutquest.viewmodels.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.OpenQuestionViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel

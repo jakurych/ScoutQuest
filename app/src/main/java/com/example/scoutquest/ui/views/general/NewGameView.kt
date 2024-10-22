@@ -1,4 +1,4 @@
-package com.example.scoutquest.ui.views
+package com.example.scoutquest.ui.views.general
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.AlertDialog

@@ -1,4 +1,4 @@
-package com.example.scoutquest.viewmodels
+package com.example.scoutquest.viewmodels.general
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
