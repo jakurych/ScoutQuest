@@ -84,6 +84,11 @@ dependencies {
     implementation(libs.firebase.functions)
     implementation(libs.firebase.analytics)
 
+    // Lottie i accompanist
+    implementation ("com.google.accompanist:accompanist-pager:0.28.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0")
+    implementation ("com.airbnb.android:lottie-compose:5.2.0")
+
 
     //implementation(libs.firebase.functions.ktx)
 
