@@ -85,15 +85,16 @@ dependencies {
     implementation(libs.firebase.analytics)
 
     // Lottie i accompanist
-    implementation ("com.google.accompanist:accompanist-pager:0.28.0")
-    implementation ("com.google.accompanist:accompanist-pager-indicators:0.28.0")
-    implementation ("com.airbnb.android:lottie-compose:5.2.0")
+    implementation (libs.accompanist.pager)
+    implementation (libs.accompanist.pager.indicators)
+    implementation (libs.lottie.compose)
 
 
     //implementation(libs.firebase.functions.ktx)
 
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.androidx.camera.core)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

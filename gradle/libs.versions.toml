@@ -1,4 +1,5 @@
 [versions]
+accompanistPagerIndicators = "0.28.0"
 agp = "8.6.1"
 coil = "2.6.0"
 firebaseAppcheckDebugVersion = "16.0.0"
@@ -17,6 +18,7 @@ lifecycleRuntimeKtx = "2.6.1"
 activityCompose = "1.8.0"
 composeBom = "2024.04.01"
 lifecycleViewmodelCompose = "2.8.4"
+lottieCompose = "5.2.0"
 mapsCompose = "2.2.0"
 material3 = "1.2.1"
 navigationCompose = "2.7.7"
@@ -33,11 +35,14 @@ playServicesLocation = "21.3.0"
 firebaseFunctionsKtx = "21.0.0"
 firebaseAppcheckPlayintegrity = "18.0.0"
 firebaseAppcheckDebug = "18.0.0"
+cameraCore = "1.3.4"
 #firebaseFunctionsKtx = "21.0.0"
 #googleCloudLanguage = "2.13.0"
 
 
 [libraries]
+accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPagerIndicators" }
+accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
@@ -66,6 +71,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
@@ -81,6 +87,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 firebase-functions-ktx = { group = "com.google.firebase", name = "firebase-functions-ktx", version.ref = "firebaseFunctionsKtx" }
 firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity", version.ref = "firebaseAppcheckPlayintegrity" }
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug", version.ref = "firebaseAppcheckDebug" }
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

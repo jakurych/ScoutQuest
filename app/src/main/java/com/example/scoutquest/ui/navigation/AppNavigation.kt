@@ -48,6 +48,7 @@ fun AppNavigation() {
     val browseGamesViewModel: BrowseGamesViewModel = viewModel()
     val gameSessionViewModel: GameSessionViewModel = viewModel()
     val openQuestionViewModel: OpenQuestionViewModel = viewModel()
+    val photoViewModel: PhotoViewModel = viewModel()
 
 
     CompositionLocalProvider(LocalNavigation provides navController) {
@@ -96,7 +97,8 @@ fun AppNavigation() {
                     quizViewModel = quizViewModel,
                     noteViewModel = noteViewModel,
                     trueFalseViewModel = trueFalseViewModel,
-                    openQuestionViewModel = openQuestionViewModel
+                    openQuestionViewModel = openQuestionViewModel,
+                    photoViewModel = photoViewModel
                 )
             }
             composable(route = CreateQuiz) {
@@ -121,12 +123,18 @@ fun AppNavigation() {
                     navController = navController
                 )
             }
+            composable(route = CreatePhotoTask) {
+                CreatePhotoTaskView(
+                    photoViewModel = photoViewModel,
+                    navController = navController
+                )
+            }
             composable(route = Browser) {
                 BrowseGamesView(
                     browseGamesViewModel = browseGamesViewModel,
                     onPlayGame = { game ->
-                        gameSessionViewModel.setGame(game) // Pass the game to the ViewModel
-                        navController.navigate(GameMap) // Navigate to GameMapView
+                        gameSessionViewModel.setGame(game)
+                        navController.navigate(GameMap)
                     }
                 )
             }

@@ -26,6 +26,7 @@ import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.navigation.CreateNote
 import com.example.scoutquest.ui.navigation.CreateOpenQuestion
+import com.example.scoutquest.ui.navigation.CreatePhotoTask
 import com.example.scoutquest.ui.navigation.CreateQuiz
 import com.example.scoutquest.ui.navigation.CreateTrueFalse
 import com.example.scoutquest.ui.navigation.Creator
@@ -35,6 +36,7 @@ import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescript
 import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.OpenQuestionViewModel
+import com.example.scoutquest.viewmodels.tasktypes.PhotoViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -52,7 +54,8 @@ fun AddTaskView(
     quizViewModel: QuizViewModel,
     noteViewModel: NoteViewModel,
     trueFalseViewModel: TrueFalseViewModel,
-    openQuestionViewModel: OpenQuestionViewModel
+    openQuestionViewModel: OpenQuestionViewModel,
+    photoViewModel: PhotoViewModel
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
@@ -79,6 +82,7 @@ fun AddTaskView(
         noteViewModel.setCreateNewGameViewModel(viewModel)
         trueFalseViewModel.setCreateNewGameViewModel(viewModel)
         openQuestionViewModel.setCreateNewGameViewModel(viewModel)
+        photoViewModel.setCreateNewGameViewModel(viewModel)
 
         //vals from VM
         taskTitle = viewModel.currentTaskTitle
@@ -106,7 +110,7 @@ fun AddTaskView(
         listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 
-    val taskTypes = listOf("Open question","Quiz", "Note","True/False" ,"None")
+    val taskTypes = listOf("Open question","Quiz", "Note","True/False" ,"Photo", "None")
 
     val selectedTaskType by viewModel.selectedTaskType.collectAsState()
     var taskTypeExpanded by remember { mutableStateOf(false) }
@@ -128,6 +132,7 @@ fun AddTaskView(
     val hasNotesNote by noteViewModel.hasNotes.collectAsState()
     val hasTrueFalseQuestions by trueFalseViewModel.hasQuestions.collectAsState()
     val hasOpenQuestion by openQuestionViewModel.hasOpenQuestion.collectAsState()
+    val hasPhotoInstruction by photoViewModel.hasInstruction.collectAsState()
 
 
     fun updateViewModel() {
@@ -282,6 +287,10 @@ fun AddTaskView(
                                 trueFalseViewModel.setQuestionsFromTrueFalse(taskToEdit?.trueFalseDetails)
                                 navController.navigate(CreateTrueFalse)
                             }
+                            "Photo" -> {
+                                photoViewModel.setInstructionFromPhoto(taskToEdit?.photoDetails)
+                                navController.navigate(CreatePhotoTask)
+                            }
                         }
                     },
                     enabled = selectedTaskType != "None",
@@ -352,6 +361,8 @@ fun AddTaskView(
                                 navController.navigate(CreateTrueFalse)
                             } else if(selectedTaskType == "Open question" && !hasOpenQuestion) {
                                 navController.navigate(CreateOpenQuestion)
+                            } else if (selectedTaskType == "Photo" && !hasPhotoInstruction) {
+                                navController.navigate(CreatePhotoTask)
 
                             } else {
                                 val task = Task(
@@ -366,13 +377,15 @@ fun AddTaskView(
                                     quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
                                     noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
                                     trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null,
-                                    openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null
+                                    openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null,
+                                    photoDetails = if (selectedTaskType == "Photo") photoViewModel.getCurrentPhotoTask() else null
                                 )
                                 viewModel.addOrUpdateTask(task)
 
                                 //task types vms reset
                                 quizViewModel.resetQuiz()
                                 noteViewModel.resetNote()
+                                photoViewModel.resetPhotoTask()
                                 trueFalseViewModel.resetTrueFalse()
 
                                 viewModel.setTaskDetailsEntered(false)

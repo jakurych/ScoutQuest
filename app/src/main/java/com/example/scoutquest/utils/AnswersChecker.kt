@@ -1,5 +1,6 @@
 package com.example.scoutquest.utils
 
+import android.content.Context
 import android.util.Log
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
@@ -21,6 +22,41 @@ class AnswersChecker {
     private var endGameBonus = 7
     private var taskReachedBonus = 1
     private var openQuestionPoints = 20
+    private var photoPoints = 15
+
+    private val convertionOperations = ConvertionOperations()
+
+
+    //Check photo question
+    suspend fun checkPhoto(
+        imageUri: String,
+        description: String,
+        context: Context
+    ): Int {
+        val functions = FirebaseFunctions.getInstance()
+
+        try {
+            val imageBase64 = convertionOperations.readImageAsBase64(imageUri, context)
+
+            val data = hashMapOf(
+                "imageBase64" to imageBase64,
+                "description" to description
+            )
+
+            val result = functions
+                .getHttpsCallable("checkPhotoFunction")
+                .call(data)
+                .continueWith { task ->
+                    val resultData = task.result?.data as? Map<*, *>
+                    (resultData?.get("score") as? Number)?.toInt() ?: 0
+                }.await()
+
+            return result
+        } catch (e: Exception) {
+            Log.e("AnswersChecker", "Error calling checkPhotoFunction", e)
+            return 0
+        }
+    }
 
     //Open question check
     suspend fun checkOpenQuestion(

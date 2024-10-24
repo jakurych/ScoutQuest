@@ -16,4 +16,5 @@ const val CreateTrueFalse = "/createtruefalse"
 const val UserBrowser = "/userbrowser"
 const val GameMap = "/gamemap"
 const val CreateOpenQuestion = "/createopenquestion"
+const val CreatePhotoTask = "/createphototask"
 
