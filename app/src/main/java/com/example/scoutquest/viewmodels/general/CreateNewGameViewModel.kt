@@ -176,7 +176,8 @@ class CreateNewGameViewModel @Inject constructor(
                     set(existingTaskIndex, task)
                 }
             } else {
-                val newTask = task.copy(taskId = generateNewTaskId())
+                val newTaskId = generateNewTaskId()
+                val newTask = task.copy(taskId = newTaskId, sequenceNumber = newTaskId)
                 currentTasks + newTask
             }
         }

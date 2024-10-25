@@ -12,6 +12,7 @@ import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.views.gamesession.tasktypes.EndGameView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.NoteView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.OpenQuestionView
+import com.example.scoutquest.ui.views.gamesession.tasktypes.PhotoTaskView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.QuizView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.TaskReachedView
 import com.example.scoutquest.ui.views.gamesession.tasktypes.TrueFalseView
@@ -207,6 +208,19 @@ fun GameMapView(
                         if (openQuestionDetails != null) {
                             OpenQuestionView(
                                 openQuestion = openQuestionDetails,
+                                viewModel = viewModel,
+                                onComplete = {
+                                    showTaskView.value = false
+                                    viewModel.onTaskCompleted()
+                                }
+                            )
+                        }
+                    }
+                    task.photoDetails != null -> {
+                        val photoDetails = task.photoDetails
+                        if (photoDetails != null) {
+                            PhotoTaskView(
+                                photoTask = photoDetails,
                                 viewModel = viewModel,
                                 onComplete = {
                                     showTaskView.value = false

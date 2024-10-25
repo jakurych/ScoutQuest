@@ -27,22 +27,27 @@ fun CreatePhotoTaskView(
     ) {
         TextField(
             value = instruction,
-            onValueChange = { instruction = it },
+            onValueChange = {
+                instruction = it
+                photoViewModel.setInstruction(it)
+            },
             label = { Text("Photo Task Instruction") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Button(
             onClick = {
-                photoViewModel.setInstruction(instruction)
-                photoViewModel.saveCurrentPhotoTask()
-                photoViewModel.setTaskDetailsEntered(true)
-                navController.navigate(AddTask)
+                if (hasInstruction) {
+                    photoViewModel.saveCurrentPhotoTask()
+                    photoViewModel.setTaskDetailsEntered(true)
+                    navController.navigate(AddTask)
+                }
             },
-            enabled = instruction.isNotBlank()
+            enabled = hasInstruction
         ) {
-            Icon(Icons.Default.Check, contentDescription = "Save")
             Text("Save Instruction")
         }
     }
 }
+
+
