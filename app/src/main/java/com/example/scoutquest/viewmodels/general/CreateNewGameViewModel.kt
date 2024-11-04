@@ -371,7 +371,7 @@ class CreateNewGameViewModel @Inject constructor(
 
             task.photoDetails?.let { photoTask ->
                 Log.d("TaskDetails", "---- Photo Task Details ----")
-                Log.d("TaskDetails", "Instruction to photo: ${photoTask.instruction}")
+                Log.d("TaskDetails", "Instruction to photo: ${photoTask.thingToPhoto}")
             }
         }
     }

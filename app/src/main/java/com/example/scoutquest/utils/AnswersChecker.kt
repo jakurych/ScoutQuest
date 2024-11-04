@@ -11,9 +11,6 @@ import com.example.scoutquest.data.models.tasktypes.Note
 //import com.google.cloud.v1.Document
 import com.google.firebase.functions.FirebaseFunctions
 import kotlinx.coroutines.tasks.await
-import org.json.JSONObject
-import java.io.FileNotFoundException
-import java.io.IOException
 
 
 class AnswersChecker {
@@ -33,7 +30,7 @@ class AnswersChecker {
 
     suspend fun checkPhoto(
         imageUri: String,
-        description: String,
+        thingToPhoto: String,
         context: Context
     ): Int {
         val functions = FirebaseFunctions.getInstance()
@@ -54,8 +51,24 @@ class AnswersChecker {
             //Przygotuj dane do wysłania
             val data = hashMapOf(
                 "imageBase64" to imageBase64,
-                "description" to description
+                "description" to thingToPhoto
             )
+
+            //txt file for check base64 encoding
+            /*try {
+                val fileName = "image_base64_${System.currentTimeMillis()}.txt"
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val file = File(downloadsDir, fileName)
+
+                FileOutputStream(file).use { output ->
+                    output.write(imageBase64.toByteArray())
+                }
+                Log.d("AnswersChecker", "Base64 saved to Downloads: ${file.absolutePath}")
+            } catch (e: Exception) {
+                Log.e("AnswersChecker", "Error saving base64 to file", e)
+            }*/
+
+
 
             return functions
                 .getHttpsCallable("checkPhotoFunction")

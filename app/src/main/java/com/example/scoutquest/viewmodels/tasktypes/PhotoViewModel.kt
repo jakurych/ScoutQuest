@@ -29,7 +29,7 @@ class PhotoViewModel @Inject constructor() : ViewModel() {
     }
 
     fun setInstructionFromPhoto(photo: Photo?) {
-        _instruction.value = photo?.instruction ?: ""
+        _instruction.value = photo?.thingToPhoto ?: ""
         _hasInstruction.value = _instruction.value.isNotBlank()
         setTaskDetailsEntered(_instruction.value.isNotBlank())
     }
@@ -40,7 +40,7 @@ class PhotoViewModel @Inject constructor() : ViewModel() {
     }
 
     fun getCurrentPhotoTask(): Photo {
-        return Photo(instruction = _instruction.value)
+        return Photo(thingToPhoto = _instruction.value)
     }
 
     fun resetPhotoTask() {

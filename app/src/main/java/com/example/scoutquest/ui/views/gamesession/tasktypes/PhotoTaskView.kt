@@ -1,15 +1,12 @@
 package com.example.scoutquest.ui.views.gamesession.tasktypes
 
-import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.Camera
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.*
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -110,7 +107,7 @@ fun PhotoTaskView(
                 }
 
                 Text(
-                    text = photoTask.instruction,
+                    text = "Make photo of: ${photoTask.thingToPhoto}",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -151,7 +148,7 @@ fun PhotoTaskView(
                                         capturedImageUri?.let { uri ->
                                             score = answersChecker.checkPhoto(
                                                 uri.toString(),
-                                                photoTask.instruction,
+                                                photoTask.thingToPhoto,
                                                 context
                                             )
                                             showResult = true

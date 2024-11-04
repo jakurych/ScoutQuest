@@ -31,7 +31,7 @@ fun CreatePhotoTaskView(
                 instruction = it
                 photoViewModel.setInstruction(it)
             },
-            label = { Text("Photo Task Instruction") },
+            label = { Text("What player have to photo?") },
             modifier = Modifier.fillMaxWidth()
         )
 
