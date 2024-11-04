@@ -2,25 +2,30 @@ const {onCall} = require("firebase-functions/v2/https");
 const {logger} = require("firebase-functions");
 const vision = require("@google-cloud/vision");
 
-
 exports.checkPhotoFunction = onCall(async (request) => {
   const data = request.data;
-  const imageBase64 = data.imageBase64; // The image in base64 format
-  const description = data.description; // The description of what should be in the photo
 
-  logger.info("Function called with data:", data);
+  logger.info("Starting photo check function");
 
-  if (!imageBase64 || !description) {
-    logger.error("Missing 'imageBase64' or 'description' arguments.");
-    throw new Error("The function had been called without arguments.");
+  if (!data.imageBase64) {
+    logger.error("No image data received");
+    throw new Error("No image data received");
   }
+
+  if (!data.description) {
+    logger.error("No description received");
+    throw new Error("No description received");
+  }
+
+  logger.info("Image data length: " + data.imageBase64.length);
+  logger.info("Description: " + data.description);
 
   try {
     const client = new vision.ImageAnnotatorClient();
 
     const request = {
       image: {
-        content: Buffer.from(imageBase64, "base64"), // Użyj podwójnych cudzysłowów
+        content: Buffer.from(data.imageBase64, "base64"),
       },
     };
 
@@ -28,17 +33,29 @@ exports.checkPhotoFunction = onCall(async (request) => {
     const labels = result.labelAnnotations;
     const detectedLabels = labels.map((label) => label.description.toLowerCase());
 
-    const descriptionLower = description.toLowerCase();
+    logger.info("Detected labels:", detectedLabels);
 
-    // Usunięto nieużywaną zmienną isMatch
+    const descriptionWords = data.description.toLowerCase().split(" ");
+    const matchingLabels = detectedLabels.filter((label) =>
+      descriptionWords.some((word) =>
+        label.includes(word) || word.includes(label),
+      ),
+    );
 
-    // Return a score based on matching labels
-    const matchingLabels = detectedLabels.filter((label) => descriptionLower.includes(label) || label.includes(descriptionLower));
-    const score = matchingLabels.length > 0 ? 1 : 0;
+    logger.info("Matching labels:", matchingLabels);
 
-    return {score, labels: detectedLabels};
+    let score = 0;
+    if (matchingLabels.length > 0) {
+      score = Math.min(Math.ceil(matchingLabels.length / 2), 3);
+    }
+
+    return {
+      score,
+      labels: detectedLabels,
+      matchingLabels,
+    };
   } catch (error) {
-    logger.error("Error processing image", error);
-    throw new Error("Error processing image.");
+    logger.error("Error in checkPhotoFunction:", error);
+    throw new Error("Error processing image: " + error.message);
   }
 });

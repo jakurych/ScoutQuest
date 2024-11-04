@@ -1,6 +1,8 @@
 package com.example.scoutquest.utils
 
 import android.content.Context
+import android.net.Uri
+import android.util.Base64
 import android.util.Log
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
@@ -10,6 +12,8 @@ import com.example.scoutquest.data.models.tasktypes.Note
 import com.google.firebase.functions.FirebaseFunctions
 import kotlinx.coroutines.tasks.await
 import org.json.JSONObject
+import java.io.FileNotFoundException
+import java.io.IOException
 
 
 class AnswersChecker {
@@ -27,7 +31,6 @@ class AnswersChecker {
     private val convertionOperations = ConvertionOperations()
 
 
-    //Check photo question
     suspend fun checkPhoto(
         imageUri: String,
         description: String,
@@ -36,24 +39,42 @@ class AnswersChecker {
         val functions = FirebaseFunctions.getInstance()
 
         try {
-            val imageBase64 = convertionOperations.readImageAsBase64(imageUri, context)
+            val uri = Uri.parse(imageUri)
 
+            //Kompresję obrazu
+            val compressedImage = convertionOperations.compressImage(context, uri)
+            if (compressedImage == null) {
+                Log.e("AnswersChecker", "Failed to compress image")
+                return 0
+            }
+
+            //Konwertuj skompresowany obraz na Base64
+            val imageBase64 = Base64.encodeToString(compressedImage, Base64.DEFAULT)
+
+            //Przygotuj dane do wysłania
             val data = hashMapOf(
                 "imageBase64" to imageBase64,
                 "description" to description
             )
 
-            val result = functions
+            return functions
                 .getHttpsCallable("checkPhotoFunction")
                 .call(data)
                 .continueWith { task ->
-                    val resultData = task.result?.data as? Map<*, *>
-                    (resultData?.get("score") as? Number)?.toInt() ?: 0
+                    val response = task.result?.data as? Map<*, *>
+                    when {
+                        task.isSuccessful && response != null -> {
+                            (response["score"] as? Number)?.toInt() ?: 0
+                        }
+                        else -> {
+                            Log.e("AnswersChecker", "Function returned null or invalid response")
+                            0
+                        }
+                    }
                 }.await()
 
-            return result
         } catch (e: Exception) {
-            Log.e("AnswersChecker", "Error calling checkPhotoFunction", e)
+            Log.e("AnswersChecker", "Error in checkPhoto", e)
             return 0
         }
     }

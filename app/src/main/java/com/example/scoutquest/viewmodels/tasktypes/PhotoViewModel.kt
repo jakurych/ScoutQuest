@@ -28,7 +28,6 @@ class PhotoViewModel @Inject constructor() : ViewModel() {
         setTaskDetailsEntered(newInstruction.isNotBlank())
     }
 
-    // Zmieniona nazwa z setInstructionFromPhoto na setPhotoFromPhoto
     fun setInstructionFromPhoto(photo: Photo?) {
         _instruction.value = photo?.instruction ?: ""
         _hasInstruction.value = _instruction.value.isNotBlank()
@@ -44,7 +43,6 @@ class PhotoViewModel @Inject constructor() : ViewModel() {
         return Photo(instruction = _instruction.value)
     }
 
-    // Zmieniona nazwa z resetPhotoTask na resetPhoto
     fun resetPhotoTask() {
         _instruction.value = ""
         _hasInstruction.value = false

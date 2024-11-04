@@ -1,6 +1,10 @@
 package com.example.scoutquest.ui.views.gamesession.tasktypes
 
 import android.content.Context
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -18,6 +22,7 @@ import com.example.scoutquest.utils.AnswersChecker
 import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
+import com.example.scoutquest.utils.ComposeFileProvider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,93 +34,152 @@ fun PhotoTaskView(
     val context = LocalContext.current
     var showResult by remember { mutableStateOf(false) }
     var score by remember { mutableStateOf(0) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showPreview by remember { mutableStateOf(false) }
     val answersChecker = AnswersChecker()
     val coroutineScope = rememberCoroutineScope()
-    var capturedImageUri by remember { mutableStateOf<String?>(null) }
+    var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            showPreview = true
+        } else {
+            errorMessage = "Failed to capture image"
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            try {
+                val uri = ComposeFileProvider.getImageUri(context)
+                capturedImageUri = uri
+                launcher.launch(uri)
+            } catch (e: Exception) {
+                errorMessage = "Error creating image file: ${e.message}"
+                Log.e("PhotoTaskView", "Error creating image file", e)
+            }
+        } else {
+            errorMessage = "Camera permission is required"
+        }
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Photo Task") })
-        },
-        content = { paddingValues ->
-            if (showResult) {
-                viewModel.updateTaskScore(score)
-                Column(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .padding(16.dp)
+            TopAppBar(
+                title = { Text("Photo Task") }
+            )
+        }
+    ) { paddingValues ->
+        if (showResult) {
+            viewModel.updateTaskScore(score)
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Task Completed! You scored $score points.",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = onComplete,
+                    modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text(
-                        text = "Task Completed! You scored $score points.",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = onComplete,
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text("Continue")
-                    }
+                    Text("Continue")
                 }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .padding(16.dp)
-                ) {
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                errorMessage?.let { error ->
                     Text(
-                        text = photoTask.instruction,
-                        style = MaterialTheme.typography.titleMedium
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    if (capturedImageUri != null) {
+                }
+
+                Text(
+                    text = photoTask.instruction,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                if (showPreview && capturedImageUri != null) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(8.dp)
+                    ) {
                         Image(
                             painter = rememberAsyncImagePainter(capturedImageUri),
                             contentDescription = "Captured Image",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
+                            modifier = Modifier.fillMaxSize()
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                    Button(
-                        onClick = {
-                            // Implement image capture logic here
-                            captureImage(context) { uri ->
-                                capturedImageUri = uri
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Capture Image")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Take Photo")
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    if (capturedImageUri != null) {
+                        Button(
+                            onClick = {
+                                showPreview = false
+                                capturedImageUri = null
+                            }
+                        ) {
+                            Text("Retake Photo")
+                        }
+
                         Button(
                             onClick = {
                                 coroutineScope.launch {
-                                    score = answersChecker.checkPhoto(capturedImageUri!!, photoTask.instruction, context)
-                                    showResult = true
+                                    try {
+                                        capturedImageUri?.let { uri ->
+                                            score = answersChecker.checkPhoto(
+                                                uri.toString(),
+                                                photoTask.instruction,
+                                                context
+                                            )
+                                            showResult = true
+                                        }
+                                    } catch (e: Exception) {
+                                        errorMessage = "Error processing photo: ${e.message}"
+                                    }
                                 }
-                            },
-                            modifier = Modifier.align(Alignment.End)
+                            }
                         ) {
                             Text("Submit Photo")
                         }
                     }
+                } else {
+                    Button(
+                        onClick = {
+                            errorMessage = null
+                            permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                        },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Take Photo")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Take Photo")
+                    }
                 }
             }
         }
-    )
+    }
 }
 
-// Placeholder function for image capture
-fun captureImage(context: Context, onImageCaptured: (String) -> Unit) {
-    // Implement logic to capture image and get URI
-    // In actual implementation, use CameraX or other library to capture image
-    // And handle permissions
-    // On capturing the image, call onImageCaptured(imageUri)
-    onImageCaptured("file://path_to_captured_image") // Placeholder URI
-}
