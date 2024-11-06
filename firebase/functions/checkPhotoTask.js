@@ -3,6 +3,7 @@ const {logger} = require("firebase-functions");
 const vision = require("@google-cloud/vision");
 const {Translate} = require("@google-cloud/translate").v2;
 const natural = require("natural");
+const {lemmatizer} = require("lemmatizer");
 
 exports.checkPhotoFunction = onCall(async (request) => {
   const data = request.data;
@@ -19,41 +20,39 @@ exports.checkPhotoFunction = onCall(async (request) => {
     throw new Error("No description received");
   }
 
-  logger.info("Image data length: " + data.imageBase64.length);
-  logger.info("Description: " + data.description);
+  logger.info(`Image data length: ${data.imageBase64.length}`);
+  logger.info(`Description: ${data.description}`);
 
   try {
-    // Initialize clients
     const visionClient = new vision.ImageAnnotatorClient();
     const translateClient = new Translate();
 
-    // Translate the description to English
+    //Translate to English
     const [translatedDescription] = await translateClient.translate(
         data.description,
         "en",
     );
     logger.info("Translated description:", translatedDescription);
 
-    // Extract words from the translated description and perform stemming
+    // Extract words from the translated description and perform lemmatization
     const descriptionText = translatedDescription.toLowerCase();
     const tokenizer = new natural.WordTokenizer();
     let descriptionWords = tokenizer.tokenize(descriptionText);
 
-    // Remove stop words
+    //Remove stop words
     const stopWords = natural.stopwords;
     descriptionWords = descriptionWords.filter(
         (word) => !stopWords.includes(word),
     );
 
-    // Stem the description words
-    const stemmer = natural.PorterStemmer;
-    const stemmedDescriptionWords = descriptionWords.map((word) =>
-      stemmer.stem(word),
+    //Lemmatize the description words
+    const lemmatizedDescriptionWords = descriptionWords.map((word) =>
+      lemmatizer(word),
     );
 
-    logger.info("Stemmed description words:", stemmedDescriptionWords);
+    logger.info("Lemmatized description words:", lemmatizedDescriptionWords);
 
-    if (stemmedDescriptionWords.length === 0) {
+    if (lemmatizedDescriptionWords.length === 0) {
       logger.error("No words found in translated description for matching.");
       throw new Error("Invalid description for matching.");
     }
@@ -72,25 +71,28 @@ exports.checkPhotoFunction = onCall(async (request) => {
       label.description.toLowerCase(),
     );
 
-    // Stem the detected labels
-    const stemmedDetectedLabels = detectedLabels.map((label) =>
-      stemmer.stem(label),
-    );
+    //Lemmatize the detected labels
+    const lemmatizedDetectedLabels = detectedLabels.map((label) => {
+      const words = tokenizer.tokenize(label);
+      const lemmatizedWords = words.map((word) => lemmatizer(word));
+      return lemmatizedWords.join(" ");
+    });
 
-    logger.info("Stemmed detected labels:", stemmedDetectedLabels);
+    logger.info("Lemmatized detected labels:", lemmatizedDetectedLabels);
 
-    // Match detected labels with description words
-    const matchingLabels = stemmedDetectedLabels.filter((label) =>
-      stemmedDescriptionWords.includes(label),
+    //Match lemmatized labels with lemmatized description words
+    const matchingLabels = lemmatizedDetectedLabels.filter((label) =>
+      lemmatizedDescriptionWords.includes(label),
     );
 
     logger.info("Matching labels:", matchingLabels);
 
-    // Calculate score based on matching labels
     let score = 0;
     if (matchingLabels.length > 0) {
       score = Math.min(matchingLabels.length * 5, 15);
     }
+
+    logger.info(`Score: ${score}`);
 
     return {
       score,

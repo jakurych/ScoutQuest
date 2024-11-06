@@ -107,7 +107,7 @@ fun PhotoTaskView(
                 }
 
                 Text(
-                    text = "Make photo of: ${photoTask.thingToPhoto}",
+                    text = "Make photo of: ${photoTask.description}",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -148,7 +148,7 @@ fun PhotoTaskView(
                                         capturedImageUri?.let { uri ->
                                             score = answersChecker.checkPhoto(
                                                 uri.toString(),
-                                                photoTask.thingToPhoto,
+                                                photoTask.description,
                                                 context
                                             )
                                             showResult = true

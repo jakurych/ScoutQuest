@@ -20,7 +20,11 @@
     "@google-cloud/vision": "^4.3.2",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.0.1",
-    "natural": "^8.0.1"
+    "lemmatizer": "^0.0.1",
+    "natural": "^8.0.1",
+    "node-wordnet": "^0.1.12",
+    "wndb-with-exceptions": "^3.0.2",
+    "wordnet": "^2.0.0"
   },
   "devDependencies": {
     "eslint": "^8.15.0",

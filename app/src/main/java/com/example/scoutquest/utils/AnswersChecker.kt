@@ -30,10 +30,12 @@ class AnswersChecker {
 
     suspend fun checkPhoto(
         imageUri: String,
-        thingToPhoto: String,
+        description: String,
         context: Context
     ): Int {
         val functions = FirebaseFunctions.getInstance()
+
+        Log.d("AnswersChecker", "Task data: $description")
 
         try {
             val uri = Uri.parse(imageUri)
@@ -51,7 +53,7 @@ class AnswersChecker {
             //Przygotuj dane do wysłania
             val data = hashMapOf(
                 "imageBase64" to imageBase64,
-                "description" to thingToPhoto
+                "description" to description
             )
 
             //txt file for check base64 encoding
