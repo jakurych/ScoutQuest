@@ -2,103 +2,147 @@ const {onCall} = require("firebase-functions/v2/https");
 const {logger} = require("firebase-functions");
 const vision = require("@google-cloud/vision");
 const {Translate} = require("@google-cloud/translate").v2;
-const natural = require("natural");
-const {lemmatizer} = require("lemmatizer");
 
 exports.checkPhotoFunction = onCall(async (request) => {
   const data = request.data;
 
   logger.info("Starting photo check function");
+  logger.info("Received data:", {
+    hasImage: !!data.imageBase64,
+    description: data.description,
+  });
 
-  if (!data.imageBase64) {
-    logger.error("No image data received");
-    throw new Error("No image data received");
+  if (!data.imageBase64 || !data.description) {
+    logger.error("Missing required data");
+    throw new Error("Missing required data");
   }
-
-  if (!data.description) {
-    logger.error("No description received");
-    throw new Error("No description received");
-  }
-
-  logger.info(`Image data length: ${data.imageBase64.length}`);
-  logger.info(`Description: ${data.description}`);
 
   try {
     const visionClient = new vision.ImageAnnotatorClient();
     const translateClient = new Translate();
 
-    //Translate to English
+    logger.info("Initializing Vision and Translate clients");
+
+    const imageRequest = {
+      image: {
+        content: Buffer.from(data.imageBase64, "base64"),
+      },
+      features: [
+        {type: "LABEL_DETECTION"},
+        {type: "LANDMARK_DETECTION"},
+        {type: "OBJECT_LOCALIZATION"},
+        {type: "WEB_DETECTION"},
+      ],
+    };
+
+    logger.info("Sending request to Vision API");
+    const [visionResponse] = await visionClient.annotateImage(imageRequest);
+    logger.info("Vision API response received");
+
+    logger.info("Translating description to English");
     const [translatedDescription] = await translateClient.translate(
         data.description,
         "en",
     );
     logger.info("Translated description:", translatedDescription);
+    const descriptionLower = translatedDescription.toLowerCase();
 
-    // Extract words from the translated description and perform lemmatization
-    const descriptionText = translatedDescription.toLowerCase();
-    const tokenizer = new natural.WordTokenizer();
-    let descriptionWords = tokenizer.tokenize(descriptionText);
-
-    //Remove stop words
-    const stopWords = natural.stopwords;
-    descriptionWords = descriptionWords.filter(
-        (word) => !stopWords.includes(word),
-    );
-
-    //Lemmatize the description words
-    const lemmatizedDescriptionWords = descriptionWords.map((word) =>
-      lemmatizer(word),
-    );
-
-    logger.info("Lemmatized description words:", lemmatizedDescriptionWords);
-
-    if (lemmatizedDescriptionWords.length === 0) {
-      logger.error("No words found in translated description for matching.");
-      throw new Error("Invalid description for matching.");
-    }
-
-    // Prepare image content
-    const imageRequest = {
-      image: {
-        content: Buffer.from(data.imageBase64, "base64"),
-      },
+    const detectedObjects = {
+      labels: (visionResponse.labelAnnotations || []).map((label) =>
+        label.description.toLowerCase()),
+      landmarks: (visionResponse.landmarkAnnotations || []).map((landmark) =>
+        landmark.description.toLowerCase()),
+      objects: (visionResponse.localizedObjectAnnotations || []).map((obj) =>
+        obj.name.toLowerCase()),
+      webEntities: (visionResponse.webDetection &&
+        visionResponse.webDetection.webEntities || []).map((entity) =>
+        entity.description.toLowerCase()),
+      similarImages: visionResponse.webDetection &&
+        visionResponse.webDetection.visuallySimilarImages || [],
     };
 
-    // Perform label detection
-    const [result] = await visionClient.labelDetection(imageRequest);
-    const labels = result.labelAnnotations;
-    const detectedLabels = labels.map((label) =>
-      label.description.toLowerCase(),
-    );
+    logger.info("Detected objects:", detectedObjects);
 
-    //Lemmatize the detected labels
-    const lemmatizedDetectedLabels = detectedLabels.map((label) => {
-      const words = tokenizer.tokenize(label);
-      const lemmatizedWords = words.map((word) => lemmatizer(word));
-      return lemmatizedWords.join(" ");
-    });
-
-    logger.info("Lemmatized detected labels:", lemmatizedDetectedLabels);
-
-    //Match lemmatized labels with lemmatized description words
-    const matchingLabels = lemmatizedDetectedLabels.filter((label) =>
-      lemmatizedDescriptionWords.includes(label),
-    );
-
-    logger.info("Matching labels:", matchingLabels);
+    const calculateSimilarity = (text1, text2) => {
+      const set1 = new Set(text1.split(" "));
+      const set2 = new Set(text2.split(" "));
+      const intersection = new Set([...set1].filter((x) => set2.has(x)));
+      return intersection.size / Math.max(set1.size, set2.size);
+    };
 
     let score = 0;
-    if (matchingLabels.length > 0) {
-      score = Math.min(matchingLabels.length * 5, 15);
-    }
+    let confidence = 0;
+    const matches = [];
 
-    logger.info(`Score: ${score}`);
+    logger.info("Checking labels");
+    detectedObjects.labels.forEach((label) => {
+      const similarity = calculateSimilarity(label, descriptionLower);
+      logger.info(`Label: ${label}, Similarity: ${similarity}`);
+      if (similarity > 0.5) {
+        matches.push({type: "label", value: label, similarity});
+        score += 5;
+        confidence += similarity;
+        logger.info(`Label match found: ${label} (score +5)`);
+      }
+    });
 
-    return {
-      score,
-      labels: detectedLabels,
-      matchingLabels,
+    logger.info("Checking landmarks");
+    detectedObjects.landmarks.forEach((landmark) => {
+      const similarity = calculateSimilarity(landmark, descriptionLower);
+      logger.info(`Landmark: ${landmark}, Similarity: ${similarity}`);
+      if (similarity > 0.5) {
+        matches.push({type: "landmark", value: landmark, similarity});
+        score += 10;
+        confidence += similarity * 2;
+        logger.info(`Landmark match found: ${landmark} (score +10)`);
+      }
+    });
+
+    logger.info("Checking objects");
+    detectedObjects.objects.forEach((object) => {
+      const similarity = calculateSimilarity(object, descriptionLower);
+      logger.info(`Object: ${object}, Similarity: ${similarity}`);
+      if (similarity > 0.5) {
+        matches.push({type: "object", value: object, similarity});
+        score += 7;
+        confidence += similarity * 1.5;
+        logger.info(`Object match found: ${object} (score +7)`);
+      }
+    });
+
+    logger.info("Checking web entities");
+    detectedObjects.webEntities.forEach((entity) => {
+      const similarity = calculateSimilarity(entity, descriptionLower);
+      logger.info(`Web Entity: ${entity}, Similarity: ${similarity}`);
+      if (similarity > 0.5) {
+        matches.push({type: "webEntity", value: entity, similarity});
+        score += 3;
+        confidence += similarity;
+        logger.info(`Web entity match found: ${entity} (score +3)`);
+      }
+    });
+
+    const finalScore = Math.min(score, 100);
+    const finalConfidence = matches.length > 0 ? confidence / matches.length : 0;
+    const isCorrect = finalScore >= 15 && finalConfidence >= 0.6;
+
+    logger.info("Final results:", {
+      finalScore,
+      finalConfidence,
+      isCorrect,
+      matchesCount: matches.length,
+    });
+
+    const finalResult = {
+      score: finalScore,
+      confidence: finalConfidence,
+      isCorrect,
+      matches,
+      detectedObjects,
     };
+
+    logger.info("Returning result:", finalResult);
+    return finalResult;
   } catch (error) {
     logger.error("Error in photo check function:", error);
     throw new Error("Failed to process image");

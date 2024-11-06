@@ -37,13 +37,22 @@ fun PhotoTaskView(
     val coroutineScope = rememberCoroutineScope()
     var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    val launcher = rememberLauncherForActivityResult(
+    val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
             showPreview = true
         } else {
             errorMessage = "Failed to capture image"
+        }
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            capturedImageUri = it
+            showPreview = true
         }
     }
 
@@ -54,7 +63,7 @@ fun PhotoTaskView(
             try {
                 val uri = ComposeFileProvider.getImageUri(context)
                 capturedImageUri = uri
-                launcher.launch(uri)
+                cameraLauncher.launch(uri)
             } catch (e: Exception) {
                 errorMessage = "Error creating image file: ${e.message}"
                 Log.e("PhotoTaskView", "Error creating image file", e)
@@ -163,20 +172,38 @@ fun PhotoTaskView(
                         }
                     }
                 } else {
-                    Button(
-                        onClick = {
-                            errorMessage = null
-                            permissionLauncher.launch(android.Manifest.permission.CAMERA)
-                        },
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Take Photo")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Take Photo")
+                        Button(
+                            onClick = {
+                                errorMessage = null
+                                permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                            }
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Take Photo")
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Take Photo")
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                errorMessage = null
+                                galleryLauncher.launch("image/*")
+                            }
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "Choose from Gallery")
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Choose from Gallery (test mod)")
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
