@@ -30,6 +30,11 @@ fun BrowseGamesView(
     browseGamesViewModel: BrowseGamesViewModel = hiltViewModel(),
     onPlayGame: (Game) -> Unit // Callback do obsługi rozpoczęcia gry
 ) {
+
+    LaunchedEffect(Unit) {
+        browseGamesViewModel.loadGames()
+    }
+
     val games by browseGamesViewModel.filteredGames.collectAsState()
     val allGames by browseGamesViewModel.games.collectAsState()
 

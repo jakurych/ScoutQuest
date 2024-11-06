@@ -45,7 +45,7 @@ class BrowseGamesViewModel @Inject constructor(
         loadGames()
     }
 
-    private fun loadGames() {
+    fun loadGames() {
         viewModelScope.launch {
             val allGames = gameRepository.getAllGames()
             _games.value = allGames
@@ -60,6 +60,7 @@ class BrowseGamesViewModel @Inject constructor(
             loadUserGames(userId)
         }
     }
+
 
 
     fun loadUserGames(userId: String) {
