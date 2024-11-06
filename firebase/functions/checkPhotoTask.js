@@ -74,53 +74,67 @@ exports.checkPhotoFunction = onCall(async (request) => {
     let confidence = 0;
     const matches = [];
 
-    logger.info("Checking labels");
-    detectedObjects.labels.forEach((label) => {
-      const similarity = calculateSimilarity(label, descriptionLower);
-      logger.info(`Label: ${label}, Similarity: ${similarity}`);
-      if (similarity > 0.5) {
-        matches.push({type: "label", value: label, similarity});
-        score += 5;
-        confidence += similarity;
-        logger.info(`Label match found: ${label} (score +5)`);
-      }
-    });
+    const isExactLandmarkMatch = detectedObjects.landmarks.some((landmark) =>
+      landmark.includes(descriptionLower) ||
+      descriptionLower.includes(landmark));
 
-    logger.info("Checking landmarks");
-    detectedObjects.landmarks.forEach((landmark) => {
-      const similarity = calculateSimilarity(landmark, descriptionLower);
-      logger.info(`Landmark: ${landmark}, Similarity: ${similarity}`);
-      if (similarity > 0.5) {
-        matches.push({type: "landmark", value: landmark, similarity});
-        score += 10;
-        confidence += similarity * 2;
-        logger.info(`Landmark match found: ${landmark} (score +10)`);
-      }
-    });
+    if (isExactLandmarkMatch) {
+      score = 100;
+      confidence = 1.0;
+      matches.push({
+        type: "landmark",
+        value: descriptionLower,
+        similarity: 1.0,
+      });
+      logger.info("Exact landmark match found! Maximum score awarded.");
+    } else {
+      logger.info("No exact landmark match, checking other elements");
 
-    logger.info("Checking objects");
-    detectedObjects.objects.forEach((object) => {
-      const similarity = calculateSimilarity(object, descriptionLower);
-      logger.info(`Object: ${object}, Similarity: ${similarity}`);
-      if (similarity > 0.5) {
-        matches.push({type: "object", value: object, similarity});
-        score += 7;
-        confidence += similarity * 1.5;
-        logger.info(`Object match found: ${object} (score +7)`);
-      }
-    });
+      logger.info("Checking labels");
+      detectedObjects.labels.forEach((label) => {
+        const similarity = calculateSimilarity(label, descriptionLower);
+        if (similarity > 0.5) {
+          matches.push({type: "label", value: label, similarity});
+          score += 5;
+          confidence += similarity;
+          logger.info(`Label match found: ${label} (score +5)`);
+        }
+      });
 
-    logger.info("Checking web entities");
-    detectedObjects.webEntities.forEach((entity) => {
-      const similarity = calculateSimilarity(entity, descriptionLower);
-      logger.info(`Web Entity: ${entity}, Similarity: ${similarity}`);
-      if (similarity > 0.5) {
-        matches.push({type: "webEntity", value: entity, similarity});
-        score += 3;
-        confidence += similarity;
-        logger.info(`Web entity match found: ${entity} (score +3)`);
-      }
-    });
+      logger.info("Checking landmarks");
+      detectedObjects.landmarks.forEach((landmark) => {
+        const similarity = calculateSimilarity(landmark, descriptionLower);
+        if (similarity > 0.5) {
+          matches.push({type: "landmark", value: landmark, similarity});
+          score += 10;
+          confidence += similarity * 2;
+          logger.info(`Landmark match found: ${landmark} (score +10)`);
+        }
+      });
+
+      logger.info("Checking objects");
+      detectedObjects.objects.forEach((object) => {
+        const similarity = calculateSimilarity(object, descriptionLower);
+        if (similarity > 0.5) {
+          matches.push({type: "object", value: object, similarity});
+          score += 7;
+          confidence += similarity * 1.5;
+          logger.info(`Object match found: ${object} (score +7)`);
+        }
+      });
+
+      logger.info("Checking web entities");
+      detectedObjects.webEntities.forEach((entity) => {
+        const similarity = calculateSimilarity(entity, descriptionLower);
+        if (similarity > 0.5) {
+          matches.push({type: "webEntity", value: entity, similarity});
+          score += 3;
+          confidence += similarity;
+          logger.info(`Web entity match found: ${entity} (score +3)`);
+        }
+      });
+    }
+
 
     const finalScore = Math.min(score, 100);
     const finalConfidence = matches.length > 0 ? confidence / matches.length : 0;
