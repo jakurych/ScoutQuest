@@ -40,4 +40,9 @@ class OpenQuestionViewModel @Inject constructor() : ViewModel() {
         _openQuestion.value = openQuestion
         _hasOpenQuestion.value = openQuestion != null
     }
+
+    fun resetOpenQuestion() {
+        _hasOpenQuestion.value = false
+        _openQuestion.value = null
+    }
 }

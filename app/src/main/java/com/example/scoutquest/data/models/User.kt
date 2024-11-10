@@ -9,5 +9,8 @@ data class User(
     val profilePictureUrl: String? = null,
     val points: Int = 0,
     val createdGames: List<String>? = null,
-    val gamesHistory: List<String>? = null
+    val gamesHistory: List<String>? = null,
+
+    val openWorldTicker: Int = 0,
+    val createdOpenWorldTasks: List<String>? = null
 )

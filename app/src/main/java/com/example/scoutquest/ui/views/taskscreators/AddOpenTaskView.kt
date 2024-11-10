@@ -1,8 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
-)
-
 package com.example.scoutquest.ui.views.taskscreators
 
 import androidx.compose.foundation.background
@@ -29,26 +24,26 @@ import com.example.scoutquest.ui.navigation.CreateOpenQuestion
 import com.example.scoutquest.ui.navigation.CreatePhotoTask
 import com.example.scoutquest.ui.navigation.CreateQuiz
 import com.example.scoutquest.ui.navigation.CreateTrueFalse
-import com.example.scoutquest.ui.navigation.Creator
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.drab_dark_brown
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
-import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
+import com.example.scoutquest.viewmodels.gamesession.OpenTaskViewModel
 import com.example.scoutquest.viewmodels.tasktypes.NoteViewModel
 import com.example.scoutquest.viewmodels.tasktypes.OpenQuestionViewModel
 import com.example.scoutquest.viewmodels.tasktypes.PhotoViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
-@ExperimentalMaterial3Api
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTaskView(
-    viewModel: CreateNewGameViewModel,
+fun AddOpenTaskView(
+    viewModel: OpenTaskViewModel,
     navController: NavController,
     taskToEdit: Task? = null,
     mapMarkers: List<Task>,
@@ -60,93 +55,50 @@ fun AddTaskView(
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-
     val padding = screenWidth * 0.05f
     val elementSpacing = screenWidth * 0.02f
 
-    var taskTitle by remember { mutableStateOf(viewModel.currentTaskTitle) }
-    var taskDescription by remember { mutableStateOf(viewModel.currentTaskDescription) }
-    var taskPoints by remember { mutableStateOf(viewModel.currentTaskPoints) }
-    var latitude by remember { mutableDoubleStateOf(viewModel.currentLatitude) }
-    var longitude by remember { mutableDoubleStateOf(viewModel.currentLongitude) }
-    var markerColor by remember { mutableStateOf("blue") }
-
-    val fullscreenCameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-            LatLng(52.253126, 20.900157), 10f
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        //task types Vms
-        quizViewModel.setCreateNewGameViewModel(viewModel)
-        noteViewModel.setCreateNewGameViewModel(viewModel)
-        trueFalseViewModel.setCreateNewGameViewModel(viewModel)
-        openQuestionViewModel.setCreateNewGameViewModel(viewModel)
-        photoViewModel.setCreateNewGameViewModel(viewModel)
-
-        //vals from VM
-        taskTitle = viewModel.currentTaskTitle
-        taskDescription = viewModel.currentTaskDescription
-        taskPoints = viewModel.currentTaskPoints
-        latitude = viewModel.currentLatitude
-        longitude = viewModel.currentLongitude
-
-        //starting marker color
-        if (viewModel.currentMarkerColor.isNotBlank()) {
-            markerColor = viewModel.currentMarkerColor
-        } else {
-            markerColor = "blue"
-            viewModel.currentMarkerColor = "blue"
-        }
-
-        if (taskToEdit != null) {
-            viewModel.setTaskDetailsEntered(true)
-        }
-    }
-
-    var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
-
-    val markerColors =
-        listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
-    var expanded by remember { mutableStateOf(false) }
-
-    val taskTypes = listOf("Open question","Quiz", "Note","True/False" ,"Photo", "None")
-
+    val taskTitle by viewModel.taskTitle.collectAsState()
+    val taskDescription by viewModel.taskDescription.collectAsState()
+    val taskPoints by viewModel.taskPoints.collectAsState()
+    val latitude by viewModel.latitude.collectAsState()
+    val longitude by viewModel.longitude.collectAsState()
+    val markerColor by viewModel.markerColor.collectAsState()
     val selectedTaskType by viewModel.selectedTaskType.collectAsState()
+    val fullscreenCameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(LatLng(latitude, longitude), 10f)
+    }
+
+    var isMapFullScreen by remember { mutableStateOf(false) }
+    var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
     var taskTypeExpanded by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
-
-    var isMapFullScreen by remember { mutableStateOf(false) }
-
     val cameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
-            LatLng(52.253126, 20.900157), 10f
-        )
+        position = CameraPosition.fromLatLngZoom(LatLng(latitude, longitude), 10f)
     }
 
-    val isTaskDetailsEntered by viewModel.isTaskDetailsEntered.collectAsState()
+    val taskTypes = listOf("Open question", "Quiz", "Note", "True/False", "Photo", "None")
+    val markerColors = listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
+    var expanded by remember { mutableStateOf(false) }
 
-    //spr czy zostały wprowadzone detale tasków
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
     val hasNotesNote by noteViewModel.hasNotes.collectAsState()
     val hasTrueFalseQuestions by trueFalseViewModel.hasQuestions.collectAsState()
     val hasOpenQuestion by openQuestionViewModel.hasOpenQuestion.collectAsState()
     val hasPhotoInstruction by photoViewModel.hasInstruction.collectAsState()
 
-
-    fun updateViewModel() {
-        viewModel.apply {
-            currentTaskTitle = taskTitle
-            currentTaskDescription = taskDescription
-            currentTaskPoints = taskPoints
-            currentLatitude = latitude
-            currentLongitude = longitude
-            currentMarkerColor = markerColor
+    LaunchedEffect(Unit) {
+        taskToEdit?.let { task ->
+            task.title?.let { viewModel.updateTitle(it) }  // viewModel.updateTitle(task.title)
+            viewModel.updateDescription(task.description)
+            viewModel.updatePoints(task.points.toString())
+            viewModel.updateLatitude(task.latitude)
+            viewModel.updateLongitude(task.longitude)
+            viewModel.updateMarkerColor(task.markerColor)
+            viewModel.updateSelectedTaskType(task.taskType ?: "None")
         }
     }
-
 
     Column(
         modifier = Modifier
@@ -156,14 +108,10 @@ fun AddTaskView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(elementSpacing)
     ) {
-
         if (!isMapFullScreen) {
             TextField(
                 value = taskTitle,
-                onValueChange = {
-                    taskTitle = it
-                    updateViewModel()
-                },
+                onValueChange = { viewModel.updateTitle(it) },
                 label = { Text("Task Title", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
                 colors = TextFieldDefaults.textFieldColors(
@@ -178,10 +126,7 @@ fun AddTaskView(
 
             TextField(
                 value = taskDescription,
-                onValueChange = {
-                    taskDescription = it
-                    updateViewModel()
-                },
+                onValueChange = { viewModel.updateDescription(it) },
                 label = { Text("Task Description", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
                 colors = TextFieldDefaults.textFieldColors(
@@ -196,10 +141,7 @@ fun AddTaskView(
 
             TextField(
                 value = taskPoints,
-                onValueChange = {
-                    taskPoints = it
-                    updateViewModel()
-                },
+                onValueChange = { viewModel.updatePoints(it) },
                 label = { Text("Task Points", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
@@ -228,8 +170,7 @@ fun AddTaskView(
                     markerColors.forEach { color ->
                         DropdownMenuItem(
                             onClick = {
-                                markerColor = color
-                                updateViewModel()
+                                viewModel.updateMarkerColor(color)
                                 expanded = false
                             },
                             text = { Text(color) }
@@ -258,19 +199,17 @@ fun AddTaskView(
                         taskTypes.forEach { type ->
                             DropdownMenuItem(
                                 onClick = {
-                                    viewModel.setSelectedTaskType(type)
+                                    viewModel.updateSelectedTaskType(type)
                                     taskTypeExpanded = false
                                 },
                                 text = { Text(type) }
                             )
-
                         }
                     }
                 }
 
                 Button(
                     onClick = {
-                        updateViewModel()
                         when (selectedTaskType) {
                             "Open question" -> {
                                 openQuestionViewModel.setOpenQuestionFromTask(taskToEdit?.openQuestionDetails)
@@ -304,13 +243,12 @@ fun AddTaskView(
             GoogleMap(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (isMapFullScreen) LocalConfiguration.current.screenHeightDp.dp else 200.dp),
+                    .height(200.dp),
                 cameraPositionState = cameraPositionState,
                 onMapClick = { latLng ->
-                    latitude = latLng.latitude
-                    longitude = latLng.longitude
+                    viewModel.updateLatitude(latLng.latitude)
+                    viewModel.updateLongitude(latLng.longitude)
                     temporaryMarker = latLng
-                    updateViewModel()
                 }
             ) {
                 mapMarkers.forEachIndexed { index, task ->
@@ -339,70 +277,55 @@ fun AddTaskView(
                 Text("Full Screen Map", color = Color.White)
             }
 
-            if (!isMapFullScreen) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.padding(elementSpacing),
+                    colors = ButtonDefaults.buttonColors(containerColor = button_green)
                 ) {
-                    Button(
-                        onClick = { navController.navigate(Creator) },
-                        modifier = Modifier.padding(elementSpacing),
-                        colors = ButtonDefaults.buttonColors(containerColor = button_green)
-                    ) {
-                        Text("Cancel", color = Color.White)
-                    }
+                    Text("Cancel", color = Color.White)
+                }
 
-                    Button(
-                        onClick = {
-                            if (selectedTaskType == "Quiz" && !hasQuizQuestions) {
-                                navController.navigate(CreateQuiz)
-                            } else if (selectedTaskType == "Note" && !hasNotesNote) {
-                                navController.navigate(CreateNote)
-                            } else if (selectedTaskType == "True/False" && !hasTrueFalseQuestions) {
-                                navController.navigate(CreateTrueFalse)
-                            } else if(selectedTaskType == "Open question" && !hasOpenQuestion) {
-                                navController.navigate(CreateOpenQuestion)
-                            } else if (selectedTaskType == "Photo" && !hasPhotoInstruction) {
-                                navController.navigate(CreatePhotoTask)
-
-                            } else {
-                                val task = Task(
-                                    taskId = taskToEdit?.taskId ?: 0,
-                                    title = viewModel.currentTaskTitle,
-                                    description = viewModel.currentTaskDescription,
-                                    points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
-                                    latitude = viewModel.currentLatitude,
-                                    longitude = viewModel.currentLongitude,
-                                    markerColor = viewModel.currentMarkerColor,
-                                    taskType = selectedTaskType,
-                                    quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
-                                    noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
-                                    trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null,
-                                    openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null,
-                                    photoDetails = if (selectedTaskType == "Photo") photoViewModel.getCurrentPhotoTask() else null
-                                )
-                                viewModel.addOrUpdateTask(task)
-
-                                //task types vms reset
-                                quizViewModel.resetQuiz()
-                                noteViewModel.resetNote()
-                                photoViewModel.resetPhotoTask()
-                                trueFalseViewModel.resetTrueFalse()
-
-                                viewModel.setTaskDetailsEntered(false)
-                                viewModel.setTaskToEdit(null)
-                                navController.navigate(Creator)
-                            }
-                        },
-                        enabled = isTaskDetailsEntered || taskToEdit != null,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isTaskDetailsEntered || taskToEdit != null) button_green else Color.Gray,
-                            contentColor = Color.White
-                        ),
-                        modifier = Modifier.padding(elementSpacing)
-                    ) {
-                        Text("Save Task", color = Color.White)
-                    }
+                Button(
+                    onClick = {
+                        if (selectedTaskType == "Quiz" && !hasQuizQuestions) {
+                            navController.navigate(CreateQuiz)
+                        } else if (selectedTaskType == "Note" && !hasNotesNote) {
+                            navController.navigate(CreateNote)
+                        } else if (selectedTaskType == "True/False" && !hasTrueFalseQuestions) {
+                            navController.navigate(CreateTrueFalse)
+                        } else if(selectedTaskType == "Open question" && !hasOpenQuestion) {
+                            navController.navigate(CreateOpenQuestion)
+                        } else if (selectedTaskType == "Photo" && !hasPhotoInstruction) {
+                            navController.navigate(CreatePhotoTask)
+                        } else {
+                            viewModel.saveOpenTask(
+                                quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
+                                noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
+                                trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null,
+                                openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null,
+                                photoDetails = if (selectedTaskType == "Photo") photoViewModel.getCurrentPhotoTask() else null,
+                                onSuccess = {
+                                    quizViewModel.resetQuiz()
+                                    noteViewModel.resetNote()
+                                    photoViewModel.resetPhotoTask()
+                                    trueFalseViewModel.resetTrueFalse()
+                                    openQuestionViewModel.resetOpenQuestion()
+                                    navController.popBackStack()
+                                },
+                                onFailure = {
+                                    // Handle error (e.g., show a toast or snackbar)
+                                }
+                            )
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = button_green),
+                    modifier = Modifier.padding(elementSpacing)
+                ) {
+                    Text("Save Open World Task", color = Color.White)
                 }
             }
         }
@@ -422,10 +345,9 @@ fun AddTaskView(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = fullscreenCameraPositionState,
                     onMapClick = { latLng ->
-                        latitude = latLng.latitude
-                        longitude = latLng.longitude
+                        viewModel.updateLatitude(latLng.latitude)
+                        viewModel.updateLongitude(latLng.longitude)
                         temporaryMarker = latLng
-                        updateViewModel()
                     }
                 ) {
                     mapMarkers.forEachIndexed { index, task ->
@@ -459,3 +381,5 @@ fun AddTaskView(
         }
     }
 }
+
+

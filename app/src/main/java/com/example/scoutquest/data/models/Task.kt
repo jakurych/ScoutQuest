@@ -21,8 +21,8 @@ data class Task(
     var markerColor: String = "",
     var taskType: String? = null,
 
-    //open world tasks
-    var category: String? = null,
+    //open world tasks, no corelated with game
+    var isOpenWorldTask: Boolean = false,
 
     //task types
     var quizDetails: @RawValue Quiz? = null,
