@@ -14,7 +14,7 @@ import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.models.tasktypes.OpenQuestion
 import com.example.scoutquest.data.models.tasktypes.Photo
-
+import com.google.firebase.auth.FirebaseAuth
 
 @HiltViewModel
 class OpenTaskViewModel @Inject constructor(
@@ -47,6 +47,16 @@ class OpenTaskViewModel @Inject constructor(
 
     private val _taskCategory = MutableStateFlow("")
     val taskCategory: StateFlow<String> = _taskCategory
+
+    private val _creatorId = MutableStateFlow<String?>(null)
+    val creatorId: StateFlow<String?> = _creatorId
+
+    init {
+        val user = FirebaseAuth.getInstance().currentUser
+        user?.let { firebaseUser ->
+            _creatorId.value = firebaseUser.uid
+        }
+    }
 
     fun updateTitle(title: String) {
         _taskTitle.value = title
@@ -106,7 +116,8 @@ class OpenTaskViewModel @Inject constructor(
                     openQuestionDetails = openQuestionDetails,
                     photoDetails = photoDetails,
                     isOpenWorldTask = true,
-                    category = _taskCategory.value
+                    category = _taskCategory.value,
+                    creatorId = _creatorId.value
                 )
                 repository.addOpenTask(
                     task = task,

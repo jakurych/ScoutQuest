@@ -17,10 +17,10 @@ import com.example.scoutquest.ui.views.taskscreators.*
 import com.example.scoutquest.ui.views.gamesession.GameMapView
 import com.example.scoutquest.ui.views.general.BrowseGamesView
 import com.example.scoutquest.ui.views.general.CreateNewGameView
-import com.example.scoutquest.ui.views.general.JoinGameView
+import com.example.scoutquest.ui.views.general.OpenWorldMenu
 import com.example.scoutquest.ui.views.general.LoginView
 import com.example.scoutquest.ui.views.general.MainScreenView
-import com.example.scoutquest.ui.views.general.NewGameView
+import com.example.scoutquest.ui.views.general.AdventureGameMenuView
 import com.example.scoutquest.ui.views.general.ProfileView
 import com.example.scoutquest.ui.views.general.SettingsView
 import com.example.scoutquest.ui.views.general.UserGamesBrowserView
@@ -69,13 +69,13 @@ fun AppNavigation() {
                 LoginView(loginViewModel, userViewModel)
             }
             composable(route = JoinGame) {
-                JoinGameView(joinGameViewModel)
+                OpenWorldMenu()
             }
             composable(route = Settings) {
                 SettingsView(settingsViewModel)
             }
             composable(route = NewGame) {
-                NewGameView()
+                AdventureGameMenuView()
             }
             composable(route = Creator) {
                 CreateNewGameView(

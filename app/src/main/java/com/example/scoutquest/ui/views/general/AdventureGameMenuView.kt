@@ -19,7 +19,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.example.scoutquest.ui.theme.bistre
 
 @Composable
-fun NewGameView() {
+fun AdventureGameMenuView() {
     val navController = LocalNavigation.current
     val auth = FirebaseAuth.getInstance()
 

@@ -282,12 +282,15 @@ fun ProfileDetails(user: User, isEmailVerified: Boolean) {
                 Text("Created Games: ${user.createdGames?.size ?: 0}", color = Color.White)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Games History: ${user.gamesHistory?.size ?: 0}", color = Color.White)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Open world ticket: ${user.openWorldTicket}", color = Color.White)
             } else {
                 Text("Please verify your email to get stats", color = Color.White)
             }
         }
     }
 }
+
 
 @Composable
 fun BadgesRow(badges: List<Badge>?) {

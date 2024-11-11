@@ -137,9 +137,6 @@ class AuthRepository @Inject constructor(
         }
     }
 
-
-
-
     suspend fun changePassword(newPassword: String, password: String): Boolean {
         val user = auth.currentUser
         return try {

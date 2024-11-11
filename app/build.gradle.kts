@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.scoutquest"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -95,6 +95,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.compose.material3)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
