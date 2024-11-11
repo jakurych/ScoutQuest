@@ -26,6 +26,7 @@ import com.example.scoutquest.ui.views.general.SettingsView
 import com.example.scoutquest.ui.views.general.UserGamesBrowserView
 import com.example.scoutquest.viewmodels.tasktypes.*
 import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
+import com.example.scoutquest.viewmodels.gamesession.OpenTaskViewModel
 import com.example.scoutquest.viewmodels.general.BrowseGamesViewModel
 import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
 import com.example.scoutquest.viewmodels.general.JoinGameViewModel
@@ -44,7 +45,7 @@ fun AppNavigation() {
     val createNewGameViewModel: CreateNewGameViewModel = viewModel()
     val registerViewModel: RegisterViewModel = viewModel()
     val loginViewModel: LoginViewModel = viewModel()
-    val joinGameViewModel: JoinGameViewModel = viewModel()
+    val openTaskViewModel: OpenTaskViewModel = viewModel()
     val quizViewModel: QuizViewModel = viewModel()
     val noteViewModel: NoteViewModel = viewModel()
     val trueFalseViewModel: TrueFalseViewModel = viewModel()
@@ -52,6 +53,7 @@ fun AppNavigation() {
     val gameSessionViewModel: GameSessionViewModel = viewModel()
     val openQuestionViewModel: OpenQuestionViewModel = viewModel()
     val photoViewModel: PhotoViewModel = viewModel()
+
 
 
     CompositionLocalProvider(LocalNavigation provides navController) {
@@ -69,7 +71,7 @@ fun AppNavigation() {
                 LoginView(loginViewModel, userViewModel)
             }
             composable(route = JoinGame) {
-                OpenWorldMenu()
+                OpenWorldMenu(navController = navController)
             }
             composable(route = Settings) {
                 SettingsView(settingsViewModel)
@@ -97,6 +99,20 @@ fun AppNavigation() {
                     navController = navController,
                     taskToEdit = taskToEdit,
                     mapMarkers = mapMarkers,
+                    quizViewModel = quizViewModel,
+                    noteViewModel = noteViewModel,
+                    trueFalseViewModel = trueFalseViewModel,
+                    openQuestionViewModel = openQuestionViewModel,
+                    photoViewModel = photoViewModel
+                )
+            }
+            composable(route = AddOpenWorldTask) {
+
+                AddOpenTaskView(
+                    viewModel = openTaskViewModel,
+                    navController = navController,
+                    taskToEdit = null,
+                    mapMarkers = emptyList(),
                     quizViewModel = quizViewModel,
                     noteViewModel = noteViewModel,
                     trueFalseViewModel = trueFalseViewModel,

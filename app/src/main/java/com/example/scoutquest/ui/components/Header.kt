@@ -18,7 +18,6 @@ import com.example.scoutquest.ui.navigation.LocalNavigation
 import com.example.scoutquest.ui.navigation.Profile
 import com.example.scoutquest.ui.navigation.Settings
 
-// Define the route as a constant
 const val MainScreenRoute = "/mainscreen"
 
 @Composable
@@ -32,7 +31,7 @@ fun Header() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Profile Icon Button
+
         IconButton(onClick = { navController.navigate(Profile) }) {
             Icon(
                 painter = painterResource(id = R.drawable.icon_user),
@@ -41,7 +40,6 @@ fun Header() {
             )
         }
 
-        // Title Text
         Text(
             text = "Scout Quest",
             fontSize = 32.sp,
@@ -49,7 +47,6 @@ fun Header() {
             modifier = Modifier.clickable { navController.navigate(MainScreenRoute) }
         )
 
-        // Settings Icon Button
         IconButton(onClick = { navController.navigate(Settings) }) {
             Icon(
                 painter = painterResource(id = R.drawable.icon_setting),

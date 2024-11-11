@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.components.Header
 import com.airbnb.lottie.compose.*
@@ -25,9 +26,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import com.example.scoutquest.data.models.User
+import com.example.scoutquest.ui.navigation.AddOpenWorldTask
 
 @Composable
-fun OpenWorldMenu() {
+fun OpenWorldMenu(navController: NavController) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val context = LocalContext.current
@@ -99,12 +101,15 @@ fun OpenWorldMenu() {
             ) {
                 CircleButton(
                     text = "Create task",
-                    onClick = {},
+                    onClick = {
+                        navController.navigate(AddOpenWorldTask)
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .padding(vertical = 8.dp)
                         .shadow(elevation = 4.dp, shape = RoundedCornerShape(30))
                 )
+
                 val createTaskComposition by rememberLottieComposition(
                     LottieCompositionSpec.Url("https://lottie.host/c6e04279-2558-4ec7-85f1-ff26b66c962b/Bf4SCnd9zK.json")
                 )
