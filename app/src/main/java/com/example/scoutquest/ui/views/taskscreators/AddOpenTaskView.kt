@@ -88,6 +88,8 @@ fun AddOpenTaskView(
     val hasOpenQuestion by openQuestionViewModel.hasOpenQuestion.collectAsState()
     val hasPhotoInstruction by photoViewModel.hasInstruction.collectAsState()
 
+    val taskCategory by viewModel.taskCategory.collectAsState()
+
     LaunchedEffect(Unit) {
         taskToEdit?.let { task ->
             task.title?.let { viewModel.updateTitle(it) }  // viewModel.updateTitle(task.title)
@@ -97,6 +99,7 @@ fun AddOpenTaskView(
             viewModel.updateLongitude(task.longitude)
             viewModel.updateMarkerColor(task.markerColor)
             viewModel.updateSelectedTaskType(task.taskType ?: "None")
+            task.category?.let { viewModel.updateCategory(it) }
         }
     }
 
@@ -128,6 +131,21 @@ fun AddOpenTaskView(
                 value = taskDescription,
                 onValueChange = { viewModel.updateDescription(it) },
                 label = { Text("Task Description", color = Color.White) },
+                textStyle = TextStyle(color = Color.White),
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = drab_dark_brown,
+                    focusedIndicatorColor = Color.White,
+                    unfocusedIndicatorColor = Color.White,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
+                    cursorColor = Color.White
+                )
+            )
+
+            TextField(
+                value = taskCategory,
+                onValueChange = { viewModel.updateCategory(it) },
+                label = { Text("Enter category", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = drab_dark_brown,

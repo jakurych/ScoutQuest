@@ -2,8 +2,10 @@ package com.example.scoutquest.data.repositories
 
 import com.example.scoutquest.data.models.Task
 import com.google.firebase.firestore.FirebaseFirestore
+import javax.inject.Inject
 
-class OpenTaskRepository(private val firestore: FirebaseFirestore) {
+class OpenTaskRepository @Inject constructor() {
+    private val firestore = FirebaseFirestore.getInstance()
     private val openTasksCollection = firestore.collection("openTasks")
 
     fun addOpenTask(

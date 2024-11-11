@@ -23,6 +23,7 @@ data class Task(
 
     //open world tasks, no corelated with game
     var isOpenWorldTask: Boolean = false,
+    var category: String? =null,
 
     //task types
     var quizDetails: @RawValue Quiz? = null,

@@ -45,8 +45,15 @@ class OpenTaskViewModel @Inject constructor(
     private val _selectedTaskType = MutableStateFlow("None")
     val selectedTaskType: StateFlow<String> = _selectedTaskType
 
+    private val _taskCategory = MutableStateFlow("")
+    val taskCategory: StateFlow<String> = _taskCategory
+
     fun updateTitle(title: String) {
         _taskTitle.value = title
+    }
+
+    fun updateCategory(category: String) {
+        _taskCategory.value = category
     }
 
     fun updateDescription(description: String) {
@@ -98,7 +105,8 @@ class OpenTaskViewModel @Inject constructor(
                     trueFalseDetails = trueFalseDetails,
                     openQuestionDetails = openQuestionDetails,
                     photoDetails = photoDetails,
-                    isOpenWorldTask = true
+                    isOpenWorldTask = true,
+                    category = _taskCategory.value
                 )
                 repository.addOpenTask(
                     task = task,

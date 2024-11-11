@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.scoutquest.ui.navigation
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import com.example.scoutquest.ui.views.general.RegisterView
 import com.example.scoutquest.viewmodels.general.RegisterViewModel
 import androidx.compose.runtime.Composable
