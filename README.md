@@ -17,13 +17,11 @@ Built with modern Android technologies and powered by Google's ecosystem:
 - **Maps Integration**: Google Maps API for real-world navigation
 - **AI & ML**: 
   - Google Vision AI for image recognition tasks
-  - Gemini AI for dynamic content generation
+  - Gemini AI for open questions task
 - **Backend**: Firebase for real-time data management and user authentication
 - **Platform**: Native Android with Kotlin
 
 ## 🎯 Key Features
 - Real-time location-based gameplay
 - Multiple task types (quizzes, photo challenges, etc.)
-- Interactive map exploration
-- Progress tracking
-- Social features for sharing achievements
+- Interactive world exploration
