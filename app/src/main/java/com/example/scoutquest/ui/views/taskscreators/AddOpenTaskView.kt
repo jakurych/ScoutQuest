@@ -88,10 +88,12 @@ fun AddOpenTaskView(
     val hasOpenQuestion by openQuestionViewModel.hasOpenQuestion.collectAsState()
     val hasPhotoInstruction by photoViewModel.hasInstruction.collectAsState()
 
+
+
     val taskCategory by viewModel.taskCategory.collectAsState()
 
     LaunchedEffect(Unit) {
-        taskToEdit?.let { task ->
+        /*taskToEdit?.let { task ->
             task.title?.let { viewModel.updateTitle(it) }  // viewModel.updateTitle(task.title)
             viewModel.updateDescription(task.description)
             viewModel.updatePoints(task.points.toString())
@@ -100,7 +102,23 @@ fun AddOpenTaskView(
             viewModel.updateMarkerColor(task.markerColor)
             viewModel.updateSelectedTaskType(task.taskType ?: "None")
             task.category?.let { viewModel.updateCategory(it) }
-        }
+        }*/
+
+
+    }
+
+    val selectedTaskTypeState by viewModel.selectedTaskType.collectAsState()
+    val isTaskDetailsEntered = when (selectedTaskTypeState) {
+        "Quiz" -> hasQuizQuestions
+        "Note" -> hasNotesNote
+        "True/False" -> hasTrueFalseQuestions
+        "Open question" -> hasOpenQuestion
+        "Photo" -> hasPhotoInstruction
+        else -> false
+    }
+
+    LaunchedEffect(isTaskDetailsEntered) {
+        viewModel.setTaskDetailsEntered(isTaskDetailsEntered)
     }
 
     Column(
@@ -309,17 +327,16 @@ fun AddOpenTaskView(
 
                 Button(
                     onClick = {
-                        if (selectedTaskType == "Quiz" && !hasQuizQuestions) {
-                            navController.navigate(CreateQuiz)
-                        } else if (selectedTaskType == "Note" && !hasNotesNote) {
-                            navController.navigate(CreateNote)
-                        } else if (selectedTaskType == "True/False" && !hasTrueFalseQuestions) {
-                            navController.navigate(CreateTrueFalse)
-                        } else if(selectedTaskType == "Open question" && !hasOpenQuestion) {
-                            navController.navigate(CreateOpenQuestion)
-                        } else if (selectedTaskType == "Photo" && !hasPhotoInstruction) {
-                            navController.navigate(CreatePhotoTask)
+                        if (!isTaskDetailsEntered) {
+                            when (selectedTaskType) {
+                                "Quiz" -> navController.navigate(CreateQuiz)
+                                "Note" -> navController.navigate(CreateNote)
+                                "True/False" -> navController.navigate(CreateTrueFalse)
+                                "Open question" -> navController.navigate(CreateOpenQuestion)
+                                "Photo" -> navController.navigate(CreatePhotoTask)
+                            }
                         } else {
+                            // Bezpośrednie wywołanie zapisu
                             viewModel.saveOpenTask(
                                 quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
                                 noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
@@ -327,24 +344,33 @@ fun AddOpenTaskView(
                                 openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null,
                                 photoDetails = if (selectedTaskType == "Photo") photoViewModel.getCurrentPhotoTask() else null,
                                 onSuccess = {
+                                    // Reset wszystkich ViewModeli
                                     quizViewModel.resetQuiz()
                                     noteViewModel.resetNote()
                                     photoViewModel.resetPhotoTask()
                                     trueFalseViewModel.resetTrueFalse()
                                     openQuestionViewModel.resetOpenQuestion()
+                                    // Powrót do poprzedniego ekranu
                                     navController.popBackStack()
                                 },
                                 onFailure = {
-                                    // Handle error (e.g., show a toast or snackbar)
+                                    // Tutaj możesz dodać obsługę błędów, np. wyświetlenie komunikatu
                                 }
                             )
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = button_green),
+                    enabled = true, // Zawsze aktywny
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isTaskDetailsEntered) button_green else Color.Gray
+                    ),
                     modifier = Modifier.padding(elementSpacing)
                 ) {
-                    Text("Save Open World Task", color = Color.White)
+                    Text(
+                        if (isTaskDetailsEntered) "Save Open World Task" else "Add Task Details",
+                        color = Color.White
+                    )
                 }
+
             }
         }
     }

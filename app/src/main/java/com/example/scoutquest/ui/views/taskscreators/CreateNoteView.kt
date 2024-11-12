@@ -70,10 +70,9 @@ fun CreateNoteView(
         Button(
             onClick = {
                 if (hasNotes) {
-                    noteViewModel.saveCurrentNote()
-                    noteViewModel.setTaskDetailsEntered(true)
-                    navController.navigate(AddTask)
-                }
+                    //noteViewModel.saveCurrentNote()
+                    //noteViewModel.setTaskDetailsEntered(true)
+                    navController.popBackStack()             }
             },
             enabled = hasNotes
         ) {

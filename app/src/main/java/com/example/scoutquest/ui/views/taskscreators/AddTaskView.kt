@@ -78,13 +78,14 @@ fun AddTaskView(
     }
 
     LaunchedEffect(Unit) {
+
         //task types Vms
-        quizViewModel.setCreateNewGameViewModel(viewModel)
+        /*quizViewModel.setCreateNewGameViewModel(viewModel)
         noteViewModel.setCreateNewGameViewModel(viewModel)
         trueFalseViewModel.setCreateNewGameViewModel(viewModel)
         openQuestionViewModel.setCreateNewGameViewModel(viewModel)
         photoViewModel.setCreateNewGameViewModel(viewModel)
-
+        */
         //vals from VM
         taskTitle = viewModel.currentTaskTitle
         taskDescription = viewModel.currentTaskDescription
@@ -104,6 +105,8 @@ fun AddTaskView(
             viewModel.setTaskDetailsEntered(true)
         }
     }
+
+
 
     var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
 
@@ -126,7 +129,7 @@ fun AddTaskView(
         )
     }
 
-    val isTaskDetailsEntered by viewModel.isTaskDetailsEntered.collectAsState()
+    //val isTaskDetailsEntered by viewModel.isTaskDetailsEntered.collectAsState()
 
     //spr czy zostały wprowadzone detale tasków
     val hasQuizQuestions by quizViewModel.hasQuestions.collectAsState()
@@ -134,6 +137,16 @@ fun AddTaskView(
     val hasTrueFalseQuestions by trueFalseViewModel.hasQuestions.collectAsState()
     val hasOpenQuestion by openQuestionViewModel.hasOpenQuestion.collectAsState()
     val hasPhotoInstruction by photoViewModel.hasInstruction.collectAsState()
+
+    val selectedTaskTypeState by viewModel.selectedTaskType.collectAsState()
+    val isTaskDetailsEntered = when (selectedTaskTypeState) {
+        "Quiz" -> hasQuizQuestions
+        "Note" -> hasNotesNote
+        "True/False" -> hasTrueFalseQuestions
+        "Open question" -> hasOpenQuestion
+        "Photo" -> hasPhotoInstruction
+        else -> false
+    }
 
 
     fun updateViewModel() {
@@ -145,6 +158,12 @@ fun AddTaskView(
             currentLongitude = longitude
             currentMarkerColor = markerColor
         }
+    }
+
+
+
+    LaunchedEffect(isTaskDetailsEntered) {
+        viewModel.setTaskDetailsEntered(isTaskDetailsEntered)
     }
 
 
@@ -367,42 +386,43 @@ fun AddTaskView(
 
                             } else {
                                 val task = Task(
-                                    taskId = taskToEdit?.taskId ?: 0,
-                                    title = viewModel.currentTaskTitle,
-                                    description = viewModel.currentTaskDescription,
-                                    points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
-                                    latitude = viewModel.currentLatitude,
-                                    longitude = viewModel.currentLongitude,
-                                    markerColor = viewModel.currentMarkerColor,
-                                    taskType = selectedTaskType,
-                                    quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
-                                    noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
-                                    trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null,
-                                    openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null,
-                                    photoDetails = if (selectedTaskType == "Photo") photoViewModel.getCurrentPhotoTask() else null
-                                )
-                                viewModel.addOrUpdateTask(task)
+                    taskId = taskToEdit?.taskId ?: 0,
+                    title = viewModel.currentTaskTitle,
+                    description = viewModel.currentTaskDescription,
+                    points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
+                    latitude = viewModel.currentLatitude,
+                    longitude = viewModel.currentLongitude,
+                    markerColor = viewModel.currentMarkerColor,
+                    taskType = selectedTaskType,
+                    quizDetails = if (selectedTaskType == "Quiz") quizViewModel.getCurrentQuiz() else null,
+                    noteDetails = if (selectedTaskType == "Note") noteViewModel.getCurrentNote() else null,
+                    trueFalseDetails = if (selectedTaskType == "True/False") trueFalseViewModel.getCurrentTrueFalse() else null,
+                    openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null,
+                    photoDetails = if (selectedTaskType == "Photo") photoViewModel.getCurrentPhotoTask() else null
+                )
+                    viewModel.addOrUpdateTask(task)
 
-                                //task types vms reset
-                                quizViewModel.resetQuiz()
-                                noteViewModel.resetNote()
-                                photoViewModel.resetPhotoTask()
-                                trueFalseViewModel.resetTrueFalse()
+                    //task types vms reset
+                    quizViewModel.resetQuiz()
+                    noteViewModel.resetNote()
+                    photoViewModel.resetPhotoTask()
+                    trueFalseViewModel.resetTrueFalse()
+                    openQuestionViewModel.resetOpenQuestion()
 
-                                viewModel.setTaskDetailsEntered(false)
-                                viewModel.setTaskToEdit(null)
-                                navController.navigate(Creator)
-                            }
-                        },
-                        enabled = isTaskDetailsEntered || taskToEdit != null,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isTaskDetailsEntered || taskToEdit != null) button_green else Color.Gray,
-                            contentColor = Color.White
-                        ),
-                        modifier = Modifier.padding(elementSpacing)
-                    ) {
-                        Text("Save Task", color = Color.White)
-                    }
+                    viewModel.setTaskDetailsEntered(false)
+                    viewModel.setTaskToEdit(null)
+                    navController.navigate(Creator)
+                }
+            },
+            enabled = isTaskDetailsEntered || taskToEdit != null,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isTaskDetailsEntered || taskToEdit != null) button_green else Color.Gray,
+                contentColor = Color.White
+            ),
+            modifier = Modifier.padding(elementSpacing)
+            ) {
+                Text("Save Task", color = Color.White)
+            }
                 }
             }
         }

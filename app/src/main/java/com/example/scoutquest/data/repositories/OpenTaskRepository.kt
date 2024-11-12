@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 class OpenTaskRepository @Inject constructor() {
     private val firestore = FirebaseFirestore.getInstance()
-    private val openTasksCollection = firestore.collection("openTasks")
+    private val openTasksCollection = firestore.collection("open_tasks")
 
     fun addOpenTask(
         task: Task,

@@ -48,6 +48,9 @@ class OpenTaskViewModel @Inject constructor(
     private val _taskCategory = MutableStateFlow("")
     val taskCategory: StateFlow<String> = _taskCategory
 
+    private val _isTaskDetailsEntered = MutableStateFlow(false)
+    val isTaskDetailsEntered: StateFlow<Boolean> = _isTaskDetailsEntered
+
     private val _creatorId = MutableStateFlow<String?>(null)
     val creatorId: StateFlow<String?> = _creatorId
 
@@ -56,6 +59,10 @@ class OpenTaskViewModel @Inject constructor(
         user?.let { firebaseUser ->
             _creatorId.value = firebaseUser.uid
         }
+    }
+
+    fun setTaskDetailsEntered(entered: Boolean) {
+        _isTaskDetailsEntered.value = entered
     }
 
     fun updateTitle(title: String) {

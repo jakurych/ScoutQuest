@@ -124,9 +124,9 @@ fun CreateTrueFalseView(
                 onClick = {
                     val trueFalse = trueFalseViewModel.getCurrentTrueFalse()
                     if (trueFalse.questionsTf.isNotEmpty()) {
-                        trueFalseViewModel.saveCurrentTrueFalse()
-                        trueFalseViewModel.setTaskDetailsEntered(true)
-                        navController.navigate(AddTask)
+                        //trueFalseViewModel.saveCurrentTrueFalse()
+                        //trueFalseViewModel.setTaskDetailsEntered(true)
+                        navController.popBackStack()
                     }
                 },
                 enabled = questionsTf.isNotEmpty(),
@@ -141,7 +141,7 @@ fun CreateTrueFalseView(
 
         item {
             Button(
-                onClick = { navController.navigate(AddTask) },
+                onClick = { navController.popBackStack() },
                 colors = ButtonDefaults.buttonColors(containerColor = button_green)
             ) {
                 Text("Cancel", color = Color.White)

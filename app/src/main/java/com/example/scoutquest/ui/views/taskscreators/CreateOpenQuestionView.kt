@@ -70,7 +70,7 @@ fun CreateOpenQuestionView(
             Button(
                 onClick = {
                     openQuestionViewModel.setOpenQuestion(questionText, answerText)
-                    navController.navigate(AddTask)
+                    navController.popBackStack()
                 },
                 enabled = questionText.isNotBlank() && answerText.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(

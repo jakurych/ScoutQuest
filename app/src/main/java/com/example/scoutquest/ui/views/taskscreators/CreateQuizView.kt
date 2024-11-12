@@ -233,9 +233,9 @@ fun CreateQuizView(
                 onClick = {
                     val quiz = quizViewModel.getCurrentQuiz()
                     if (quiz.questions.isNotEmpty()) {
-                        quizViewModel.saveCurrentQuiz()
-                        quizViewModel.setTaskDetailsEntered(true)
-                        navController.navigate(AddTask)
+                       // quizViewModel.saveCurrentQuiz()
+                        //quizViewModel.setTaskDetailsEntered(true)
+                        navController.popBackStack()
                     }
                 },
                 enabled = hasQuestions,
@@ -263,7 +263,7 @@ fun CreateQuizView(
 
         item {
             Button(
-                onClick = { navController.navigate(AddTask) },
+                onClick = { navController.popBackStack()    },
                 colors = ButtonDefaults.buttonColors(containerColor = button_green)
             ) {
                 Text("Cancel", color = Color.White)

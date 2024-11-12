@@ -38,9 +38,9 @@ fun CreatePhotoTaskView(
         Button(
             onClick = {
                 if (hasInstruction) {
-                    photoViewModel.saveCurrentPhotoTask()
-                    photoViewModel.setTaskDetailsEntered(true)
-                    navController.navigate(AddTask)
+                   // photoViewModel.saveCurrentPhotoTask()
+                    //photoViewModel.setTaskDetailsEntered(true)
+                    navController.popBackStack()
                 }
             },
             enabled = hasInstruction

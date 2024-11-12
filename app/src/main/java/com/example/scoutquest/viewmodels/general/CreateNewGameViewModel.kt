@@ -33,6 +33,9 @@ class CreateNewGameViewModel @Inject constructor(
 
     private var currentGameId: String? = null
 
+
+
+
     // Task types
     var currentQuizDetails: Quiz? = null
     var currentNoteDetails: Note? = null
@@ -86,6 +89,8 @@ class CreateNewGameViewModel @Inject constructor(
     var currentLatitude: Double = _selectedLatitude.value
     var currentLongitude: Double = _selectedLongitude.value
     var currentMarkerColor: String = "red"
+
+
 
 
 

@@ -9,6 +9,64 @@ import kotlinx.coroutines.flow.update
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+
+@HiltViewModel
+class NoteViewModel @Inject constructor() : ViewModel() {
+    // **USUNIĘTO**: private lateinit var createNewGameViewModel: CreateNewGameViewModel
+
+    private val _notes = MutableStateFlow<List<String>>(emptyList())
+    val notes: StateFlow<List<String>> = _notes
+
+    private val _hasNotes = MutableStateFlow(false)
+    val hasNotes: StateFlow<Boolean> = _hasNotes
+
+    // **USUNIĘTO**: fun setCreateNewGameViewModel(viewModel: CreateNewGameViewModel)
+
+    fun setNotesFromNote(note: Note?) {
+        _notes.value = note?.notes ?: emptyList()
+        _hasNotes.value = _notes.value.isNotEmpty()
+        // **USUNIĘTO**: setTaskDetailsEntered(_notes.value.isNotEmpty())
+    }
+
+    // **USUNIĘTO**: fun saveCurrentNote()
+
+    fun addNote(note: String) {
+        _notes.update { currentNotes ->
+            val newNotes = currentNotes + note
+            _hasNotes.value = newNotes.isNotEmpty()
+            // **USUNIĘTO**: setTaskDetailsEntered(newNotes.isNotEmpty())
+            newNotes
+        }
+    }
+
+    fun removeNote(index: Int) {
+        _notes.update { currentNotes ->
+            if (index in currentNotes.indices) {
+                val newNotes = currentNotes.toMutableList().apply { removeAt(index) }
+                _hasNotes.value = newNotes.isNotEmpty()
+                // **USUNIĘTO**: setTaskDetailsEntered(newNotes.isNotEmpty())
+                newNotes
+            } else {
+                currentNotes
+            }
+        }
+    }
+
+    fun getCurrentNote(): Note {
+        return Note(notes = _notes.value)
+    }
+
+    fun resetNote() {
+        _notes.value = emptyList()
+        _hasNotes.value = false
+        // **USUNIĘTO**: setTaskDetailsEntered(false)
+    }
+
+    // **USUNIĘTO**: fun setTaskDetailsEntered(entered: Boolean)
+}
+
+
+/*
 @HiltViewModel
 class NoteViewModel @Inject constructor() : ViewModel() {
     private lateinit var createNewGameViewModel: CreateNewGameViewModel
@@ -70,3 +128,4 @@ class NoteViewModel @Inject constructor() : ViewModel() {
         createNewGameViewModel.setTaskDetailsEntered(entered)
     }
 }
+*/
