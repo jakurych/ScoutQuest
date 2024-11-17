@@ -15,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.scoutquest.ui.views.taskscreators.*
 import com.example.scoutquest.ui.views.gamesession.GameMapView
+import com.example.scoutquest.ui.views.gamesession.OpenWorldMapView
 import com.example.scoutquest.ui.views.general.BrowseGamesView
 import com.example.scoutquest.ui.views.general.CreateNewGameView
 import com.example.scoutquest.ui.views.general.OpenWorldMenu
@@ -176,6 +177,16 @@ fun AppNavigation() {
                 GameMapView(
                     viewModel = gameSessionViewModel,
                     onGameEnd = {
+                        navController.navigate(MainScreenRoute) {
+                            popUpTo(MainScreenRoute) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            composable(route = OpenWorldMap) {
+                OpenWorldMapView(
+                    viewModel = gameSessionViewModel,
+                    onExit = {
                         navController.navigate(MainScreenRoute) {
                             popUpTo(MainScreenRoute) { inclusive = true }
                         }

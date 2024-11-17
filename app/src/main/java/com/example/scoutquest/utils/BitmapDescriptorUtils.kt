@@ -35,7 +35,7 @@ object BitmapDescriptorUtils {
 
     fun createCustomMarkerBitmap(context: Context, baseBitmap: Bitmap, index: Int): Bitmap {
         // Skalowanie
-        val scaleFactor = 2 // Adjust the scale factor as needed
+        val scaleFactor = 2
         val scaledWidth = baseBitmap.width * scaleFactor
         val scaledHeight = baseBitmap.height * scaleFactor
         val scaledBitmap = Bitmap.createScaledBitmap(baseBitmap, scaledWidth, scaledHeight, false)

@@ -25,6 +25,7 @@ data class Task(
     var isOpenWorldTask: Boolean = false,
     var category: String? =null,
     var creatorId: String? = null,
+    var completed: Boolean = false,
 
     //task types
     var quizDetails: @RawValue Quiz? = null,

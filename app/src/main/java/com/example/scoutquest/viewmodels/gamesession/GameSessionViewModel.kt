@@ -12,18 +12,30 @@ import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.GameSession
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.repositories.GameSessionRepository
+import com.example.scoutquest.data.repositories.OpenTaskRepository
 import com.example.scoutquest.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @HiltViewModel
 class GameSessionViewModel @Inject constructor(
     private val gameSessionRepository: GameSessionRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val openTaskRepository: OpenTaskRepository
 ) : ViewModel() {
 
+    //openWorld
+    private val _openWorldTasks = MutableStateFlow<List<Task>>(emptyList())
+    val openWorldTasks = _openWorldTasks.asStateFlow()
+
+    private val _completedOpenTasks = MutableStateFlow<Set<String>>(emptySet())
+    val completedOpenTasks = _completedOpenTasks.asStateFlow()
+
+    //game
     private val _gameSession = MutableLiveData<GameSession?>()
     val gameSession: LiveData<GameSession?> = _gameSession
 
@@ -37,6 +49,34 @@ class GameSessionViewModel @Inject constructor(
     private var sessionId: String? = null
 
     private val scores: MutableMap<String, Long> = mutableMapOf()
+
+    //openWorld
+
+    fun loadOpenWorldTasks() {
+        viewModelScope.launch {
+            val tasks = openTaskRepository.getAllOpenTasks()
+            _openWorldTasks.value = tasks
+        }
+    }
+
+    fun updateOpenTaskScore(taskId: String, points: Int) {
+        viewModelScope.launch {
+            val userId = userRepository.getUserId()
+            if (userId != null) {
+                userRepository.updateUserPoints(userId, points)
+                _completedOpenTasks.value = _completedOpenTasks.value + taskId
+                openTaskRepository.markTaskAsCompleted(userId, taskId)
+            }
+        }
+    }
+
+    fun isTaskCompleted(taskId: String): Boolean {
+        return completedOpenTasks.value.contains(taskId)
+    }
+
+
+
+    //guided adventure
 
     fun setGame(game: Game) {
         tasks = game.tasks

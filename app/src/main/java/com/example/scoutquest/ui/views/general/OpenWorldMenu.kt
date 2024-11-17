@@ -27,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import com.example.scoutquest.data.models.User
 import com.example.scoutquest.ui.navigation.AddOpenWorldTask
+import com.example.scoutquest.ui.navigation.OpenWorldMap
 
 @Composable
 fun OpenWorldMenu(navController: NavController) {
@@ -88,7 +89,9 @@ fun OpenWorldMenu(navController: NavController) {
 
             CircleButton(
                 text = "Jump into open world",
-                onClick = {},
+                onClick = {
+                    navController.navigate(OpenWorldMap)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(75.dp)
