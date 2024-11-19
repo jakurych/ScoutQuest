@@ -19,11 +19,14 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import com.example.scoutquest.data.models.Task
 import com.example.scoutquest.data.services.MarkersHelper
+import com.example.scoutquest.ui.components.CircleButton
 import com.example.scoutquest.ui.navigation.CreateNote
 import com.example.scoutquest.ui.navigation.CreateOpenQuestion
 import com.example.scoutquest.ui.navigation.CreatePhotoTask
 import com.example.scoutquest.ui.navigation.CreateQuiz
 import com.example.scoutquest.ui.navigation.CreateTrueFalse
+import com.example.scoutquest.ui.navigation.MainScreenRoute
+import com.example.scoutquest.ui.theme.black_olive
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.drab_dark_brown
 import com.example.scoutquest.utils.BitmapDescriptorUtils.rememberBitmapDescriptor
@@ -72,6 +75,8 @@ fun AddOpenTaskView(
     var isMapFullScreen by remember { mutableStateOf(false) }
     var temporaryMarker by remember { mutableStateOf(LatLng(latitude, longitude)) }
     var taskTypeExpanded by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+
 
     val scrollState = rememberScrollState()
     val cameraPositionState = rememberCameraPositionState {
@@ -344,22 +349,15 @@ fun AddOpenTaskView(
                                 openQuestionDetails = if (selectedTaskType == "Open question") openQuestionViewModel.getCurrentOpenQuestion() else null,
                                 photoDetails = if (selectedTaskType == "Photo") photoViewModel.getCurrentPhotoTask() else null,
                                 onSuccess = {
-                                    // Reset wszystkich ViewModeli
-                                    quizViewModel.resetQuiz()
-                                    noteViewModel.resetNote()
-                                    photoViewModel.resetPhotoTask()
-                                    trueFalseViewModel.resetTrueFalse()
-                                    openQuestionViewModel.resetOpenQuestion()
-                                    // Powrót do poprzedniego ekranu
-                                    navController.popBackStack()
+                                    showSuccessDialog = true
                                 },
                                 onFailure = {
-                                    // Tutaj możesz dodać obsługę błędów, np. wyświetlenie komunikatu
+                                    //obsluga błędów
                                 }
                             )
                         }
                     },
-                    enabled = true, // Zawsze aktywny
+                    enabled = true,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isTaskDetailsEntered) button_green else Color.Gray
                     ),
@@ -424,6 +422,46 @@ fun AddOpenTaskView(
             }
         }
     }
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSuccessDialog = false
+            },
+            title = {
+                Text(text = "Success", color = Color.White)
+            },
+            text = {
+                Text("Task has been successfully created!", color = Color.White)
+            },
+            confirmButton = {
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CircleButton(
+                        text = "OK",
+                        onClick = {
+                            // Reset wszystkich ViewModeli
+                            quizViewModel.resetQuiz()
+                            noteViewModel.resetNote()
+                            photoViewModel.resetPhotoTask()
+                            trueFalseViewModel.resetTrueFalse()
+                            openQuestionViewModel.resetOpenQuestion()
+                            showSuccessDialog = false
+                            // Powrót do głównego ekranu
+                            navController.navigate(MainScreenRoute) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true
+                                }
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            },
+            containerColor = black_olive
+        )
+    }
+
 }
 
 

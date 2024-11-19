@@ -14,11 +14,13 @@ import com.example.scoutquest.data.models.tasktypes.Note
 import com.example.scoutquest.data.models.tasktypes.TrueFalse
 import com.example.scoutquest.data.models.tasktypes.OpenQuestion
 import com.example.scoutquest.data.models.tasktypes.Photo
+import com.example.scoutquest.data.repositories.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 
 @HiltViewModel
 class OpenTaskViewModel @Inject constructor(
-    private val repository: OpenTaskRepository
+    private val repository: OpenTaskRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _taskTitle = MutableStateFlow("")
@@ -129,6 +131,11 @@ class OpenTaskViewModel @Inject constructor(
                 repository.addOpenTask(
                     task = task,
                     onSuccess = {
+                        viewModelScope.launch {
+                            _creatorId.value?.let { userId ->
+                                userRepository.decrementOpenWorldTicket(userId)
+                            }
+                        }
                         _saveStatus.value = SaveStatus.Success
                         onSuccess()
                     },

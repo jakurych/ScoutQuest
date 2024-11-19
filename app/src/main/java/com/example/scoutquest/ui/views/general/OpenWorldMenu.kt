@@ -1,5 +1,6 @@
 package com.example.scoutquest.ui.views.general
 
+import android.widget.Toast
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -102,10 +103,20 @@ fun OpenWorldMenu(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val context = LocalContext.current
+
                 CircleButton(
                     text = "Create task",
                     onClick = {
-                        navController.navigate(AddOpenWorldTask)
+                        if (openWorldTickets > 0) {
+                            navController.navigate(AddOpenWorldTask)
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Solve open world task to get tickets!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)

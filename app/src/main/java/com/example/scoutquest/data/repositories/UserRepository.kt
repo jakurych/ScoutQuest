@@ -141,6 +141,22 @@ class UserRepository @Inject constructor() {
         }
     }
 
+    suspend fun decrementOpenWorldTicket(userId: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val currentTickets = snapshot.getLong("openWorldTicket")?.toInt() ?: 0
+                if (currentTickets > 0) {
+                    transaction.update(userRef, "openWorldTicket", currentTickets - 1)
+                }
+            }.await()
+        } catch (e: Exception) {
+            println("Error decrementing open world ticket: ${e.message}")
+        }
+    }
+
+
 
     private suspend fun updateUserProfilePicture(userId: String, imageUrl: String) {
         try {
