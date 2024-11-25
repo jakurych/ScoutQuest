@@ -203,7 +203,7 @@ fun OpenWorldMapView(
                     if (noteDetails != null) {
                         NoteView(note = noteDetails, viewModel = viewModel, onComplete = {
                             showTaskView.value = false
-                            viewModel.onTaskCompleted()
+                            viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
                         })
                     }
                 }
@@ -213,7 +213,7 @@ fun OpenWorldMapView(
                     if (quizDetails != null) {
                         QuizView(quiz = quizDetails, viewModel = viewModel, onComplete = {
                             showTaskView.value = false
-                            viewModel.onTaskCompleted()
+                            viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
                         })
                     }
                 }
@@ -226,7 +226,7 @@ fun OpenWorldMapView(
                             viewModel = viewModel,
                             onComplete = {
                                 showTaskView.value = false
-                                viewModel.onTaskCompleted()
+                                viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
                             })
                     }
                 }
@@ -239,7 +239,7 @@ fun OpenWorldMapView(
                             viewModel = viewModel,
                             onComplete = {
                                 showTaskView.value = false
-                                viewModel.onTaskCompleted()
+                                viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
                             }
                         )
                     }
@@ -253,7 +253,7 @@ fun OpenWorldMapView(
                             viewModel = viewModel,
                             onComplete = {
                                 showTaskView.value = false
-                                viewModel.onTaskCompleted()
+                                viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
                             }
                         )
                     }
@@ -261,10 +261,11 @@ fun OpenWorldMapView(
 
                 else -> {
                     showTaskView.value = false
-                    viewModel.onTaskCompleted()
+                    viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
                 }
             }
         }
+
 
         if (!showTaskView.value) {
             Button(

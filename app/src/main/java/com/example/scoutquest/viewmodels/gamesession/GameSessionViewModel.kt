@@ -20,6 +20,7 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 
 @HiltViewModel
 class GameSessionViewModel @Inject constructor(
@@ -34,6 +35,8 @@ class GameSessionViewModel @Inject constructor(
 
     private val _completedOpenTasks = MutableStateFlow<Set<String>>(emptySet())
     val completedOpenTasks = _completedOpenTasks.asStateFlow()
+
+    private val _currentUserId = MutableStateFlow<String?>(null)
 
     //game
     private val _gameSession = MutableLiveData<GameSession?>()
@@ -52,29 +55,51 @@ class GameSessionViewModel @Inject constructor(
 
     //openWorld
 
-    fun loadOpenWorldTasks() {
+    init {
         viewModelScope.launch {
-            val tasks = openTaskRepository.getAllOpenTasks()
-            _openWorldTasks.value = tasks
+            _currentUserId.value = userRepository.getUserId()
+        }
+    }
+
+    suspend fun loadOpenWorldTasks() {
+        val userId = userRepository.getUserId()
+        userId?.let {
+            val allTasks = openTaskRepository.getAllOpenTasks()
+            val user = userRepository.getUserById(userId)
+
+
+            val completedTasks = user?.completedOpenWorldTasks ?: emptySet()
+
+            val filteredTasks = allTasks.filter { task ->
+                task.creatorId != userId &&
+                        (user?.createdOpenWorldTasks?.contains(task.taskId.toString()) != true) &&
+                        !completedTasks.contains(task.taskId.toString())
+            }
+
+            _openWorldTasks.value = filteredTasks
         }
     }
 
     fun updateOpenTaskScore(taskId: String, points: Int) {
         viewModelScope.launch {
             val userId = userRepository.getUserId()
-            if (userId != null) {
-                userRepository.updateUserPoints(userId, points)
-                _completedOpenTasks.value = _completedOpenTasks.value + taskId
-                openTaskRepository.markTaskAsCompleted(userId, taskId)
+            userId?.let {
+                userRepository.updateUserPoints(it, points)
+                userRepository.addCompletedOpenWorldTask(it, taskId)
+                loadOpenWorldTasks()
+                userRepository.incrementOpenWorldTicket(userId)
             }
+
         }
     }
 
     fun isTaskCompleted(taskId: String): Boolean {
-        return completedOpenTasks.value.contains(taskId)
+        val currentUser = userRepository.getUserId()
+        return currentUser?.let { userId ->
+            val user = runBlocking { userRepository.getUserById(userId) }
+            user?.completedOpenWorldTasks?.contains(taskId) == true
+        } ?: false
     }
-
-
 
     //guided adventure
 
@@ -102,15 +127,6 @@ class GameSessionViewModel @Inject constructor(
                 loadScoresFromFirebase()
             } else {
                 println("Error: User ID is null")
-            }
-        }
-    }
-
-    fun startGame(userId: String, sessionId: String) {
-        viewModelScope.launch {
-            val user = userRepository.getUserById(userId)
-            user?.let {
-                gameSessionRepository.addParticipantToGameSession(sessionId, it)
             }
         }
     }
@@ -185,8 +201,6 @@ class GameSessionViewModel @Inject constructor(
     fun onTaskReached(task: Task) {
         activeTask = task
     }
-
-    fun getTasks(): List<Task> = tasks
 
     private fun updateGameSession() {
         viewModelScope.launch {

@@ -52,24 +52,6 @@ class UserRepository @Inject constructor() {
         }
     }
 
-    suspend fun getUserIdByEmail(email: String): String? {
-        return try {
-            val querySnapshot = db.collection("users")
-                .whereEqualTo("email", email)
-                .get()
-                .await()
-
-            if (querySnapshot.documents.isNotEmpty()) {
-                querySnapshot.documents[0].id
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            println("Error fetching user ID by email: ${e.message}")
-            null
-        }
-    }
-
     suspend fun updateUserPoints(userId: String, pointsToAdd: Int) {
         try {
             val userRef = db.collection("users").document(userId)
@@ -122,6 +104,20 @@ class UserRepository @Inject constructor() {
         }
     }
 
+    suspend fun addCompletedOpenWorldTask(userId: String, taskId: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val currentCompletedTasks = snapshot.get("completedOpenWorldTasks") as? List<String> ?: emptyList()
+                val updatedCompletedTasks = currentCompletedTasks + taskId
+                transaction.update(userRef, "completedOpenWorldTasks", updatedCompletedTasks)
+            }.await()
+        } catch (e: Exception) {
+            println("Error adding completed open world task: ${e.message}")
+        }
+    }
+
     suspend fun uploadProfileImage(userId: String, uri: Uri, context: Context): String? {
         return try {
             val profileImagesRef = storageRef.child("profileImages/$userId.jpg")
@@ -140,6 +136,20 @@ class UserRepository @Inject constructor() {
             null
         }
     }
+    
+    suspend fun addCreatedOpenWorldTask(userId: String, taskId: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val currentTasks = snapshot.get("createdOpenWorldTasks") as? List<String> ?: emptyList()
+                val updatedTasks = currentTasks + taskId
+                transaction.update(userRef, "createdOpenWorldTasks", updatedTasks)
+            }.await()
+        } catch (e: Exception) {
+            println("Error adding created open world task: ${e.message}")
+        }
+    }
 
     suspend fun decrementOpenWorldTicket(userId: String) {
         try {
@@ -156,7 +166,20 @@ class UserRepository @Inject constructor() {
         }
     }
 
-
+    suspend fun incrementOpenWorldTicket(userId: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val currentTickets = snapshot.getLong("openWorldTicket")?.toInt() ?: 0
+                if (currentTickets > 0) {
+                    transaction.update(userRef, "openWorldTicket", currentTickets + 1)
+                }
+            }.await()
+        } catch (e: Exception) {
+            println("Error incrementing open world ticket: ${e.message}")
+        }
+    }
 
     private suspend fun updateUserProfilePicture(userId: String, imageUrl: String) {
         try {

@@ -16,6 +16,7 @@ import com.example.scoutquest.data.models.tasktypes.OpenQuestion
 import com.example.scoutquest.data.models.tasktypes.Photo
 import com.example.scoutquest.data.repositories.UserRepository
 import com.google.firebase.auth.FirebaseAuth
+import kotlin.random.Random
 
 @HiltViewModel
 class OpenTaskViewModel @Inject constructor(
@@ -99,6 +100,7 @@ class OpenTaskViewModel @Inject constructor(
         _selectedTaskType.value = type
     }
 
+
     fun saveOpenTask(
         quizDetails: Quiz?,
         noteDetails: Note?,
@@ -111,7 +113,13 @@ class OpenTaskViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _saveStatus.value = SaveStatus.Loading
+
+                //random task id
+                val randomSeed = System.currentTimeMillis()
+                val randomTaskId = Random(randomSeed).nextInt(1, Int.MAX_VALUE)
+
                 val task = Task(
+                    taskId = randomTaskId,
                     title = _taskTitle.value,
                     description = _taskDescription.value,
                     points = _taskPoints.value.toIntOrNull() ?: 0,
@@ -130,10 +138,11 @@ class OpenTaskViewModel @Inject constructor(
                 )
                 repository.addOpenTask(
                     task = task,
-                    onSuccess = {
+                    onSuccess = { taskId ->
                         viewModelScope.launch {
                             _creatorId.value?.let { userId ->
                                 userRepository.decrementOpenWorldTicket(userId)
+                                userRepository.addCreatedOpenWorldTask(userId, taskId)
                             }
                         }
                         _saveStatus.value = SaveStatus.Success
@@ -150,6 +159,7 @@ class OpenTaskViewModel @Inject constructor(
             }
         }
     }
+
 }
 
     sealed class SaveStatus {
