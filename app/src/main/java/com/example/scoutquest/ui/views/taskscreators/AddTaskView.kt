@@ -66,7 +66,7 @@ fun AddTaskView(
 
     var taskTitle by remember { mutableStateOf(viewModel.currentTaskTitle) }
     var taskDescription by remember { mutableStateOf(viewModel.currentTaskDescription) }
-    var taskPoints by remember { mutableStateOf(viewModel.currentTaskPoints) }
+    //var taskPoints by remember { mutableStateOf(viewModel.currentTaskPoints) }
     var latitude by remember { mutableDoubleStateOf(viewModel.currentLatitude) }
     var longitude by remember { mutableDoubleStateOf(viewModel.currentLongitude) }
     var markerColor by remember { mutableStateOf("blue") }
@@ -89,7 +89,7 @@ fun AddTaskView(
         //vals from VM
         taskTitle = viewModel.currentTaskTitle
         taskDescription = viewModel.currentTaskDescription
-        taskPoints = viewModel.currentTaskPoints
+        //taskPoints = viewModel.currentTaskPoints
         latitude = viewModel.currentLatitude
         longitude = viewModel.currentLongitude
 
@@ -153,7 +153,6 @@ fun AddTaskView(
         viewModel.apply {
             currentTaskTitle = taskTitle
             currentTaskDescription = taskDescription
-            currentTaskPoints = taskPoints
             currentLatitude = latitude
             currentLongitude = longitude
             currentMarkerColor = markerColor
@@ -213,24 +212,7 @@ fun AddTaskView(
                 )
             )
 
-            TextField(
-                value = taskPoints,
-                onValueChange = {
-                    taskPoints = it
-                    updateViewModel()
-                },
-                label = { Text("Task Points", color = Color.White) },
-                textStyle = TextStyle(color = Color.White),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = drab_dark_brown,
-                    focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.White,
-                    focusedLabelColor = Color.White,
-                    unfocusedLabelColor = Color.White,
-                    cursorColor = Color.White
-                )
-            )
+
 
             Text("Select Marker Color", color = Color.White)
             Box {
@@ -389,7 +371,7 @@ fun AddTaskView(
                     taskId = taskToEdit?.taskId ?: 0,
                     title = viewModel.currentTaskTitle,
                     description = viewModel.currentTaskDescription,
-                    points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
+                    //points = viewModel.currentTaskPoints.toIntOrNull() ?: 0,
                     latitude = viewModel.currentLatitude,
                     longitude = viewModel.currentLongitude,
                     markerColor = viewModel.currentMarkerColor,

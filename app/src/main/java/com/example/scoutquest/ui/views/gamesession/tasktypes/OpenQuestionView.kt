@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 fun OpenQuestionView(
     openQuestion: OpenQuestion,
     viewModel: GameSessionViewModel,
-    onComplete: () -> Unit
+    onComplete: (Int) -> Unit // Zmiana typu na (Int) -> Unit
 ) {
     var userAnswer by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
@@ -42,7 +42,7 @@ fun OpenQuestionView(
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = onComplete,
+                        onClick = { onComplete(score) }, // Przekazanie punktów do onComplete
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Continue")

@@ -12,7 +12,7 @@ import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onComplete: () -> Unit) {
+fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onComplete: (Int) -> Unit) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var userAnswers by remember { mutableStateOf<List<Boolean>>(emptyList()) }
     var showResult by remember { mutableStateOf(false) }
@@ -60,7 +60,7 @@ fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onCompl
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = onComplete,
+                        onClick = { onComplete(points) },
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Continue")

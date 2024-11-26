@@ -172,9 +172,8 @@ class UserRepository @Inject constructor() {
             db.runTransaction { transaction ->
                 val snapshot = transaction.get(userRef)
                 val currentTickets = snapshot.getLong("openWorldTicket")?.toInt() ?: 0
-                if (currentTickets > 0) {
-                    transaction.update(userRef, "openWorldTicket", currentTickets + 1)
-                }
+                transaction.update(userRef, "openWorldTicket", currentTickets + 1)
+
             }.await()
         } catch (e: Exception) {
             println("Error incrementing open world ticket: ${e.message}")

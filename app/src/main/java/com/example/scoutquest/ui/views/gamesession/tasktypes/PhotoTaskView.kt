@@ -26,7 +26,7 @@ import com.example.scoutquest.utils.ComposeFileProvider
 fun PhotoTaskView(
     photoTask: Photo,
     viewModel: GameSessionViewModel,
-    onComplete: () -> Unit
+    onComplete: (Int) -> Unit // Zmiana typu na () -> Unit
 ) {
     val context = LocalContext.current
     var showResult by remember { mutableStateOf(false) }
@@ -93,7 +93,7 @@ fun PhotoTaskView(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
-                    onClick = onComplete,
+                    onClick = { onComplete(score) }, // Przekazanie score jako argument
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text("Continue")
@@ -205,5 +205,6 @@ fun PhotoTaskView(
         }
     }
 }
+
 
 

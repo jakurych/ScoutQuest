@@ -6,14 +6,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.scoutquest.data.models.tasktypes.Question
 import com.example.scoutquest.data.models.tasktypes.Quiz
 import com.example.scoutquest.utils.AnswersChecker
 import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: () -> Unit) {
+fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: (Int) -> Unit) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var selectedAnswers by remember { mutableStateOf<List<Int>>(emptyList()) }
     var showResult by remember { mutableStateOf(false) }
@@ -53,7 +52,7 @@ fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: () -> Unit
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = onComplete,
+                        onClick = { onComplete(points) }, // Przekazanie points jako argument
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Continue")

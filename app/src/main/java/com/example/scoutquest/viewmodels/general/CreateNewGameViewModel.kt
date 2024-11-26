@@ -134,7 +134,7 @@ class CreateNewGameViewModel @Inject constructor(
         if (task != null) {
             currentTaskTitle = task.title ?: ""
             currentTaskDescription = task.description
-            currentTaskPoints = task.points.toString()
+            //currentTaskPoints = task.points.toString()
             currentLatitude = task.latitude
             currentLongitude = task.longitude
             currentMarkerColor = task.markerColor
@@ -341,7 +341,7 @@ class CreateNewGameViewModel @Inject constructor(
             Log.d("TaskData", "----- Task ${index + 1} -----")
             Log.d("TaskData", "Title: ${task.title ?: "No Title"}")
             Log.d("TaskData", "Description: ${task.description}")
-            Log.d("TaskData", "Points: ${task.points}")
+            //Log.d("TaskData", "Points: ${task.points}")
             Log.d("TaskData", "Location: (${task.latitude}, ${task.longitude})")
             Log.d("TaskData", "Marker Color: ${task.markerColor}")
             Log.d("TaskData", "Task Type: ${task.taskType}")

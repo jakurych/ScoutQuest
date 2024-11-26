@@ -85,13 +85,13 @@ class GameSessionViewModel @Inject constructor(
             val userId = userRepository.getUserId()
             userId?.let {
                 userRepository.updateUserPoints(it, points)
+                userRepository.incrementOpenWorldTicket(userId)
                 userRepository.addCompletedOpenWorldTask(it, taskId)
                 loadOpenWorldTasks()
-                userRepository.incrementOpenWorldTicket(userId)
             }
-
         }
     }
+
 
     fun isTaskCompleted(taskId: String): Boolean {
         val currentUser = userRepository.getUserId()

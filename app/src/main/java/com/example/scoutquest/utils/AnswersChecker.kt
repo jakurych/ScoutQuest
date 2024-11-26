@@ -15,6 +15,14 @@ import kotlinx.coroutines.tasks.await
 
 class AnswersChecker {
 
+
+    //quiz -> 10 points for each correct answer, 5 bonus points for all correct
+    //open question -> max 20 points
+    //note -> 5 points
+    //true/false -> 8 points for each correct answer, 5 bonus points for all correct
+    //photo -> max 25 points
+
+
     //Points depends on task type
     private var notePoints = 5
     private var trueFalsePoints = 10
@@ -55,22 +63,6 @@ class AnswersChecker {
                 "imageBase64" to imageBase64,
                 "description" to description
             )
-
-            //txt file for check base64 encoding
-            /*try {
-                val fileName = "image_base64_${System.currentTimeMillis()}.txt"
-                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                val file = File(downloadsDir, fileName)
-
-                FileOutputStream(file).use { output ->
-                    output.write(imageBase64.toByteArray())
-                }
-                Log.d("AnswersChecker", "Base64 saved to Downloads: ${file.absolutePath}")
-            } catch (e: Exception) {
-                Log.e("AnswersChecker", "Error saving base64 to file", e)
-            }*/
-
-
 
             return functions
                 .getHttpsCallable("checkPhotoFunction")
@@ -128,8 +120,6 @@ class AnswersChecker {
             return 0
         }
     }
-
-
 
     //Quiz check
     fun checkQuiz(quiz: Quiz, userAnswers: List<List<Int>>): Int {

@@ -15,7 +15,7 @@ data class Task(
     var sequenceNumber: Int = taskId,
     var title: String? = null,
     var description: String = "",
-    var points: Int = 0,
+    //var points: Int = 0,
     var latitude: Double = 0.0,
     var longitude: Double = 0.0,
     var markerColor: String = "",

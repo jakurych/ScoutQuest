@@ -15,6 +15,8 @@ data class Game(
     val description: String = "",
     val tasks: List<Task> = emptyList(),
     val isPublic: Boolean = false,
+
+    //to implement in future:
     val playCount: Int? = null,
     val rating:@RawValue Rating? = null
 ): Parcelable

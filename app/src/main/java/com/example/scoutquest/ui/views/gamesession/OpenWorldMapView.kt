@@ -150,7 +150,7 @@ fun OpenWorldMapView(
 
         }
 
-        // Małe okienko informacyjne
+        //Małe okienko informacyjne
         if (showTaskInfo.value && selectedTask.value != null) {
             val task = selectedTask.value!!
             Box(
@@ -166,7 +166,7 @@ fun OpenWorldMapView(
                     ) {
                         Text("Task: ${task.title}")
                         Text("Category: ${task.category}")
-                        Text("Points: ${task.points}")
+                        //Text("Points: ${task.points}")
                         Text("Type: ${task.taskType}")
 
                         if (isTaskInRange.value) {
@@ -194,16 +194,16 @@ fun OpenWorldMapView(
             }
         }
 
-        // Wyświetlanie zadania
+        /// Wyświetlanie zadania
         if (showTaskView.value && selectedTask.value != null) {
             val task = selectedTask.value!!
             when {
                 task.noteDetails != null -> {
                     val noteDetails = task.noteDetails
                     if (noteDetails != null) {
-                        NoteView(note = noteDetails, viewModel = viewModel, onComplete = {
+                        NoteView(note = noteDetails, viewModel = viewModel, onComplete = { points ->
                             showTaskView.value = false
-                            viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
+                            viewModel.updateOpenTaskScore(task.taskId.toString(), points)
                         })
                     }
                 }
@@ -211,9 +211,9 @@ fun OpenWorldMapView(
                 task.quizDetails != null -> {
                     val quizDetails = task.quizDetails
                     if (quizDetails != null) {
-                        QuizView(quiz = quizDetails, viewModel = viewModel, onComplete = {
+                        QuizView(quiz = quizDetails, viewModel = viewModel, onComplete = { points ->
                             showTaskView.value = false
-                            viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
+                            viewModel.updateOpenTaskScore(task.taskId.toString(), points )
                         })
                     }
                 }
@@ -224,9 +224,9 @@ fun OpenWorldMapView(
                         TrueFalseView(
                             trueFalse = trueFalseDetails,
                             viewModel = viewModel,
-                            onComplete = {
+                            onComplete = { points ->
                                 showTaskView.value = false
-                                viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
+                                viewModel.updateOpenTaskScore(task.taskId.toString(), points )
                             })
                     }
                 }
@@ -237,9 +237,9 @@ fun OpenWorldMapView(
                         OpenQuestionView(
                             openQuestion = openQuestionDetails,
                             viewModel = viewModel,
-                            onComplete = {
+                            onComplete = { points ->
                                 showTaskView.value = false
-                                viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
+                                viewModel.updateOpenTaskScore(task.taskId.toString(), points)
                             }
                         )
                     }
@@ -251,20 +251,16 @@ fun OpenWorldMapView(
                         PhotoTaskView(
                             photoTask = photoDetails,
                             viewModel = viewModel,
-                            onComplete = {
+                            onComplete = { points ->
                                 showTaskView.value = false
-                                viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
+                                viewModel.updateOpenTaskScore(task.taskId.toString(), points )
                             }
                         )
                     }
                 }
-
-                else -> {
-                    showTaskView.value = false
-                    viewModel.updateOpenTaskScore(task.taskId.toString(), task.points)
-                }
             }
         }
+
 
 
         if (!showTaskView.value) {

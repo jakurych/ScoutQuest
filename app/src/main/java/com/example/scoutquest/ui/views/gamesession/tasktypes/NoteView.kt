@@ -3,6 +3,11 @@ package com.example.scoutquest.ui.views.gamesession.tasktypes
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -12,10 +17,16 @@ import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NoteView(note: Note, viewModel: GameSessionViewModel, onComplete: () -> Unit) {
+fun NoteView(note: Note, viewModel: GameSessionViewModel, onComplete: (Int) -> Unit) {
     val answersChecker = AnswersChecker()
-    val points = answersChecker.checkNote(note)
-    viewModel.updateTaskScore(points) // Aktualizacja punktów w ViewModel
+    var score by remember { mutableStateOf(0) }
+    var showResult by remember { mutableStateOf(false) }
+
+    LaunchedEffect(note) {
+        score = answersChecker.checkNote(note)
+        viewModel.updateTaskScore(score) // Aktualizacja punktów w ViewModel
+        showResult = true
+    }
 
     Scaffold(
         topBar = {
@@ -41,12 +52,12 @@ fun NoteView(note: Note, viewModel: GameSessionViewModel, onComplete: () -> Unit
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "You scored $points points.",
+                    text = "You scored $score points.",
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
-                    onClick = onComplete,
+                    onClick = { onComplete(score) }, // Przekazywanie punktów do onComplete
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text("Continue")
@@ -55,4 +66,5 @@ fun NoteView(note: Note, viewModel: GameSessionViewModel, onComplete: () -> Unit
         }
     )
 }
+
 

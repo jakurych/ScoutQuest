@@ -212,11 +212,11 @@ fun GameItemWithEdit(game: Game, viewModel: BrowseGamesViewModel, userId: String
                     fontSize = 14.sp,
                     color = expandedDetailTextColor
                 )
-                Text(
+                /*Text(
                     text = "Points: ${game.tasks.sumOf { it.points }}",
                     fontSize = 14.sp,
                     color = expandedDetailTextColor
-                )
+                )*/
                 Text(
                     text = "Task Types: ${game.tasks.joinToString { it.taskType ?: "Unknown" }}",
                     fontSize = 14.sp,

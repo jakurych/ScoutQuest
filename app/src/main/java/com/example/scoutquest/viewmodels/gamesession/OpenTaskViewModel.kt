@@ -122,7 +122,7 @@ class OpenTaskViewModel @Inject constructor(
                     taskId = randomTaskId,
                     title = _taskTitle.value,
                     description = _taskDescription.value,
-                    points = _taskPoints.value.toIntOrNull() ?: 0,
+                    //points = _taskPoints.value.toIntOrNull() ?: 0,
                     latitude = _latitude.value,
                     longitude = _longitude.value,
                     markerColor = _markerColor.value,

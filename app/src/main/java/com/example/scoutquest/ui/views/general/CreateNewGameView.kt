@@ -331,7 +331,7 @@ fun CreateNewGameView(
                                 color = Color.White
                             )
                             Text("Description: ${task.description}", color = Color.White)
-                            Text("Points: ${task.points}", color = Color.White)
+                            //Text("Points: ${task.points}", color = Color.White)
                             Row {
                                 IconButton(onClick = {
                                     onEditTask(task)

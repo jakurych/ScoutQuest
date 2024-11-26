@@ -63,7 +63,7 @@ fun AddOpenTaskView(
 
     val taskTitle by viewModel.taskTitle.collectAsState()
     val taskDescription by viewModel.taskDescription.collectAsState()
-    val taskPoints by viewModel.taskPoints.collectAsState()
+    //val taskPoints by viewModel.taskPoints.collectAsState()
     val latitude by viewModel.latitude.collectAsState()
     val longitude by viewModel.longitude.collectAsState()
     val markerColor by viewModel.markerColor.collectAsState()
@@ -180,7 +180,7 @@ fun AddOpenTaskView(
                 )
             )
 
-            TextField(
+            /*TextField(
                 value = taskPoints,
                 onValueChange = { viewModel.updatePoints(it) },
                 label = { Text("Task Points", color = Color.White) },
@@ -194,7 +194,7 @@ fun AddOpenTaskView(
                     unfocusedLabelColor = Color.White,
                     cursorColor = Color.White
                 )
-            )
+            )*/
 
             Text("Select Marker Color", color = Color.White)
             Box {
