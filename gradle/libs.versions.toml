@@ -37,6 +37,7 @@ firebaseAppcheckPlayintegrity = "18.0.0"
 firebaseAppcheckDebug = "18.0.0"
 cameraCore = "1.3.4"
 composeMaterial3 = "1.0.0-alpha28"
+places = "4.1.0"
 #firebaseFunctionsKtx = "21.0.0"
 #googleCloudLanguage = "2.13.0"
 
@@ -90,6 +91,7 @@ firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "fireb
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug", version.ref = "firebaseAppcheckDebug" }
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
 androidx-compose-material3 = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "composeMaterial3" }
+places = { group = "com.google.android.libraries.places", name = "places", version.ref = "places" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

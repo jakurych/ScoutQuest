@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.places)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

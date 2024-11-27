@@ -5,19 +5,25 @@
 
 package com.example.scoutquest.ui.views.taskscreators
 
+import android.location.Geocoder
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -39,11 +45,21 @@ import com.example.scoutquest.viewmodels.tasktypes.OpenQuestionViewModel
 import com.example.scoutquest.viewmodels.tasktypes.PhotoViewModel
 import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.viewmodels.tasktypes.TrueFalseViewModel
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
+import java.io.IOException
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextFieldDefaults.textFieldColors
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 
 @ExperimentalMaterial3Api
 @Composable
@@ -71,8 +87,12 @@ fun AddTaskView(
     var longitude by remember { mutableDoubleStateOf(viewModel.currentLongitude) }
     var markerColor by remember { mutableStateOf("blue") }
 
+    //location search
+
+
+
     val fullscreenCameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+        position = CameraPosition.fromLatLngZoom(
             LatLng(52.253126, 20.900157), 10f
         )
     }
@@ -124,7 +144,7 @@ fun AddTaskView(
     var isMapFullScreen by remember { mutableStateOf(false) }
 
     val cameraPositionState = rememberCameraPositionState {
-        position = com.google.android.gms.maps.model.CameraPosition.fromLatLngZoom(
+        position = CameraPosition.fromLatLngZoom(
             LatLng(52.253126, 20.900157), 10f
         )
     }
@@ -184,7 +204,7 @@ fun AddTaskView(
                 },
                 label = { Text("Task Title", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
-                colors = TextFieldDefaults.textFieldColors(
+                colors = textFieldColors(
                     containerColor = drab_dark_brown,
                     focusedIndicatorColor = Color.White,
                     unfocusedIndicatorColor = Color.White,
@@ -202,7 +222,7 @@ fun AddTaskView(
                 },
                 label = { Text("Task Description", color = Color.White) },
                 textStyle = TextStyle(color = Color.White),
-                colors = TextFieldDefaults.textFieldColors(
+                colors = textFieldColors(
                     containerColor = drab_dark_brown,
                     focusedIndicatorColor = Color.White,
                     unfocusedIndicatorColor = Color.White,
@@ -415,13 +435,134 @@ fun AddTaskView(
             onDismissRequest = { isMapFullScreen = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White)
+            val context = LocalContext.current
+            val coroutineScope = rememberCoroutineScope()
+            val focusManager = LocalFocusManager.current
+            var searchQuery by remember { mutableStateOf("") }
+            rememberCoroutineScope()
+
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                //search bar
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = drab_dark_brown.copy(alpha = 0.7f),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        placeholder = {
+                            Text(
+                                text = "Search address, location name, etc.",
+                                style = TextStyle(
+                                    color = Color.White.copy(alpha = 0.7f)
+                                )
+                            )
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Search
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                focusManager.clearFocus()
+                                coroutineScope.launch {
+                                    try {
+                                        val geocoder = Geocoder(context)
+                                        val addresses = geocoder.getFromLocationName(searchQuery, 1)
+
+                                        if (!addresses.isNullOrEmpty()) {
+                                            val address = addresses[0]
+                                            latitude = address.latitude
+                                            longitude = address.longitude
+                                            temporaryMarker = LatLng(latitude, longitude)
+
+                                            //Aktualizacja pozycji kamery
+                                            fullscreenCameraPositionState.position =
+                                                CameraPosition.fromLatLngZoom(
+                                                    LatLng(latitude, longitude), 15f
+                                                )
+
+                                            updateViewModel()
+                                        } else {
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(context, "Invalid location!", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    } catch (e: IOException) {
+                                        e.printStackTrace()
+                                    }
+                                }
+                            }
+                        ),
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            cursorColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedTextColor = Color.White
+                        ),
+                        textStyle = TextStyle(color = Color.White),
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    focusManager.clearFocus()
+                                    coroutineScope.launch {
+                                        try {
+                                            val geocoder = Geocoder(context)
+                                            val addresses = geocoder.getFromLocationName(searchQuery, 1)
+
+                                            if (!addresses.isNullOrEmpty()) {
+                                                val address = addresses[0]
+                                                latitude = address.latitude
+                                                longitude = address.longitude
+                                                temporaryMarker = LatLng(latitude, longitude)
+
+                                                //Aktualizacja pozycji kamery
+                                                fullscreenCameraPositionState.position =
+                                                    CameraPosition.fromLatLngZoom(
+                                                        LatLng(latitude, longitude), 15f
+                                                    )
+
+                                                updateViewModel()
+                                            } else {
+                                                withContext(Dispatchers.Main) {
+                                                    Toast.makeText(context, "Invalid location!", Toast.LENGTH_SHORT).show()
+                                                }
+                                            }
+                                        } catch (e: IOException) {
+                                            e.printStackTrace()
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    )
+                }
+
                 GoogleMap(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
                     cameraPositionState = fullscreenCameraPositionState,
                     onMapClick = { latLng ->
                         latitude = latLng.latitude
@@ -431,7 +572,8 @@ fun AddTaskView(
                     }
                 ) {
                     mapMarkers.forEachIndexed { index, task ->
-                        val markerUrl = MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
+                        val markerUrl =
+                            MarkersHelper.getMarkerUrl(task.markerColor, (index + 1).toString())
                         val bitmapDescriptor = rememberBitmapDescriptor(markerUrl, index + 1)
                         val position = LatLng(task.latitude, task.longitude)
                         Marker(
@@ -444,14 +586,16 @@ fun AddTaskView(
                     Marker(
                         state = MarkerState(position = temporaryMarker),
                         title = "Selected Location",
-                        icon = rememberBitmapDescriptor(MarkersHelper.getMarkerUrl(markerColor, ""), 0)
+                        icon = rememberBitmapDescriptor(
+                            MarkersHelper.getMarkerUrl(markerColor, ""),
+                            0
+                        )
                     )
                 }
 
                 Button(
                     onClick = { isMapFullScreen = false },
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
                         .padding(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = button_green)
                 ) {
@@ -460,4 +604,6 @@ fun AddTaskView(
             }
         }
     }
+
 }
+
