@@ -1,155 +1,127 @@
 package com.example.scoutquest.ui.views.general
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import com.example.scoutquest.ui.components.CircleButton
+import com.airbnb.lottie.compose.*
+import com.example.scoutquest.ui.components.AnimatedButton
 import com.example.scoutquest.ui.components.Header
-import com.example.scoutquest.ui.navigation.Browser
-import com.example.scoutquest.ui.navigation.Creator
-import com.example.scoutquest.ui.navigation.LocalNavigation
-import com.example.scoutquest.ui.navigation.Login
-import com.example.scoutquest.ui.navigation.MainScreenRoute
-import com.google.firebase.auth.FirebaseAuth
-import com.example.scoutquest.ui.theme.bistre
+import com.example.scoutquest.ui.navigation.*
 
 @Composable
 fun AdventureGameMenuView() {
     val navController = LocalNavigation.current
-    val auth = FirebaseAuth.getInstance()
 
-    var showLoginDialog by remember { mutableStateOf(false) }
-    var showVerificationDialog by remember { mutableStateOf(false) }
-
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-
-    val padding = screenWidth * 0.05f
-    val elementSpacing = screenWidth * 0.02f
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+        Box(modifier = Modifier
+            .weight(0.1f)
+            .fillMaxWidth()
         ) {
             Header()
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(elementSpacing),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                CircleButton(
-                    text = "Create new game",
-                    onClick = {
-                        val user = auth.currentUser
-                        if (user != null) {
-                            if (user.isEmailVerified) {
-                                navController.navigate(Creator)
-                            } else {
-                                showVerificationDialog = true
-                            }
-                        } else {
-                            showLoginDialog = true
-                        }
-                    },
-                    modifier = Modifier
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(elementSpacing),
-                horizontalArrangement = Arrangement.End
-            ) {
-                CircleButton(
-                    text = "<---",
-                    onClick = { navController.navigate(MainScreenRoute) },
-                    modifier = Modifier
-                )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(elementSpacing),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                CircleButton(
-                    text = "Browse games",
-                    onClick = { navController.navigate(Browser) },
-                    modifier = Modifier
-                )
-            }
         }
 
-        if (showLoginDialog) {
-            AlertDialog(
-                onDismissRequest = { showLoginDialog = false },
-                title = { Text("Login Required") },
-                text = { Text("To create a new game, login is required.") },
-                confirmButton = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CircleButton(
-                            text = "Login",
-                            onClick = {
-                                navController.navigate(Login)
-                                showLoginDialog = false
-                            },
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-                },
-                dismissButton = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CircleButton(
-                            text = "Cancel",
-                            onClick = { showLoginDialog = false },
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-                },
-                containerColor = bistre
+        //idący gościu
+        Box(modifier = Modifier
+            .weight(0.4f)
+            .fillMaxWidth()
+            .fillMaxHeight()
+        ) {
+            val topLottieComposition by rememberLottieComposition(
+                LottieCompositionSpec.Url("https://lottie.host/f18a8fab-7a3f-49cd-a5f5-16b6a85033d0/vrIipEnzki.lottie")
+            )
+            val topLottieProgress by animateLottieCompositionAsState(
+                composition = topLottieComposition,
+                iterations = LottieConstants.IterateForever,
+                speed = 0.8f
+            )
+
+            LottieAnimation(
+                composition = topLottieComposition,
+                progress = { topLottieProgress },
+                modifier = Modifier.fillMaxSize()
             )
         }
 
-        if (showVerificationDialog) {
-            AlertDialog(
-                onDismissRequest = { showVerificationDialog = false },
-                title = { Text("Email Verification Required") },
-                text = { Text("Please verify your email address to create a new game.") },
-                confirmButton = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CircleButton(
-                            text = "Okay",
-                            onClick = { showVerificationDialog = false },
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-                },
-                containerColor = bistre
-            )
+        Box(
+            modifier = Modifier
+                .weight(0.2f)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AnimatedButton(
+                    text = "Browse Games",
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    navController.navigate(Browser)
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                AnimatedButton(
+                    text = "Continue Game",
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    navController.navigate(BrowseSession)
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .weight(0.25f)
+                .fillMaxWidth()
+                //.fillMaxHeight()
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            AnimatedButton(
+                text = "Create Game",
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.weight(0.55f)
+            ) {
+                navController.navigate(Creator)
+            }
+
+            //kwiatek
+            Box(
+                modifier = Modifier
+                    .weight(0.45f)
+                    .fillMaxHeight()
+                    .padding(start = 8.dp)
+            ) {
+                val bottomLottieComposition by rememberLottieComposition(
+                    LottieCompositionSpec.Url("https://lottie.host/e597fae4-36bb-4243-973b-ea2338cf7657/3WfrXpj53N.lottie")
+                )
+                val bottomLottieProgress by animateLottieCompositionAsState(
+                    composition = bottomLottieComposition,
+                    iterations = LottieConstants.IterateForever,
+                    speed = 0.8f
+                )
+
+                LottieAnimation(
+                    composition = bottomLottieComposition,
+                    progress = { bottomLottieProgress },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }
+
+
+

@@ -73,18 +73,13 @@ class GameSessionRepository @Inject constructor() {
         println("Session after update: $updatedSession")
     }
 
-    suspend fun addParticipantToGameSession(sessionId: String, user: User) {
-        try {
-            val sessionRef = firestore.collection("game_sessions").document(sessionId)
-            firestore.runTransaction { transaction ->
-                val snapshot = transaction.get(sessionRef)
-                val currentParticipants =
-                    snapshot.get("participants") as? List<User> ?: listOf()
-                val updatedParticipants = currentParticipants + user
-                transaction.update(sessionRef, "participants", updatedParticipants)
-            }.await()
+    suspend fun getActiveSessions(): List<GameSession> {
+        return try {
+            val snapshot = gameSessionsCollection.whereEqualTo("finished", false).get().await()
+            snapshot.documents.mapNotNull { it.toObject(GameSession::class.java) }
         } catch (e: Exception) {
-            println("Error adding participant to game session: ${e.message}")
+            println("Error fetching active game sessions: ${e.message}")
+            emptyList()
         }
     }
 

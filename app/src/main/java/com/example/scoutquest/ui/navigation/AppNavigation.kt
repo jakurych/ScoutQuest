@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.example.scoutquest.ui.navigation
 
@@ -7,12 +7,14 @@ import com.example.scoutquest.ui.views.general.RegisterView
 import com.example.scoutquest.viewmodels.general.RegisterViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.scoutquest.data.models.GameSession
 import com.example.scoutquest.ui.views.taskscreators.*
 import com.example.scoutquest.ui.views.gamesession.GameMapView
 import com.example.scoutquest.ui.views.gamesession.OpenWorldMapView
@@ -22,6 +24,7 @@ import com.example.scoutquest.ui.views.general.OpenWorldMenu
 import com.example.scoutquest.ui.views.general.LoginView
 import com.example.scoutquest.ui.views.general.MainScreenView
 import com.example.scoutquest.ui.views.general.AdventureGameMenuView
+import com.example.scoutquest.ui.views.general.BrowseSessionsView
 import com.example.scoutquest.ui.views.general.ProfileView
 import com.example.scoutquest.ui.views.general.SettingsView
 import com.example.scoutquest.ui.views.general.UserGamesBrowserView
@@ -29,12 +32,13 @@ import com.example.scoutquest.viewmodels.tasktypes.*
 import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 import com.example.scoutquest.viewmodels.gamesession.OpenTaskViewModel
 import com.example.scoutquest.viewmodels.general.BrowseGamesViewModel
+import com.example.scoutquest.viewmodels.general.BrowseSessionsViewModel
 import com.example.scoutquest.viewmodels.general.CreateNewGameViewModel
-import com.example.scoutquest.viewmodels.general.JoinGameViewModel
 import com.example.scoutquest.viewmodels.general.LoginViewModel
 import com.example.scoutquest.viewmodels.general.ProfileViewModel
 import com.example.scoutquest.viewmodels.general.SettingsViewModel
 import com.example.scoutquest.viewmodels.general.UserViewModel
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun AppNavigation() {
@@ -54,6 +58,7 @@ fun AppNavigation() {
     val gameSessionViewModel: GameSessionViewModel = viewModel()
     val openQuestionViewModel: OpenQuestionViewModel = viewModel()
     val photoViewModel: PhotoViewModel = viewModel()
+    val browseSessionsViewModel: BrowseSessionsViewModel = viewModel()
 
 
 
@@ -127,9 +132,11 @@ fun AppNavigation() {
                     navController = navController
                 )
             }
-            composable(route = CreateOpenQuestion){
-                CreateOpenQuestionView(openQuestionViewModel,
-                    navController)
+            composable(route = CreateOpenQuestion) {
+                CreateOpenQuestionView(
+                    openQuestionViewModel,
+                    navController
+                )
             }
             composable(route = CreateNote) {
                 CreateNoteView(
@@ -193,6 +200,24 @@ fun AppNavigation() {
                     }
                 )
             }
+            composable(route = BrowseSession) {
+                BrowseSessionsView(
+                    browseSessionsViewModel = browseSessionsViewModel,
+                    onSessionSelected = { session ->
+                        val game = runBlocking {
+                            browseSessionsViewModel.getGameFromSession(session)
+                        }
+
+                        game?.let {
+                            gameSessionViewModel.resumeGameSession(session, it)
+                            navController.navigate(GameMap)
+                        }
+                    }
+                )
+            }
+
+
         }
     }
 }
+

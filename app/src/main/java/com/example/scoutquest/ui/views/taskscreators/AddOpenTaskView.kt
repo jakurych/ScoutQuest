@@ -95,7 +95,7 @@ fun AddOpenTaskView(
         position = CameraPosition.fromLatLngZoom(LatLng(latitude, longitude), 10f)
     }
 
-    val taskTypes = listOf("Open question", "Quiz", "Note", "True/False", "Photo", "None")
+    val taskTypes = listOf("Open question", "Quiz", "Note", "True/False", "Photo")
     val markerColors = listOf("red", "black", "blue", "green", "grey", "orange", "purple", "white", "yellow")
     var expanded by remember { mutableStateOf(false) }
 

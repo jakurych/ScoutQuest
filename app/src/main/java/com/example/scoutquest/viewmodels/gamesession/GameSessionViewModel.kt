@@ -119,7 +119,6 @@ class GameSessionViewModel @Inject constructor(
                 val newSession = GameSession(
                     sessionId = UUID.randomUUID().toString(),
                     gameId = game.gameId,
-                    participants = listOf(userId)
                 )
                 sessionId = newSession.sessionId
                 gameSessionRepository.createGameSession(newSession)
@@ -244,4 +243,17 @@ class GameSessionViewModel @Inject constructor(
             }
         }
     }
+
+    fun resumeGameSession(gameSession: GameSession, game: Game) {
+
+        tasks = game.tasks
+        sessionId = gameSession.sessionId
+        currentTaskIndex = gameSession.currentTaskIndex
+        scores.clear()
+        scores.putAll(gameSession.scores)
+        _gameSession.value = gameSession
+        activeTask = tasks.getOrNull(currentTaskIndex)
+        gameEnded = currentTaskIndex >= tasks.size
+    }
+
 }

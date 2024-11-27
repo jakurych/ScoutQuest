@@ -19,5 +19,6 @@ const val OpenWorldMap = "/openworldmap"
 const val CreateOpenQuestion = "/createopenquestion"
 const val CreatePhotoTask = "/createphototask"
 const val AddOpenWorldTask = "/addopenworldtask"
+const val BrowseSession = "/browsesession"
 
 
