@@ -10,7 +10,7 @@ data class User(
     val createdGames: List<String>? = null,
     val gamesHistory: List<String>? = null,
 
-    val openWorldTicket: Int = 0,
+    val openWorldTicket: Int = 9,
     val createdOpenWorldTasks: List<String>? = null,
     val completedOpenWorldTasks: List<String>? = null
 )
