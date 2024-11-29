@@ -32,6 +32,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.core.content.FileProvider
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.CoroutineScope
@@ -398,7 +400,8 @@ fun ProfileActions(user: User, profileViewModel: ProfileViewModel, navController
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState()),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = eerie_black)
     ) {
