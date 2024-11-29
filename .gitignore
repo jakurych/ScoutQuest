@@ -1,15 +1,55 @@
 *.iml
 .gradle
+.idea
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+#pliki srodowiska npm do firebase functions
+firebase/functions/*
+!firebase/functions/index.js
+!firebase/functions/checkPhotoTask.js
+!firebase/functions/checkOpenQuestion.js
+
+# Android Studio
+*.log
+*.bak
+*.swp
+
+# Pliki tymczasowe
+*.tmp
+
+# Pliki kompilacji
+*.class
+*.dex
+*.apk
+
+# Pliki zależności
+/app/build/
+/app/release/
+
+# Klucze i hasła
+*.keystore
+keystore.properties
+
+# Pliki systemu
+Thumbs.db
+
+# Pliki IDE
+*.ipr
+*.iws
+
+# Pliki środowiska Gradle
+/captures/
+/app/captures/
+
+# Pliki debugowania
+debug.log
+crash_logs/
+
+# Pliki cache
+.cache/
