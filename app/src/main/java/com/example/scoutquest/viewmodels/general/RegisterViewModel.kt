@@ -25,8 +25,6 @@ class RegisterViewModel @Inject constructor(
     var registrationSuccess by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
 
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-
     fun register() {
         if (password != confirmPassword) {
             errorMessage = "Passwords do not match"

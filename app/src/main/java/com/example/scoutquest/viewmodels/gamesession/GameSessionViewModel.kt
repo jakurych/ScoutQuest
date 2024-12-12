@@ -121,6 +121,9 @@ class GameSessionViewModel @Inject constructor(
                     gameId = game.gameId,
                 )
                 sessionId = newSession.sessionId
+
+                userRepository.addGameToUserHistory(userId, newSession.sessionId)
+
                 gameSessionRepository.createGameSession(newSession)
                 _gameSession.value = newSession
                 loadScoresFromFirebase()
@@ -129,6 +132,7 @@ class GameSessionViewModel @Inject constructor(
             }
         }
     }
+
 
     private fun getCurrentTaskId(): Int {
         return tasks.getOrNull(currentTaskIndex)?.taskId ?: -1
@@ -220,9 +224,9 @@ class GameSessionViewModel @Inject constructor(
             if (userId != null) {
                 val totalPoints = totalScores().toInt()
                 userRepository.updateUserPoints(userId, totalPoints)
-                sessionId?.let { id ->
+               /* sessionId?.let { id ->
                     userRepository.addGameToUserHistory(userId, id)
-                }
+                }*/
             } else {
                 println("Error: User ID is null when trying to update profile after game")
             }

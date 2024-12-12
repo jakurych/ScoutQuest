@@ -6,6 +6,7 @@ import com.example.scoutquest.data.models.Game
 import com.example.scoutquest.data.models.GameSession
 import com.example.scoutquest.data.repositories.GameRepository
 import com.example.scoutquest.data.repositories.GameSessionRepository
+import com.example.scoutquest.data.repositories.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BrowseSessionsViewModel @Inject constructor(
     private val gameSessionRepository: GameSessionRepository,
-    private val gameRepository: GameRepository
+    private val gameRepository: GameRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _activeSessions = MutableStateFlow<List<GameSession>>(emptyList())
@@ -33,9 +35,17 @@ class BrowseSessionsViewModel @Inject constructor(
     )
 
     suspend fun loadActiveSessions() {
+        val userId = userRepository.getUserId()
+        val user = userId?.let { userRepository.getUserById(it) }
+
+        val userGameHistory = user?.gamesHistory ?: emptyList()
+
         val sessions = gameSessionRepository.getActiveSessions()
-        _activeSessions.value = sessions.filter { !it.finished }
+        _activeSessions.value = sessions.filter { session ->
+            !session.finished && session.sessionId in userGameHistory
+        }
     }
+
 
     suspend fun getGameData(gameId: String): GameData? {
         return try {
