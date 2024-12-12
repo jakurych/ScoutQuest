@@ -185,6 +185,7 @@ fun AppNavigation() {
                     viewModel = gameSessionViewModel,
                     onGameEnd = {
                         navController.navigate(MainScreenRoute) {
+                            gameSessionViewModel.resetGameSession()
                             popUpTo(MainScreenRoute) { inclusive = true }
                         }
                     }

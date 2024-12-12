@@ -48,6 +48,12 @@ fun GameMapView(
 
     val gameEnded by remember { derivedStateOf { viewModel.gameEnded } }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.resetGameSession() //reset przy opuszczeniu (sesji lokalnie)
+        }
+    }
+
     LaunchedEffect(currentTask) {
         bitmapDescriptor = null // Reset marker
 
