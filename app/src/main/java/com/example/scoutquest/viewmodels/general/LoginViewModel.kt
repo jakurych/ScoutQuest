@@ -33,17 +33,4 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-
-
-
-    fun logout() {
-        viewModelScope.launch {
-            authRepository.signOut()
-            _isUserLoggedIn.value = false
-        }
-    }
-
-    fun clearError() {
-        _errorMessage.value = ""
-    }
 }

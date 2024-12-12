@@ -34,6 +34,11 @@ class UserRepository @Inject constructor() {
         }
     }
 
+    suspend fun addUser(user: User) {
+        user.userId?.let { FirebaseFirestore.getInstance().collection("users").document(it).set(user).await() }
+    }
+
+
     fun getUserId(): String? {
         return auth.currentUser?.uid
     }

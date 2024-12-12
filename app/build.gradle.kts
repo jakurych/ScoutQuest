@@ -110,20 +110,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.28.0")
-    implementation("com.google.accompanist:accompanist-placeholder-material:0.28.0")
-    implementation("com.airbnb.android:lottie-compose:6.0.0")
+    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.accompanist.placeholder.material)
+    implementation(libs.lottie.compose.v600)
 
 
     //Play Services
     implementation(libs.play.services.base)
 
     //implementation(libs.play.services.provider)
-
-
-
-
-
     //AI check
     //implementation(libs.google.cloud.language)
 

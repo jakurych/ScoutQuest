@@ -1,10 +1,12 @@
 package com.example.scoutquest.data.repositories
 
 import android.util.Log
+import com.example.scoutquest.data.models.User
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -164,5 +166,28 @@ class AuthRepository @Inject constructor(
             }
         }
     }
+
+    suspend fun registerUser(username: String, email: String, password: String): String {
+        try {
+            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            val userId = result.user?.uid ?: throw Exception("User ID is null")
+
+            // Dodaj użytkownika do Firestore
+            val user = User(username = username, email = email, userId = userId)
+            userRepository.addUser(user)
+
+            // Wyślij e-mail weryfikacyjny
+            sendEmailVerification()
+
+            return userId
+        } catch (e: FirebaseAuthUserCollisionException) {
+            throw Exception("User already exists: ${e.message}")
+        } catch (e: Exception) {
+            throw Exception("Registration failed: ${e.message}")
+        }
+    }
+
+
+
 
 }
