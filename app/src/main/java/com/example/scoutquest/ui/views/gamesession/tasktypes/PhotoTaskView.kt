@@ -26,13 +26,14 @@ import com.example.scoutquest.utils.ComposeFileProvider
 fun PhotoTaskView(
     photoTask: Photo,
     viewModel: GameSessionViewModel,
-    onComplete: (Int) -> Unit // Zmiana typu na () -> Unit
+    onComplete: (Int) -> Unit
 ) {
     val context = LocalContext.current
     var showResult by remember { mutableStateOf(false) }
     var score by remember { mutableStateOf(0) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showPreview by remember { mutableStateOf(false) }
+    var showPermissionDialog by remember { mutableStateOf(false) }
     val answersChecker = AnswersChecker()
     val coroutineScope = rememberCoroutineScope()
     var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -69,8 +70,39 @@ fun PhotoTaskView(
                 Log.e("PhotoTaskView", "Error creating image file", e)
             }
         } else {
-            errorMessage = "Camera permission is required"
+            showPermissionDialog = true
         }
+    }
+
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionDialog = false },
+            title = { Text("Permission Required") },
+            text = {
+                Text("The app needs camera access to complete this task. " +
+                        "Would you like to grant permission?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showPermissionDialog = false
+                        permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                    }
+                ) {
+                    Text("Grant Permission")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showPermissionDialog = false
+                        errorMessage = "Cannot complete task without camera access"
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -93,7 +125,7 @@ fun PhotoTaskView(
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
-                    onClick = { onComplete(score) }, // Przekazanie score jako argument
+                    onClick = { onComplete(score) },
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text("Continue")
@@ -197,7 +229,7 @@ fun PhotoTaskView(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = "Choose from Gallery")
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Choose from Gallery (test mod)")
+                            Text("Choose from Gallery (test mode)")
                         }
                     }
                 }
@@ -205,6 +237,4 @@ fun PhotoTaskView(
         }
     }
 }
-
-
 

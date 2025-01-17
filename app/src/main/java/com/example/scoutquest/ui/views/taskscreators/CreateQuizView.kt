@@ -30,6 +30,9 @@ import com.example.scoutquest.viewmodels.tasktypes.QuizViewModel
 import com.example.scoutquest.ui.theme.button_green
 import com.example.scoutquest.ui.theme.drab_dark_brown
 
+//to fix: podczas edycji, pytanie zostaje dodane jako nowe a nie nadpisane
+//to add: żółte obramowanie tak jak w AddTask
+
 @Composable
 fun CreateQuizView(
     quizViewModel: QuizViewModel,
