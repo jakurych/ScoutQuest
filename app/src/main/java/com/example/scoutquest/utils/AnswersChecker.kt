@@ -25,6 +25,7 @@ class AnswersChecker {
     private var notePoints = 5
     private var trueFalsePoints = 10
     private var quizCorrectAnswerPoints = 10
+    private var trueFalseBonusPoints = 5
     private var quizBonusPoints = 5
     private var endGameBonus = 7
     private var taskReachedBonus = 1
@@ -119,45 +120,69 @@ class AnswersChecker {
         }
     }
 
-    //Quiz check
-    fun checkQuiz(quiz: Quiz, userAnswers: List<List<Int>>): Int {
-        var totalPoints = 0
-        var allCorrect = true
+    //klasa wynikowa Quizu
+    data class QuizResult(
+        val points: Int,
+        val incorrectAnswers: List<Pair<Int, List<Int>>>
+    )
 
-        quiz.questions.forEachIndexed { index, question ->
-            if (index < userAnswers.size) {
-                val userAnswer = userAnswers[index]
-                if (userAnswer.sorted() == question.correctAnswerIndex.sorted()) {
-                    totalPoints += quizCorrectAnswerPoints
+    //Quiz check
+    fun checkQuiz(quiz: Quiz, userAnswers: List<List<Int>>): QuizResult {
+            var totalPoints = 0
+            var allCorrect = true
+            val incorrectAnswers = mutableListOf<Pair<Int, List<Int>>>()
+
+            quiz.questions.forEachIndexed { index, question ->
+                if (index < userAnswers.size) {
+                    val userAnswer = userAnswers[index]
+                    if (userAnswer.sorted() == question.correctAnswerIndex.sorted()) {
+                        totalPoints += quizCorrectAnswerPoints
+                    } else {
+                        allCorrect = false
+                        incorrectAnswers.add(index to question.correctAnswerIndex)
+                    }
                 } else {
                     allCorrect = false
+                }
+            }
+
+            if (allCorrect) {
+                totalPoints += trueFalseBonusPoints
+            }
+
+            return QuizResult(totalPoints, incorrectAnswers)
+        }
+
+    //True/False result
+    data class TrueFalseResult(
+        val points: Int,
+        val incorrectAnswers: List<Int>
+    )
+
+    //True/False
+    fun checkTrueFalse(trueFalse: TrueFalse, userAnswers: List<Boolean>): TrueFalseResult {
+        var totalPoints = 0
+        var allCorrect = true
+        val incorrectAnswers = mutableListOf<Int>()
+
+        trueFalse.answersTf.forEachIndexed { index, correctAnswer ->
+            if (index < userAnswers.size) {
+                if (userAnswers[index] == correctAnswer) {
+                    totalPoints += trueFalsePoints
+                } else {
+                    allCorrect = false
+                    incorrectAnswers.add(index)
                 }
             } else {
                 allCorrect = false
             }
         }
 
-        //Bonus if all correct
         if (allCorrect) {
-            totalPoints += quizBonusPoints
+            totalPoints += trueFalsePoints
         }
 
-        return totalPoints
-    }
-
-    //True/False
-    fun checkTrueFalse(trueFalse: TrueFalse, userAnswers: List<Boolean>): Int {
-        var totalPoints = 0
-
-        trueFalse.answersTf.forEachIndexed { index, correctAnswer ->
-            if (index < userAnswers.size) {
-                if (userAnswers[index] == correctAnswer) {
-                    totalPoints += trueFalsePoints
-                }
-            }
-        }
-
-        return totalPoints
+        return TrueFalseResult(totalPoints, incorrectAnswers)
     }
 
     //note instant points

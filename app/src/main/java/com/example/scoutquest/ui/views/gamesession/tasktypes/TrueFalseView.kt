@@ -16,15 +16,7 @@ fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onCompl
     var currentQuestionIndex by remember { mutableStateOf(0) }
     var userAnswers by remember { mutableStateOf<List<Boolean>>(emptyList()) }
     var showResult by remember { mutableStateOf(false) }
-    val incorrectAnswers = remember { mutableListOf<Int>() }
-
-    fun moveToNextOrFinish() {
-        if (currentQuestionIndex < trueFalse.questionsTf.size - 1) {
-            currentQuestionIndex++
-        } else {
-            showResult = true
-        }
-    }
+    var trueFalseResult by remember { mutableStateOf<AnswersChecker.TrueFalseResult?>(null) }
 
     val currentQuestion = trueFalse.questionsTf.getOrNull(currentQuestionIndex)
     val answersChecker = AnswersChecker()
@@ -35,35 +27,36 @@ fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onCompl
         },
         content = { paddingValues ->
             if (showResult) {
-                val points = answersChecker.checkTrueFalse(trueFalse, userAnswers)
-                viewModel.updateTaskScore(points) // Aktualizacja punktów w ViewModel
-                Column(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Task Completed! You scored $points points.",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (incorrectAnswers.isNotEmpty()) {
-                        Text("You made mistakes in the following questions:")
-                        incorrectAnswers.forEach { questionIndex ->
-                            val questionText = trueFalse.questionsTf[questionIndex]
-                            val correctAnswer = if (trueFalse.answersTf[questionIndex]) "True" else "False"
-                            Text("- Question: $questionText")
-                            Text("  Correct answer: $correctAnswer")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = { onComplete(points) },
-                        modifier = Modifier.align(Alignment.End)
+                trueFalseResult?.let { result ->
+                    viewModel.updateTaskScore(result.points)
+                    Column(
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .padding(16.dp)
                     ) {
-                        Text("Continue")
+                        Text(
+                            text = "Task Completed! You scored ${result.points} points.",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        if (result.incorrectAnswers.isNotEmpty()) {
+                            Text("You made mistakes in the following questions:")
+                            result.incorrectAnswers.forEach { questionIndex ->
+                                val questionText = trueFalse.questionsTf[questionIndex]
+                                val correctAnswer = if (trueFalse.answersTf[questionIndex]) "True" else "False"
+                                Text("- Question: $questionText")
+                                Text("  Correct answer: $correctAnswer")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { onComplete(result.points) },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text("Continue")
+                        }
                     }
                 }
             } else {
@@ -81,20 +74,24 @@ fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onCompl
                         Row {
                             Button(onClick = {
                                 userAnswers = userAnswers + true
-                                if (!trueFalse.answersTf[currentQuestionIndex]) {
-                                    incorrectAnswers.add(currentQuestionIndex)
+                                if (currentQuestionIndex < trueFalse.questionsTf.size - 1) {
+                                    currentQuestionIndex++
+                                } else {
+                                    trueFalseResult = answersChecker.checkTrueFalse(trueFalse, userAnswers + true)
+                                    showResult = true
                                 }
-                                moveToNextOrFinish()
                             }) {
                                 Text("True")
                             }
                             Spacer(modifier = Modifier.width(16.dp))
                             Button(onClick = {
                                 userAnswers = userAnswers + false
-                                if (trueFalse.answersTf[currentQuestionIndex]) {
-                                    incorrectAnswers.add(currentQuestionIndex)
+                                if (currentQuestionIndex < trueFalse.questionsTf.size - 1) {
+                                    currentQuestionIndex++
+                                } else {
+                                    trueFalseResult = answersChecker.checkTrueFalse(trueFalse, userAnswers + false)
+                                    showResult = true
                                 }
-                                moveToNextOrFinish()
                             }) {
                                 Text("False")
                             }
@@ -105,5 +102,3 @@ fun TrueFalseView(trueFalse: TrueFalse, viewModel: GameSessionViewModel, onCompl
         }
     )
 }
-
-

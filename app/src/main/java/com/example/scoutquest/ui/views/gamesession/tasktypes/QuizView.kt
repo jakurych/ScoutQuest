@@ -14,9 +14,9 @@ import com.example.scoutquest.viewmodels.gamesession.GameSessionViewModel
 @Composable
 fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: (Int) -> Unit) {
     var currentQuestionIndex by remember { mutableStateOf(0) }
-    var selectedAnswers by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var selectedAnswers by remember { mutableStateOf<List<List<Int>>>(List(quiz.questions.size) { emptyList() }) }
     var showResult by remember { mutableStateOf(false) }
-    val incorrectAnswers = remember { mutableListOf<Pair<Int, List<Int>>>() }
+    var quizResult by remember { mutableStateOf<AnswersChecker.QuizResult?>(null) }
 
     val currentQuestion = quiz.questions.getOrNull(currentQuestionIndex)
     val answersChecker = AnswersChecker()
@@ -27,35 +27,38 @@ fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: (Int) -> U
         },
         content = { paddingValues ->
             if (showResult) {
-                val points = answersChecker.checkQuiz(quiz, listOf(selectedAnswers))
-                viewModel.updateTaskScore(points) // Aktualizacja punktów w ViewModel
-                Column(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Quiz Completed! You scored $points points.",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (incorrectAnswers.isNotEmpty()) {
-                        Text("You made mistakes in the following questions:")
-                        incorrectAnswers.forEach { (questionIndex, correctAnswer) ->
-                            val questionText = quiz.questions[questionIndex].questionText
-                            val correctOptions = correctAnswer.joinToString(", ") { quiz.questions[questionIndex].options[it] }
-                            Text("- Question: $questionText")
-                            Text("  Correct answer(s): $correctOptions")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = { onComplete(points) }, // Przekazanie points jako argument
-                        modifier = Modifier.align(Alignment.End)
+                quizResult?.let { result ->
+                    viewModel.updateTaskScore(result.points)
+                    Column(
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .padding(16.dp)
                     ) {
-                        Text("Continue")
+                        Text(
+                            text = "Quiz Completed! You scored ${result.points} points.",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        if (result.incorrectAnswers.isNotEmpty()) {
+                            Text("You made mistakes in the following questions:")
+                            result.incorrectAnswers.forEach { (questionIndex, correctAnswer) ->
+                                val questionText = quiz.questions[questionIndex].questionText
+                                val correctOptions = correctAnswer.joinToString(", ") {
+                                    quiz.questions[questionIndex].options[it]
+                                }
+                                Text("- Question: $questionText")
+                                Text("  Correct answer(s): $correctOptions")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { onComplete(result.points) },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text("Continue")
+                        }
                     }
                 }
             } else {
@@ -75,10 +78,20 @@ fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: (Int) -> U
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                RadioButton(
-                                    selected = selectedAnswers.contains(index),
-                                    onClick = {
-                                        selectedAnswers = listOf(index)
+                                Checkbox(
+                                    checked = selectedAnswers[currentQuestionIndex].contains(index),
+                                    onCheckedChange = { isChecked ->
+                                        val currentAnswers = selectedAnswers[currentQuestionIndex].toMutableList()
+                                        if (isChecked) {
+                                            if (!currentAnswers.contains(index)) {
+                                                currentAnswers.add(index)
+                                            }
+                                        } else {
+                                            currentAnswers.remove(index)
+                                        }
+                                        val newAnswers = selectedAnswers.toMutableList()
+                                        newAnswers[currentQuestionIndex] = currentAnswers
+                                        selectedAnswers = newAnswers
                                     }
                                 )
                                 Text(text = option)
@@ -87,13 +100,10 @@ fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: (Int) -> U
                         Spacer(modifier = Modifier.height(24.dp))
                         Button(
                             onClick = {
-                                if (selectedAnswers.sorted() != question.correctAnswerIndex.sorted()) {
-                                    incorrectAnswers.add(currentQuestionIndex to question.correctAnswerIndex)
-                                }
                                 if (currentQuestionIndex < quiz.questions.size - 1) {
                                     currentQuestionIndex++
-                                    selectedAnswers = emptyList()
                                 } else {
+                                    quizResult = answersChecker.checkQuiz(quiz, selectedAnswers)
                                     showResult = true
                                 }
                             },
@@ -107,5 +117,3 @@ fun QuizView(quiz: Quiz, viewModel: GameSessionViewModel, onComplete: (Int) -> U
         }
     )
 }
-
-
