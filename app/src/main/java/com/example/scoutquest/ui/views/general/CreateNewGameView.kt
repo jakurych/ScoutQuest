@@ -69,6 +69,8 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 
+
+
 @Composable
 fun CreateNewGameView(
     createNewGameViewModel: CreateNewGameViewModel,

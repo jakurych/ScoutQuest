@@ -188,6 +188,11 @@ fun AppNavigation() {
                             gameSessionViewModel.resetGameSession()
                             popUpTo(MainScreenRoute) { inclusive = true }
                         }
+                    },
+                    onExit = {
+                        navController.navigate(MainScreenRoute) {
+                            popUpTo(MainScreenRoute) { inclusive = true }
+                        }
                     }
                 )
             }

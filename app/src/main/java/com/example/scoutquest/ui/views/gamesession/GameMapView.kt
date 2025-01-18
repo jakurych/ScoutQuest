@@ -3,10 +3,15 @@ package com.example.scoutquest.ui.views.gamesession
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import androidx.compose.ui.Alignment
 import android.util.Log
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.scoutquest.data.services.MarkersHelper
 import com.example.scoutquest.ui.views.gamesession.tasktypes.EndGameView
@@ -27,7 +32,8 @@ import com.google.maps.android.compose.*
 @Composable
 fun GameMapView(
     viewModel: GameSessionViewModel,
-    onGameEnd: () -> Unit
+    onGameEnd: () -> Unit,
+    onExit: () -> Unit
 ) {
     val context = LocalContext.current
     val cameraPositionState = rememberCameraPositionState()
@@ -243,6 +249,17 @@ fun GameMapView(
                 }
             }
         }
+        if (!showTaskView.value) {
+            Button(
+                onClick = onExit,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
+            ) {
+                Text("Exit")
+            }
+        }
+
     }
 
     // Reset view after game ends
@@ -252,6 +269,7 @@ fun GameMapView(
             onGameEnd()
         }, score = viewModel.totalScores())
     }
+
 }
 
 
