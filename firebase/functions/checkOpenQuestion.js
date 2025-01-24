@@ -27,7 +27,7 @@ exports.checkOpenQuestionFunctionV2 = onCall(async (request) => {
     const generativeModel = vertexAI.preview.getGenerativeModel({
       model: model,
       generation_config: {
-        max_output_tokens: 8, // max tokens 256 -> 200-300 słów liczby <4, 8 dla bezpieczenstwa
+        max_output_tokens: 2, // max tokens 256 -> 200-300 słów liczby <4, 8 dla bezpieczenstwa
         temperature: 0.1, // kreatywnosc -> im większa tym większa losowość
         top_p: 1, // % najbardziej prawdopodobnych tokenów będzie wzięty pod uwagę
         top_k: 40, // wybierz spośród 40 najbardziej prawdopodobnych tokenów
