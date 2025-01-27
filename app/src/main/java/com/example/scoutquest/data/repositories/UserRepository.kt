@@ -38,6 +38,19 @@ class UserRepository @Inject constructor() {
         user.userId?.let { FirebaseFirestore.getInstance().collection("users").document(it).set(user).await() }
     }
 
+    suspend fun removeSessionFromUserHistory(userId: String, sessionId: String) {
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(userRef)
+                val gamesHistory = snapshot.get("gamesHistory") as? List<String> ?: emptyList()
+                val updatedHistory = gamesHistory.filter { it != sessionId }
+                transaction.update(userRef, "gamesHistory", updatedHistory)
+            }.await()
+        } catch (e: Exception) {
+            println("Error removing session from user history: ${e.message}")
+        }
+    }
 
     fun getUserId(): String? {
         return auth.currentUser?.uid

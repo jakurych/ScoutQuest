@@ -69,8 +69,13 @@ class BrowseSessionsViewModel @Inject constructor(
 
     fun deleteSession(sessionId: String) {
         viewModelScope.launch {
+            val userId = userRepository.getUserId()
+            userId?.let {
+                userRepository.removeSessionFromUserHistory(it, sessionId)
+            }
             gameSessionRepository.deleteGameSession(sessionId)
-            loadActiveSessions() //Przeładuj sesje po usunięciu
+            loadActiveSessions()
         }
     }
+
 }
