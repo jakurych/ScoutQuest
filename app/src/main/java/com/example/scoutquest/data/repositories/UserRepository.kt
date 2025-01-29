@@ -2,6 +2,7 @@ package com.example.scoutquest.data.repositories
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.example.scoutquest.data.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -102,11 +103,17 @@ class UserRepository @Inject constructor() {
     suspend fun updateUserEmail(userId: String, newEmail: String) {
         try {
             val userRef = db.collection("users").document(userId)
-            userRef.update("email", newEmail).await()
+            val updates = hashMapOf<String, Any>(
+                "email" to newEmail
+            )
+            userRef.update(updates).await()
+            Log.d("UserRepository", "Email updated in Firestore successfully")
         } catch (e: Exception) {
-            println("Error updating user email: ${e.message}")
+            Log.e("UserRepository", "Error updating user email: ${e.message}")
+            throw Exception("Failed to update email in database: ${e.message}")
         }
     }
+
 
     suspend fun removeGameFromUser(userId: String, gameId: String) {
         try {

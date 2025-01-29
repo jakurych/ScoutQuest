@@ -86,41 +86,41 @@ class AuthRepository @Inject constructor(
     suspend fun changeEmail(newEmail: String, password: String) {
         val user = auth.currentUser
         if (user != null) {
-            //Reauthentication
             val credential = EmailAuthProvider.getCredential(user.email!!, password)
             try {
+                // Reauthenticate user
                 user.reauthenticate(credential).await()
-                user.updateEmail(newEmail).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Log.d("AuthRepository", "User email address updated.")
-                        // Update email in Firestore
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                userRepository.updateUserEmail(user.uid, newEmail)
-                                Log.d("AuthRepository", "User email updated in Firestore.")
-                            } catch (e: Exception) {
-                                Log.e("AuthRepository", "Error updating email in Firestore: ${e.message}")
-                            }
-                        }
-                    } else {
-                        Log.e("AuthRepository", "Failed to update email: ${task.exception?.message}")
-                    }
-                }
-            } catch (e: FirebaseAuthInvalidCredentialsException) {
-                Log.e("AuthRepository", "Invalid current password")
-                throw Exception("Invalid current password")
-            } catch (e: FirebaseAuthRecentLoginRequiredException) {
-                Log.e("AuthRepository", "Recent login required. Please log in again.")
-                throw Exception("Recent login required. Please log in again.")
+
+                // Update email
+                user.updateEmail(newEmail).await()
+
+                // Send verification email
+                user.sendEmailVerification().await()
+
+                // Update email in Firestore
+                userRepository.updateUserEmail(user.uid, newEmail)
+
+                Log.d("AuthRepository", "Email updated and verification sent successfully")
             } catch (e: Exception) {
-                Log.e("AuthRepository", "Failed to update email: ${e.message}")
-                throw Exception("Failed to update email: ${e.message}")
+                Log.e("AuthRepository", "Error updating email: ${e.message}")
+                throw e
             }
         } else {
-            Log.e("AuthRepository", "User is not logged in")
             throw Exception("User is not logged in")
         }
     }
+
+    suspend fun reloadCurrentUser(): FirebaseUser? {
+        return try {
+            auth.currentUser?.reload()?.await()
+            auth.currentUser
+        } catch (e: Exception) {
+            Log.e("AuthRepository", "Error reloading user: ${e.message}")
+            null
+        }
+    }
+
+
 
     suspend fun sendPasswordResetEmail(email: String): Boolean {
         return try {

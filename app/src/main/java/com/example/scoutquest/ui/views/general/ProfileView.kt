@@ -45,6 +45,8 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
     val navController = LocalNavigation.current
     val isUserLoggedIn by userViewModel.isUserLoggedIn.collectAsState()
     val user by profileViewModel.user.collectAsState()
+    val isEmailVerified by profileViewModel.isEmailVerified.collectAsState()
+    val isCheckingVerification by profileViewModel.isCheckingVerification.collectAsState()
 
     LaunchedEffect(Unit) {
         profileViewModel.fetchUserData()
@@ -72,7 +74,11 @@ fun ProfileView(profileViewModel: ProfileViewModel, userViewModel: UserViewModel
         user?.let {
             ProfileHeader(user = it, profileViewModel = profileViewModel)
             Spacer(modifier = Modifier.height(16.dp))
-            ProfileDetails(user = it, isEmailVerified = profileViewModel.isEmailVerified())
+            ProfileDetails(
+                user = it,
+                isEmailVerified = isEmailVerified,
+                isCheckingVerification = isCheckingVerification
+            )
             Spacer(modifier = Modifier.height(16.dp))
             ProfileActions(it, profileViewModel, navController)
         }
@@ -261,7 +267,11 @@ private fun createImageFile(context: Context): File {
 }
 
 @Composable
-fun ProfileDetails(user: User, isEmailVerified: Boolean) {
+fun ProfileDetails(
+    user: User,
+    isEmailVerified: Boolean,
+    isCheckingVerification: Boolean = false // Nowy parametr
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -279,6 +289,7 @@ fun ProfileDetails(user: User, isEmailVerified: Boolean) {
             Spacer(modifier = Modifier.height(8.dp))
 
             if (isEmailVerified) {
+                //zawartość dla zweryfikowanego maila
                 Text("Points: ${user.points}", color = Color.White)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Created Games: ${user.createdGames?.size ?: 0}", color = Color.White)
@@ -287,12 +298,30 @@ fun ProfileDetails(user: User, isEmailVerified: Boolean) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Open world ticket: ${user.openWorldTicket}", color = Color.White)
             } else {
-                Text("Please verify your email to get stats", color = Color.White)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        if (isCheckingVerification)
+                            "Checking email verification..."
+                        else
+                            "Please verify your email to get stats",
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                    if (isCheckingVerification) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
         }
     }
 }
-
 
 @Composable
 fun BadgesRow(badges: List<Badge>?) {
