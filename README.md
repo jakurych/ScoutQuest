@@ -1,3 +1,6 @@
+**THE DOCUMENTATION PDF CAN BE FOUND IN THE FILES AND AT THE FOLLOWING LINK:**  
+https://drive.google.com/file/d/1KsTt003pzYmQO_OO1IM3DWNp3ee4JRQ-/view?usp=sharing
+
 # ScoutQuest 🗺️
 
 ScoutQuest is an interactive mobile geolocation game for Android that transforms real-world exploration into an engaging adventure.
